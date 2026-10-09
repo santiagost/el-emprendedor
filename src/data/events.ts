@@ -6,7 +6,7 @@ export const GAME_EVENTS: GameEvent[] = [
   // ==========================================
   {
     id: 'f1_mvp_calidad',
-    stage: 1,
+    phaseId: 1,
     title: 'El Primer Prototipo',
     weight: 10,
     description: 'El producto funciona pero tiene fallas visuales y bugs menores. ¿Cómo salís al mercado?',
@@ -29,7 +29,7 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'f1_primer_socio',
-    stage: 1,
+    phaseId: 1,
     title: 'La Elección del Co-Fundador',
     weight: 10,
     description: 'Necesitás complementar tus habilidades. Aparecen dos personas interesadas en sumarse.',
@@ -52,7 +52,7 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'f1_primer_cliente_grande',
-    stage: 1,
+    phaseId: 1,
     title: 'Contrato Tentador',
     weight: 8,
     description: 'Una empresa consolidada quiere contratarte, pero exige pagar a 120 días y exclusividad operativa.',
@@ -79,7 +79,7 @@ export const GAME_EVENTS: GameEvent[] = [
   // ==========================================
   {
     id: 'f2_crisis_cobro',
-    stage: 2,
+    phaseId: 2,
     title: 'El Gran Cliente Demora el Pago',
     weight: 25, // Muy probable si tenés el tag
     requiredTags: ['cliente_dependencia'],
@@ -102,7 +102,7 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'f2_proveedor_critico',
-    stage: 2,
+    phaseId: 2,
     title: 'El Dilema de Abastecimiento',
     weight: 10,
     description: 'Podés importar insumos/servicios clave a mitad de precio de un solo proveedor, o mantener varios proveedores locales más caros.',
@@ -125,7 +125,7 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'f2_sobrecarga_equipo',
-    stage: 2,
+    phaseId: 2,
     title: 'Pico de Demanda y Cuello de Botella',
     weight: 10,
     description: 'Las ventas crecieron un 60%, pero el equipo no da abasto. Hay quejas de clientes por demoras.',
@@ -151,7 +151,7 @@ export const GAME_EVENTS: GameEvent[] = [
   // ==========================================
   {
     id: 'f3_shock_externo',
-    stage: 3,
+    phaseId: 3,
     title: 'Cierre de Importaciones / Devaluación',
     weight: 20, // Ruleta contextual
     description: 'El gobierno impone restricciones cambiarias y aduaneras severas. El mercado está en pánico.',
@@ -172,7 +172,7 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'f3_ronda_inversion',
-    stage: 3,
+    phaseId: 3,
     title: 'Llega un Fondo de Inversión',
     weight: 10,
     description: 'Un fondo de Venture Capital ofrece 200k USD, pero exige el 35% de la empresa y una silla con derecho a veto en el directorio.',
@@ -195,7 +195,7 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'f3_disputa_socios',
-    stage: 3,
+    phaseId: 3,
     title: 'Guerra en el Directorio',
     weight: 30, // Se activa si elegiste al socio conflictivo
     requiredTags: ['socio_conflictivo'],
@@ -219,7 +219,7 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'f3_crisis_burnout',
-    stage: 3,
+    phaseId: 3,
     title: 'El Equipo al Límite',
     weight: 30,
     requiredTags: ['equipo_sobrecargado'],
@@ -246,7 +246,7 @@ export const GAME_EVENTS: GameEvent[] = [
   // ==========================================
   {
     id: 'f4_competidor_gigante',
-    stage: 4,
+    phaseId: 4,
     title: 'Ataque Corporativo',
     weight: 10,
     description: 'El líder del mercado copió tu producto estrella y lo ofrece a pérdida gracias a su espalda financiera.',
@@ -267,7 +267,7 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'f4_intento_compra_hostil',
-    stage: 4,
+    phaseId: 4,
     title: 'Oferta de Compra Hostil',
     weight: 25,
     requiredTags: ['equity_diluido'],
@@ -290,7 +290,7 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'f4_legado_sostenible',
-    stage: 4,
+    phaseId: 4,
     title: 'El Dilema del Dividendo',
     weight: 15,
     requiredTags: ['autonomia_estrategica'],
@@ -314,7 +314,7 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'f4_auditoria_afip',
-    stage: 4,
+    phaseId: 4,
     title: 'Auditoría Fiscal General',
     weight: 8, // Cisne negro
     description: 'Los inspectores revisan minuciosamente tus libros contables y contrataciones de los últimos 3 años.',

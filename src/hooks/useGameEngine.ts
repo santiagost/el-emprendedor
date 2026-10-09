@@ -6,7 +6,7 @@ import type { Archetype, Financing } from '../types/game';
 const INITIAL_STATE: GameState = {
   currentTurn: 1,
   maxTurns: 15,
-  stage: 1,
+  phaseId: 1,
   metrics: { capital: 50, reputacion: 50, bienestar: 50 },
   activeTags: [],
   history: [],
@@ -30,8 +30,8 @@ const getRandomWeightedEvent = (events: GameEvent[]): GameEvent => {
 };
 
 const getInitialEvent = (): GameEvent => {
-  const stageOneEvents = GAME_EVENTS.filter((ev) => ev.stage === 1 && (!ev.requiredTags || ev.requiredTags.length === 0));
-  return getRandomWeightedEvent(stageOneEvents);
+  const phaseOneEvents = GAME_EVENTS.filter((ev) => ev.phaseId === 1 && (!ev.requiredTags || ev.requiredTags.length === 0));
+  return getRandomWeightedEvent(phaseOneEvents);
 }
 
 const validateInitialMetrics = (initialMetric: number, archetypeEffect: number | undefined, financingEffect: number | undefined): number => {
@@ -65,7 +65,7 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing) =
     // Filtrar eventos por etapa, que no se hayan jugado y que cumplan condiciones de tags
     const available = GAME_EVENTS.filter((ev) => {
       if (state.history.includes(ev.id)) return false;
-      if (ev.stage !== state.stage) return false;
+      if (ev.phaseId !== state.phaseId) return false;
 
       const hasRequiredTags = ev.requiredTags
         ? ev.requiredTags.every((t) => state.activeTags.includes(t))
@@ -127,7 +127,7 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing) =
     const nextState: GameState = {
       ...gameState,
       currentTurn: nextTurn,
-      stage: nextStage,
+      phaseId: nextStage,
       metrics: newMetrics,
       activeTags: updatedTags,
       history: [...gameState.history, currentEvent.id],

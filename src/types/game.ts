@@ -1,4 +1,4 @@
-export type Stage = 1 | 2 | 3 | 4;
+import { type PhaseId } from "../game/phases";
 
 export interface Metrics {
     capital: number;
@@ -21,7 +21,7 @@ export interface GameOption {
 
 export interface GameEvent {
     id: string;
-    stage: Stage;
+    phaseId: PhaseId;
     title: string;
     description: string;
     requiredTags?: string[];
@@ -35,7 +35,7 @@ export type GameStatus = 'playing' | 'game_over_capital' | 'game_over_bienestar'
 export interface GameState {
     currentTurn: number;
     maxTurns: number;
-    stage: Stage;
+    phaseId: PhaseId;
     metrics: Metrics;
     activeTags: string[];
     history: string[]; // ids de eeventos jugados

@@ -29,7 +29,7 @@ export default function Game({ arquetipo, financiamiento }: GameProps) {
             <header className="space-y-4">
                 <div className="flex justify-between items-center text-xs font-semibold text-slate-400">
                     <span>TURNO {currentTurn} / {maxTurns}</span>
-                    <span className="uppercase tracking-widest text-indigo-400">Fase {gameState.stage}</span>
+                    <span className="uppercase tracking-widest text-indigo-400">Fase {gameState.phaseId}</span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 bg-slate-900 p-3 rounded-xl border border-slate-800">
