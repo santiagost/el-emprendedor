@@ -5,3 +5,5 @@
 - Works in Vite + React + TypeScript projects with Tailwind CSS. Confidence: 0.65
 - Asks for critical, opinion-driven analysis ("dame tu visión", "qué opinás") on architecture and scalability — wants honest assessment of what's wrong and what to improve, not just execution. Confidence: 0.6
 - Works directly on the `main` branch ("voy a trabajar siempre sobre main"); treats variant default branches like `master` as mistakes to clean up rather than keep. Confidence: 0.85
+- Works from saved plans (Command Code plan mode, stored under `~/.commandcode/plans`) with labeled steps (e.g. A1/A2/A3) and asks the agent to verify what has actually been implemented against the plan, step by step. Confidence: 0.6
+- Requests self-contained "context handoff" documents describing the current state of the code, written so another LLM (not just themselves) can pick up the project — wants an exhaustive, paste-ready summary covering stack, architecture, files, domain model, current WIP/broken state, and git history. Confidence: 0.75

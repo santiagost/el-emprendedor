@@ -1,100 +1,14 @@
-import { useState, useCallback } from 'react';
-import type { GameState, GameEvent, GameOption, Metrics } from '../types/game';
-import { GAME_EVENTS } from '../data/events';
-import type { Archetype, Financing } from '../types/game';
+import { useState } from 'react';
+import { phaseForTurn} from '../game/phases';
+import type { GameState, GameEvent, GameOption, Metrics, Archetype, Financing, PendingEvent } from '../types/game';
+import { startGame, getInitialEvent, selectNextEvent, clamp} from '../game/engine'
+import type { RNG } from '../game/rng';
 
-const INITIAL_STATE: GameState = {
-  currentTurn: 1,
-  maxTurns: 15,
-  phaseId: 1,
-  metrics: { capital: 50, reputacion: 50, bienestar: 50 },
-  activeTags: [],
-  history: [],
-  status: 'playing',
-  lastPill: null,
-};
-
-
-const getRandomWeightedEvent = (events: GameEvent[]): GameEvent => {
-  const totalWeight = events.reduce((sum, ev) => sum + (ev.weight || 10), 0);
-  let random = Math.random() * totalWeight;
-
-  for (const ev of events) {
-    const weight = ev.weight ?? 10;
-    if (random < weight) {
-      return ev;
-    }
-    random -= weight;
-  }
-  return events[0]; // fallback
-};
-
-const getInitialEvent = (): GameEvent => {
-  const phaseOneEvents = GAME_EVENTS.filter((ev) => ev.phaseId === 1 && (!ev.requiredTags || ev.requiredTags.length === 0));
-  return getRandomWeightedEvent(phaseOneEvents);
-}
-
-const validateInitialMetrics = (initialMetric: number, archetypeEffect: number | undefined, financingEffect: number | undefined): number => {
-  const total = initialMetric + (archetypeEffect || 0) + (financingEffect || 0);
-  if (total < 0 || total > 100) {
-    console.warn(`Initial metric value out of bounds: ${total}. Clamping to [0, 100].`);
-    return Math.max(0, Math.min(100, total));
-  }
-  return Math.max(0, Math.min(100, total));
-}
-
-const startGame = (archetype: Archetype, financing: Financing): GameState => {
-  return {
-    ...INITIAL_STATE,
-    metrics: {
-      capital: validateInitialMetrics(INITIAL_STATE.metrics.capital, archetype.effects.capital, financing.effects.capital),
-      bienestar: validateInitialMetrics(INITIAL_STATE.metrics.bienestar, archetype.effects.bienestar, financing.effects.bienestar),
-      reputacion: validateInitialMetrics(INITIAL_STATE.metrics.reputacion, archetype.effects.reputacion, financing.effects.reputacion),
-    },
-    activeTags: [...(archetype.tags || []), ...(financing.tags || [])],
-  };
-};
-
-export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing) => {
+export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, rng: RNG) => {
   const [gameState, setGameState] = useState<GameState>(() => startGame(arquetipo, financiamiento));
-  const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(getInitialEvent());
+  const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(getInitialEvent(rng));
 
-  const clamp = (val: number) => Math.max(0, Math.min(100, val));
-
-  const selectNextEvent = useCallback((state: GameState): GameEvent | null => {
-    // Filtrar eventos por etapa, que no se hayan jugado y que cumplan condiciones de tags
-    const available = GAME_EVENTS.filter((ev) => {
-      if (state.history.includes(ev.id)) return false;
-      if (ev.phaseId !== state.phaseId) return false;
-
-      const hasRequiredTags = ev.requiredTags
-        ? ev.requiredTags.every((t) => state.activeTags.includes(t))
-        : true;
-
-      const hasForbiddenTags = ev.forbiddenTags
-        ? ev.forbiddenTags.some((t) => state.activeTags.includes(t))
-        : false;
-
-      return hasRequiredTags && !hasForbiddenTags;
-    });
-
-    if (available.length === 0) {
-      const neutralFallback = GAME_EVENTS.filter((ev) => {
-        if (state.history.includes(ev.id)) return false;
-        const hasRequired = ev.requiredTags && ev.requiredTags.length > 0;
-        return !hasRequired;
-      });
-
-      if (neutralFallback.length > 0) {
-        return getRandomWeightedEvent(neutralFallback);
-      }
-
-      return null;
-    }
-    return getRandomWeightedEvent(available);
-  }, []);
-
-  const makeDecision = (option: GameOption) => {
+  const makeDecision = (option: GameOption, rng: RNG) => {
     if (gameState.status !== 'playing' || !currentEvent) return;
 
     // 1. Calcular nuevas métricas
@@ -122,30 +36,54 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing) =
 
     // 4. Calcular etapa según el turno
     const nextTurn = gameState.currentTurn + 1;
-    const nextStage = nextTurn > 10 ? 4 : nextTurn > 6 ? 3 : nextTurn > 3 ? 2 : 1;
+    const currentPhase = phaseForTurn(nextTurn);
+    const nextPhaseId = currentPhase ? currentPhase.id : gameState.phaseId;
 
-    const nextState: GameState = {
+    const updatedPending: PendingEvent[] = [...gameState.pendingEvents];
+    if (option.scheduledEvent){
+      updatedPending.push({
+        eventId: option.scheduledEvent.eventId,
+        triggerTurn: nextTurn + option.scheduledEvent.delayTurns,
+      });
+    }
+
+    const stateForSelection: GameState = {
       ...gameState,
       currentTurn: nextTurn,
-      phaseId: nextStage,
+      phaseId: nextPhaseId,
       metrics: newMetrics,
       activeTags: updatedTags,
       history: [...gameState.history, currentEvent.id],
+      pendingEvents: updatedPending,
       status: newStatus,
-      lastPill: option.learningPill!,
+      lastPill: option.learningPill ?? null,
     };
 
-    setGameState(nextState);
+    
+    if (newStatus === 'playing'){
+      const {event: nextEvent, remainingPending, endedEarly } = selectNextEvent(stateForSelection, rng);
 
-    if (newStatus === 'playing') {
-      setCurrentEvent(selectNextEvent(nextState));
-    }
+      if (endedEarly){
+        setGameState({...stateForSelection,
+          status: 'ended_early',
+          pendingEvents: remainingPending,
+        });
+        setCurrentEvent(null);
+      }
+      else{
+        setGameState({
+          ...stateForSelection,
+          pendingEvents: remainingPending,
+        });
+        setCurrentEvent(nextEvent)
+      }
+    } 
   };
 
   const restartGame = () => {
     const initialState = startGame(arquetipo, financiamiento);
     setGameState(initialState);
-    setCurrentEvent(getInitialEvent());
+    setCurrentEvent(getInitialEvent(rng));
   };
 
   return {

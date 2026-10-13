@@ -17,6 +17,10 @@ export interface GameOption {
     addTags?: string[];
     removeTags?: string[];
     learningPill?: string;
+    scheduledEvent?: {
+        eventId: string;
+        delayTurns: number;
+    };
 }
 
 export interface GameEvent {
@@ -30,7 +34,14 @@ export interface GameEvent {
     weight?: number;
 }
 
-export type GameStatus = 'playing' | 'game_over_capital' | 'game_over_bienestar' | 'game_over_reputacion' | 'victory' | 'setup';
+export type GameStatus = 
+| 'playing' 
+| 'game_over_capital' 
+| 'game_over_bienestar' 
+| 'game_over_reputacion' 
+| 'victory' 
+| 'setup' 
+| 'ended_early';
 
 export interface GameState {
     currentTurn: number;
@@ -41,6 +52,7 @@ export interface GameState {
     history: string[]; // ids de eeventos jugados
     status: GameStatus;
     lastPill: string | null;
+    pendingEvents: PendingEvent[];
 }
 
 export interface Archetype{
@@ -67,4 +79,9 @@ export interface Financing{
     };
     effects: Partial<Metrics>;
     tags?: string[];
+}
+
+export interface PendingEvent{
+    eventId: string;
+    triggerTurn: number;
 }
