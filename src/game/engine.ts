@@ -1,6 +1,6 @@
-import type { GameEvent, GameState, Archetype, Financing, PendingEvent } from '../types/game';
+import type { GameEvent, GameState, Archetype, Financing, PendingEvent, Metrics, GameStatus, GameOption } from '../types/game';
 import { GAME_EVENTS } from '../data/events';
-import { MAX_TURNS, PHASES } from './phases';
+import { MAX_TURNS, phaseForTurn, PHASES, type PhaseId } from './phases';
 import type { RNG } from './rng';
 
 export const clamp = (val: number, min = 0, max = 100): number => Math.max(min, Math.min(max, val));
@@ -124,42 +124,90 @@ export const selectNextEvent = (state: GameState, rng: RNG): SelectionResult => 
 };
 
 
-//   // Filtrar eventos por etapa, que no se hayan jugado y que cumplan condiciones de tags
-//   const available = GAME_EVENTS.filter((ev) => {
-//     if (state.history.includes(ev.id)) return false;
-//     if (ev.phaseId !== state.phaseId) return false;
+export function applyMetricsEffects(currents: Metrics,
+  effects?: Partial<Metrics>): Metrics {
+  if (!effects) return { ...currents };
+  return {
+    capital: clamp(currents.capital + (effects.capital ?? 0), 0, 100),
+    reputacion: clamp(currents.reputacion + (effects.reputacion ?? 0), 0, 100),
+    bienestar: clamp(currents.bienestar + (effects.bienestar ?? 0), 0, 100),
+  };
+}
 
-//     const hasRequiredTags = ev.requiredTags
-//       ? ev.requiredTags.every((t) => state.activeTags.includes(t))
-//       : true;
+export function applyTags(currentTags: string[],
+  addTags: string[] = [],
+  removeTags: string[] = [],
+): string[] {
+  const toRemove = new Set(removeTags);
+  const remaining = currentTags.filter((t) => !toRemove.has(t));
+  return Array.from(new Set([...remaining, ...addTags]));
+}
 
-//     const hasForbiddenTags = ev.forbiddenTags
-//       ? ev.forbiddenTags.some((t) => state.activeTags.includes(t))
-//       : false;
+export function evaluateGameStatus(
+  metrics: Metrics,
+  turnJustResolved: number,
+  maxTurns: number
+): GameStatus {
+  if (metrics.capital <= 0) return 'game_over_capital';
+  if (metrics.bienestar <= 0) return 'game_over_bienestar';
+  if (metrics.reputacion <= 0) return 'game_over_reputacion';
+  if (turnJustResolved >= maxTurns) return 'victory';
+  return 'playing';
+}
 
-//     return hasRequiredTags && !hasForbiddenTags;
-//   });
-//   // Si hay eventos disponibles para la etapa y tags actuales
-// if (available.length > 0) {
-//   return getRandomWeightedEvent(available);
-// }
+export function advanceTurn(
+  currentTurn: number,
+  maxTurns: number,
+): { nextTurn: number, nextPhaseId: PhaseId } {
+  const nextTurn = currentTurn + 1;
+  const boundedTurn = Math.min(nextTurn, maxTurns);
+  const phase = phaseForTurn(boundedTurn);
+  if (!phase) {
+    throw new RangeError(`No hay una fase definida para el turno ${boundedTurn}`);
+  }
+  return { nextTurn: boundedTurn, nextPhaseId: phase.id };
+}
+export function applyDecision(
+  state: GameState,
+  option: GameOption,
+  eventId: string
+): GameState {
+  const nextMetrics = applyMetricsEffects(state.metrics, option.effects);
+  const nextTags = applyTags(state.activeTags, option.addTags, option.removeTags);
 
-// // 2. Fallback neutral si no hay candidatos (no jugados y sin tags requeridos)
-// const phaseNeutralFallback = GAME_EVENTS.filter((ev) => {
-//   if (state.history.includes(ev.id)) return false;
-//   if (ev.phaseId !== state.phaseId) return false;
-//   const hasRequired = ev.requiredTags && ev.requiredTags.length > 0;
-//   return !hasRequired;
-// });
+  const nextPendingEvents = [...(state.pendingEvents ?? [])];
+  if (option.scheduledEvent) {
+    nextPendingEvents.push({
+      eventId: option.scheduledEvent.eventId,
+      triggerTurn: state.currentTurn + option.scheduledEvent.delayTurns,
+    });
+  }
 
-// if (phaseNeutralFallback.length > 0) {
-//   return getRandomWeightedEvent(phaseNeutralFallback);
-// }
+  const status = evaluateGameStatus(nextMetrics, state.currentTurn, state.maxTurns);
 
-// const emergencyFallback = GAME_EVENTS.filter((ev) => {
-//   if (state.history.includes(ev.id)) return false;
-//   const hasRequired = ev.requiredTags && ev.requiredTags.length > 0;
-//   return !hasRequired;
-// });
+  if (status !== 'playing') {
+    return {
+      ...state,
+      metrics: nextMetrics,
+      activeTags: nextTags,
+      history: [...state.history, eventId],
+      lastPill: option.learningPill ?? null,
+      pendingEvents: nextPendingEvents,
+      status,
+    };
+  }
 
-// return emergencyFallback.length > 0 ? getRandomWeightedEvent(emergencyFallback) : null;
+  const { nextTurn, nextPhaseId } = advanceTurn(state.currentTurn, state.maxTurns);
+
+  return{
+    ...state,
+    currentTurn: nextTurn,
+    phaseId: nextPhaseId,
+    metrics: nextMetrics,
+    activeTags: nextTags,
+    history: [...state.history, eventId],
+    lastPill: option.learningPill ?? null,
+    pendingEvents: nextPendingEvents,
+    status: 'playing',
+  }
+}
