@@ -11,7 +11,9 @@ export default function Game({ arquetipo, financiamiento }: GameProps) {
     const {
         gameState,
         currentEvent,
+        step,
         makeDecision,
+        advance,
         restartGame
     } = useGameEngine(arquetipo, financiamiento);
 

@@ -85,3 +85,8 @@ export interface PendingEvent{
     eventId: string;
     triggerTurn: number;
 }
+
+export type GameStep = 
+| 'decision'
+| 'outcome'
+| 'ended'

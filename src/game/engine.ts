@@ -167,6 +167,7 @@ export function advanceTurn(
   }
   return { nextTurn: boundedTurn, nextPhaseId: phase.id };
 }
+
 export function applyDecision(
   state: GameState,
   option: GameOption,
