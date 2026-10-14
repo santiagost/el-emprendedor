@@ -1,19 +1,21 @@
-import { useState, useRef } from 'react';
-import type { GameState, GameEvent, GameOption, Archetype, Financing, GameStep } from '../types/game';
-import { startGame, getInitialEvent, selectNextEvent, applyDecision } from '../game/engine'
+import { useState } from 'react';
+import type { GameState, GameEvent, Archetype, Financing, GameStep } from '../types/game';
+import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn } from '../game/engine'
 import { type RNG, createRng } from '../game/rng';
 
+const sessionRng = createRng(Date.now());
+
 export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, rng?: RNG) => {
-  const random = createRng(Date.now())
-  const rngRef = useRef(rng ?? random)
+  const [activeRng] = useState<RNG>(() => rng ?? sessionRng);
   const [gameState, setGameState] = useState<GameState>(() => startGame(arquetipo, financiamiento));
-  const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(getInitialEvent(rngRef.current));
+  const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(() => getInitialEvent(activeRng));
   const [step, setStep] = useState<GameStep>('decision')
 
-  const makeDecision = (option: GameOption, turn?: number) => {
+  const decide = (optionIndex: number, turn: number) => {
     if (gameState.status !== 'playing' || !currentEvent || step !== 'decision') return;
-    if (turn !== undefined && turn !== gameState.currentTurn) return;
+    if (turn !== gameState.currentTurn) return;
 
+    const option = currentEvent.options[optionIndex];
     const nextState: GameState = applyDecision(gameState, option, currentEvent.id)
 
     setGameState(nextState);
@@ -28,21 +30,17 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, r
       return;
     }
 
-    const { event: nextEvent, remainingPending, endedEarly } = selectNextEvent(gameState, rngRef.current);
+    const { nextTurn, nextPhaseId } = advanceTurn(gameState.currentTurn, gameState.maxTurns);
+    const advanced: GameState = { ...gameState, currentTurn: nextTurn, phaseId: nextPhaseId };
+
+    const { event: nextEvent, remainingPending, endedEarly } = selectNextEvent(advanced, activeRng);
 
     if (endedEarly) {
-      setGameState((prev) => ({
-        ...prev,
-        status: 'ended_early',
-        pendingEvents: remainingPending
-      }));
+      setGameState({ ...advanced, status: 'ended_early', pendingEvents: remainingPending });
       setCurrentEvent(null);
       setStep('ended')
     } else {
-      setGameState((prev) => ({
-        ...prev,
-        pendingEvents: remainingPending,
-      }));
+      setGameState({ ...advanced, pendingEvents: remainingPending });
       setCurrentEvent(nextEvent);
       setStep('decision');
     }
@@ -51,7 +49,7 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, r
   const restartGame = () => {
     const initialState = startGame(arquetipo, financiamiento);
     setGameState(initialState);
-    setCurrentEvent(getInitialEvent(rngRef.current));
+    setCurrentEvent(getInitialEvent(activeRng));
     setStep('decision');
   };
 
@@ -59,7 +57,7 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, r
     gameState,
     currentEvent,
     step,
-    makeDecision,
+    decide,
     advance,
     restartGame,
   };

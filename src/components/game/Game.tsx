@@ -12,7 +12,7 @@ export default function Game({ arquetipo, financiamiento }: GameProps) {
         gameState,
         currentEvent,
         step,
-        makeDecision,
+        decide,
         advance,
         restartGame
     } = useGameEngine(arquetipo, financiamiento);
@@ -69,14 +69,14 @@ export default function Game({ arquetipo, financiamiento }: GameProps) {
 
             {/* Área Central / Evento */}
             <section className="my-auto py-6">
-                {status === 'playing' && currentEvent && (
+                {currentEvent && (step === 'decision' || step === 'outcome') && (
                     <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between min-h-[280px]">
                         <div>
                             <h2 className="text-lg font-bold text-slate-100 mb-2">{currentEvent.title}</h2>
                             <p className="text-sm text-slate-300 leading-relaxed">{currentEvent.description}</p>
                         </div>
 
-                        {lastPill && (
+                        {step === 'outcome' && lastPill && (
                             <div className="mt-4 p-3 bg-indigo-950/40 border border-indigo-800/60 rounded-lg">
                                 <p className="text-[11px] text-indigo-300 leading-normal">
                                     💡 <span className="font-semibold">Concepto clave:</span> {lastPill}
@@ -86,10 +86,13 @@ export default function Game({ arquetipo, financiamiento }: GameProps) {
                     </div>
                 )}
 
-                {status !== 'playing' && (
+                {status !== 'playing' && step === 'ended'&& (
                     <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center space-y-4">
                         <h2 className="text-xl font-bold">
                             {status === 'victory' ? '🎉 ¡Empresa Consolidada!' : '💥 Fin de la Trayectoria'}
+                        </h2>
+                        <h2>
+                            {status === 'ended_early' ? 'Partida terminada antes': ""}
                         </h2>
                         <p className="text-sm text-slate-300">
                             {status === 'game_over_capital' && 'Te quedaste sin liquidez y la empresa cayó en quiebra.'}
@@ -108,12 +111,12 @@ export default function Game({ arquetipo, financiamiento }: GameProps) {
             </section>
 
             {/* Opciones de Decisión */}
-            {status === 'playing' && currentEvent && (
+            {status === 'playing' && currentEvent && step=== 'decision' && (
                 <footer className="space-y-2 pb-4">
                     {currentEvent.options.map((option, idx) => (
                         <button
                             key={idx}
-                            onClick={() => makeDecision(option)}
+                            onClick={() => decide(idx, currentTurn)}
                             className="w-full text-left p-3.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 hover:border-slate-700 rounded-xl transition-all text-xs text-slate-200"
                         >
                             {option.text}
@@ -121,6 +124,14 @@ export default function Game({ arquetipo, financiamiento }: GameProps) {
                     ))}
                 </footer>
             )}
+
+            {/*Outcome panel*/}
+            {step === 'outcome' &&(
+                <div>
+                    <button onClick={advance}>Siguiente</button>
+                </div>
+            )
+            }
         </main>
     );
 }

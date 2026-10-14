@@ -63,7 +63,7 @@ export interface SelectionResult {
 }
 
 export const selectNextEvent = (state: GameState, rng: RNG): SelectionResult => {
-  const eventsMap = new Map<String, GameEvent>(GAME_EVENTS.map(
+  const eventsMap = new Map<string, GameEvent>(GAME_EVENTS.map(
     (ev) => [ev.id, ev]));
 
   const pendingIndex = state.pendingEvents.findIndex((pending) => {
@@ -105,9 +105,11 @@ export const selectNextEvent = (state: GameState, rng: RNG): SelectionResult => 
   })
 
   if (globalFallback.length > 0) {
-    console.warn(
-      `[GameEngine] Fase ${state.phaseId} sin eventos disponibles en turno ${state.currentTurn}. Usando fallback global.`
-    );
+    if (import.meta.env.DEV) {
+      console.warn(
+        `[GameEngine] Fase ${state.phaseId} sin eventos disponibles en turno ${state.currentTurn}. Usando fallback global.`
+      );
+    }
 
     return {
       event: getRandomWeightedEvent(globalFallback, rng),
@@ -186,29 +188,13 @@ export function applyDecision(
 
   const status = evaluateGameStatus(nextMetrics, state.currentTurn, state.maxTurns);
 
-  if (status !== 'playing') {
-    return {
-      ...state,
-      metrics: nextMetrics,
-      activeTags: nextTags,
-      history: [...state.history, eventId],
-      lastPill: option.learningPill ?? null,
-      pendingEvents: nextPendingEvents,
-      status,
-    };
-  }
-
-  const { nextTurn, nextPhaseId } = advanceTurn(state.currentTurn, state.maxTurns);
-
-  return{
+  return {
     ...state,
-    currentTurn: nextTurn,
-    phaseId: nextPhaseId,
     metrics: nextMetrics,
     activeTags: nextTags,
     history: [...state.history, eventId],
     lastPill: option.learningPill ?? null,
     pendingEvents: nextPendingEvents,
-    status: 'playing',
-  }
+    status,
+  };
 }
