@@ -1,5 +1,5 @@
 import type { GameEvent, GameState, Archetype, Financing, PendingEvent, Metrics, GameStatus, GameOption } from '../types/game';
-import { GAME_EVENTS } from '../data/events';
+import { GAME_EVENTS } from '../data/events/events';
 import { MAX_TURNS, phaseForTurn, PHASES, type PhaseId } from './phases';
 import type { RNG } from './rng';
 

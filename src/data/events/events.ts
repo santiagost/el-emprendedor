@@ -1,4 +1,4 @@
-import type {GameEvent} from '../types/game'
+import type {GameEvent} from '../../types/game'
 
 export const GAME_EVENTS: GameEvent[] = [
   // ==========================================
