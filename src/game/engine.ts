@@ -1,7 +1,8 @@
 import type { GameEvent, GameState, Archetype, Financing, PendingEvent, Metrics, GameStatus, GameOption } from '../types/game';
-import { GAME_EVENTS } from '../data/events/events';
+import { GAME_EVENTS } from '../data/events/index';
 import { MAX_TURNS, phaseForTurn, PHASES, type PhaseId } from './phases';
 import type { RNG } from './rng';
+import type { Tag } from '../data/tags';
 
 export const clamp = (val: number, min = 0, max = 100): number => Math.max(min, Math.min(max, val));
 
@@ -136,10 +137,10 @@ export function applyMetricsEffects(currents: Metrics,
   };
 }
 
-export function applyTags(currentTags: string[],
-  addTags: string[] = [],
-  removeTags: string[] = [],
-): string[] {
+export function applyTags(currentTags: Tag[],
+  addTags: Tag[] = [],
+  removeTags: Tag[] = [],
+): Tag[] {
   const toRemove = new Set(removeTags);
   const remaining = currentTags.filter((t) => !toRemove.has(t));
   return Array.from(new Set([...remaining, ...addTags]));

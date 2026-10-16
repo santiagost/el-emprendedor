@@ -47,8 +47,8 @@ export const defineEvent = (e: {
     }
 
     if (import.meta.env.DEV) {
-        if (!e.id.startsWith(`f${e.phaseId}_`)) {
-            throw new Error(`Evento "${e.id}" no coincide con su phaseId (${e.phaseId}). Debe empezar con "f${e.phaseId}_".`);
+        if (!e.id.startsWith(`f${phaseId}_`)) {
+            throw new Error(`Evento "${e.id}" no coincide con su phaseId (${phaseId}). Debe empezar con "f${phaseId}_".`);
         }
         if (e.options.length < 2 || e.options.length > 3) {
             throw new Error(`Evento "${e.id}": debe tener 2 o 3 opciones (tiene ${e.options.length}).`);

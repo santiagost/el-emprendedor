@@ -29,6 +29,28 @@ export const TAGS = {
     modifiers: { capital: 1, reputacion: 1 },
   },
 
+    // Fase 1: Génesis & Validación
+  calidad_producto: {
+    label: 'Calidad de Producto',
+    modifiers: { capital: -1, reputacion: 2 },
+  },
+  generacion_ingresos: {
+    label: 'Generación de Ingresos',
+    modifiers: { capital: 2 },
+  },
+  red_contactos: {
+    label: 'Red de Contactos',
+    modifiers: { reputacion: 2 },
+  },
+  inversiones: {
+    label: 'Inversiones',
+    modifiers: { capital: 2 },
+  },
+  patrimonio: {
+    label: 'Patrimonio',
+    modifiers: { capital: 1, bienestar: 1 },
+  },
+
   // Fase 2: Tracción & Caja
   deuda_riesgosa: {
     label: 'Deuda Riesgosa',
