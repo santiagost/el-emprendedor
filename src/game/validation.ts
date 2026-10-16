@@ -167,3 +167,58 @@ export const validateScheduledEvents = (events: GameEvent[]): string[] => {
 
   return errores;
 };
+
+export const detectOrphanTags = (events: GameEvent[], tags: Record<string, unknown> = TAGS): string[] => {
+  const warnings: string[] = [];
+  const used = new Set<string>();
+
+  const collect = (tagList: readonly string[] | undefined) => {
+    tagList?.forEach((tag) => used.add(tag));
+  };
+
+  events.forEach((ev) => {
+    collect(ev.requiredTags);
+    collect(ev.forbiddenTags);
+    collect(ev.when?.tags);
+    collect(ev.when?.forbiddenTags);
+    ev.options.forEach((op) => {
+      collect(op.addTags);
+      collect(op.removeTags);
+    });
+  });
+
+  Object.keys(tags).forEach((tag) => {
+    if (!used.has(tag)) {
+      warnings.push(`Tag huérfano: "${tag}" está registrado en TAGS pero ningún evento lo usa.`);
+    }
+  });
+
+  return warnings;
+};
+
+export const detectDuplicateImpacts = (events: GameEvent[]): string[] => {
+  const warnings: string[] = [];
+  const seen = new Map<string, string[]>();
+
+  events.forEach((ev) => {
+    ev.options.forEach((op, opIndex) => {
+      const signature = [
+        op.effects.capital ?? 0,
+        op.effects.bienestar ?? 0,
+        op.effects.reputacion ?? 0,
+      ].join('|');
+      const label = `"${ev.id}" (opción ${opIndex + 1})`;
+      seen.set(signature, [...(seen.get(signature) ?? []), label]);
+    });
+  });
+
+  seen.forEach((labels, signature) => {
+    if (labels.length > 1) {
+      warnings.push(
+        `Impacto repetido [${signature.split('|').join(', ')}] en ${labels.length} opciones: ${labels.join(', ')}.`
+      );
+    }
+  });
+
+  return warnings;
+};

@@ -65,7 +65,7 @@ export interface GameState {
     phaseId: PhaseId;
     metrics: Metrics;
     activeTags: Tag[];
-    history: string[]; // ids de eeventos jugados
+    history: string[]; // ids de eventos jugados
     status: GameStatus;
     lastPill: string | null;
     pendingEvents: PendingEvent[];

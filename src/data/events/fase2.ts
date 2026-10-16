@@ -79,5 +79,31 @@ export const fase2Events = [
                 }
             )
         ]
+    }),
+
+    defineEvent({
+        id: 'f2_primera_contratacion',
+        phaseId: 2,
+        title: 'La Primera Contratación Clave',
+        weight: 10,
+        description: 'La demanda supera lo que podés sostener solo. Necesitás sumar a alguien fuerte al equipo, pero cada perfil implica una apuesta distinta.',
+        options: [
+            defineOption(
+                'Contratar un perfil senior caro que ordene la operación desde el día uno.',
+                { capital: -15, reputacion: +10, bienestar: +5 },
+                {
+                    addTags: ['procesos_solidos'],
+                    learningPill: 'Contratación Clave: Un senior caro que resuelve de inmediato suele salir más barato que meses de improvisación.'
+                }
+            ),
+            defineOption(
+                'Apostar por talento junior con potencial y formarlo mientras operás.',
+                { capital: +10, reputacion: -5, bienestar: -10 },
+                {
+                    addTags: ['equipo_sobrecargado'],
+                    learningPill: 'Costo de Formación: Formar talento interno es barato en dinero pero caro en tiempo y energía del fundador.'
+                }
+            )
+        ]
     })
 ]

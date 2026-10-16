@@ -35,7 +35,7 @@ dist-ssr
 *.userosscache
 *.sln.docstates
 *.env
-
+.commandcode/
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

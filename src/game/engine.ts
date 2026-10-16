@@ -1,4 +1,4 @@
-import type { GameEvent, GameState, Archetype, Financing, PendingEvent, Metrics, GameStatus, GameOption } from '../types/game';
+import type { GameEvent, GameState, GameStep, Archetype, Financing, PendingEvent, Metrics, GameStatus, GameOption } from '../types/game';
 import { GAME_EVENTS } from '../data/events/index';
 import { MAX_TURNS, phaseForTurn, PHASES, type PhaseId } from './phases';
 import type { RNG } from './rng';
@@ -101,8 +101,8 @@ export const selectNextEvent = (state: GameState, rng: RNG): SelectionResult => 
 
   const globalFallback = GAME_EVENTS.filter((ev) => {
     if (state.history.includes(ev.id)) return false;
-    const isUn_gated = !ev.requiredTags || ev.requiredTags.length === 0;
-    return isUn_gated;
+    const isUngated = !ev.requiredTags || ev.requiredTags.length === 0;
+    return isUngated;
   })
 
   if (globalFallback.length > 0) {
@@ -169,6 +169,16 @@ export function advanceTurn(
     throw new RangeError(`No hay una fase definida para el turno ${boundedTurn}`);
   }
   return { nextTurn: boundedTurn, nextPhaseId: phase.id };
+}
+
+export function canDecide(
+  status: GameStatus,
+  currentEvent: GameEvent | null,
+  step: GameStep,
+  turn: number,
+  currentTurn: number,
+): currentEvent is GameEvent {
+  return status === 'playing' && currentEvent !== null && step === 'decision' && turn === currentTurn;
 }
 
 export function applyDecision(

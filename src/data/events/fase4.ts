@@ -104,5 +104,82 @@ export const fase4Events = [
                 }
             )
         ]
+    }),
+
+    defineEvent({
+        id: 'f4_sucesion_operativa',
+        phaseId: 4,
+        title: 'Soltar la Operación',
+        weight: 10,
+        description: 'La empresa ya funciona sin vos en el día a día. Podés contratar un gerente general y soltar, o seguir decidiendo cada detalle.',
+        options: [
+            defineOption(
+                'Contratar un gerente general y pasar a un rol estratégico.',
+                { capital: -15, reputacion: +10, bienestar: +20 },
+                {
+                    addTags: ['lifestyle_business'],
+                    learningPill: 'Delegación Real: Una empresa que no funciona sin el fundador no es un activo, es un empleo con más estrés.'
+                }
+            ),
+            defineOption(
+                'Seguir al mando de cada decisión operativa.',
+                { capital: +10, reputacion: -5, bienestar: -20 },
+                {
+                    learningPill: 'Techo del Fundador: Cuando todo pasa por vos, tu energía se convierte en el límite del crecimiento de la empresa.'
+                }
+            )
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_propuesta_franquicia',
+        phaseId: 4,
+        title: 'Propuesta de Franquicia',
+        weight: 10,
+        description: 'Un grupo inversor quiere franquiciar tu modelo en todo el país. Escalarías con capital ajeno, pero perderías control sobre la calidad.',
+        options: [
+            defineOption(
+                'Franquiciar el modelo y escalar con capital de terceros.',
+                { capital: +20, reputacion: -10, bienestar: -5 },
+                {
+                    addTags: ['expansion_global'],
+                    learningPill: 'Franquicias: Escalar con capital ajeno acelera la expansión, pero cada local descontrolado erosiona la marca.'
+                }
+            ),
+            defineOption(
+                'Mantener operación propia y control total de la calidad.',
+                { capital: -10, reputacion: +15, bienestar: +5 },
+                {
+                    addTags: ['calidad_producto'],
+                    learningPill: 'Control vs Escala: Crecer con locales propios es lento y caro, pero protege lo que te hizo llegar hasta acá.'
+                }
+            )
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_alianza_estrategica',
+        phaseId: 4,
+        title: 'Alianza Estratégica',
+        weight: 10,
+        description: 'Un jugador complementario propone una alianza comercial con exclusividad. Sumarías fuerza de ventas, a cambio de atarte a un solo socio.',
+        options: [
+            defineOption(
+                'Firmar la alianza con exclusividad.',
+                { capital: +15, reputacion: +10, bienestar: -10 },
+                {
+                    addTags: ['red_contactos'],
+                    learningPill: 'Alianzas Comerciales: Un buen socio multiplica tu alcance; la exclusividad define cuánto te cuesta si la relación se enfría.'
+                }
+            ),
+            defineOption(
+                'Rechazar la alianza y competir en todos los frentes.',
+                { capital: -10, reputacion: +5, bienestar: +5 },
+                {
+                    addTags: ['autonomia_estrategica'],
+                    learningPill: 'Independencia Estratégica: Competir solo preserva tu libertad de movimiento, pero cada batalla se paga con caja propia.'
+                }
+            )
+        ]
     })
 ]

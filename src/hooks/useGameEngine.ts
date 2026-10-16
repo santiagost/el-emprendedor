@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { GameState, GameEvent, Archetype, Financing, GameStep } from '../types/game';
-import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn } from '../game/engine'
+import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, canDecide } from '../game/engine'
 import { type RNG, createRng } from '../game/rng';
 
 const sessionRng = createRng(Date.now());
@@ -12,8 +12,7 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, r
   const [step, setStep] = useState<GameStep>('decision')
 
   const decide = (optionIndex: number, turn: number) => {
-    if (gameState.status !== 'playing' || !currentEvent || step !== 'decision') return;
-    if (turn !== gameState.currentTurn) return;
+    if (!canDecide(gameState.status, currentEvent, step, turn, gameState.currentTurn)) return;
 
     const option = currentEvent.options[optionIndex];
     const nextState: GameState = applyDecision(gameState, option, currentEvent.id)

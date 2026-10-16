@@ -106,5 +106,57 @@ export const fase3Events = [
                 }
             )
         ]
+    }),
+
+    defineEvent({
+        id: 'f3_apuesta_crecimiento',
+        phaseId: 3,
+        title: 'Apuesta de Crecimiento',
+        weight: 10,
+        description: 'Una agencia propone una campaña agresiva y cara con resultados inciertos. La alternativa es seguir creciendo lento, a puro boca en boca.',
+        options: [
+            defineOption(
+                'Invertir fuerte en la campaña y apostar a un salto de escala.',
+                { capital: -20, reputacion: +15 },
+                {
+                    addTags: ['generacion_ingresos'],
+                    learningPill: 'CAC y Crecimiento: Pagar por crecer solo funciona si el cliente adquirido deja más de lo que costó conseguirlo.'
+                }
+            ),
+            defineOption(
+                'Crecer orgánico con referidos, lento pero sin quemar caja.',
+                { capital: +5, reputacion: +5, bienestar: +5 },
+                {
+                    addTags: ['clientes_diversificados'],
+                    learningPill: 'Crecimiento Orgánico: Los clientes que llegan por recomendación cuestan poco, pagan mejor y se quedan más tiempo.'
+                }
+            )
+        ]
+    }),
+
+    defineEvent({
+        id: 'f3_caida_servicio',
+        phaseId: 3,
+        title: 'Caída del Servicio en Pleno Pico',
+        weight: 12,
+        description: 'En el mejor momento de demanda, la plataforma se cae. Los clientes están furiosos y cada hora cuenta.',
+        options: [
+            defineOption(
+                'Frenar las ventas nuevas hasta estabilizar la plataforma.',
+                { capital: -10, reputacion: +15 },
+                {
+                    addTags: ['procesos_solidos'],
+                    learningPill: 'Deuda Técnica: Frenar para estabilizar duele en el corto plazo, pero operar sobre un sistema roto duele siempre.'
+                }
+            ),
+            defineOption(
+                'Aplicar un parche rápido y seguir vendiendo a toda máquina.',
+                { capital: +15, reputacion: -15, bienestar: -10 },
+                {
+                    addTags: ['equipo_sobrecargado'],
+                    learningPill: 'Costo de la Improvisación: El parche rápido sostiene la facturación hoy y factura el cansancio del equipo mañana.'
+                }
+            )
+        ]
     })
 ]

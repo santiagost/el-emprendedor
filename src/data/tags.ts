@@ -29,7 +29,7 @@ export const TAGS = {
     modifiers: { capital: 1, reputacion: 1 },
   },
 
-    // Fase 1: Génesis & Validación
+  // Tags de arquetipos (setup inicial)
   calidad_producto: {
     label: 'Calidad de Producto',
     modifiers: { capital: -1, reputacion: 2 },
