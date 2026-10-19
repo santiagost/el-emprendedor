@@ -31,6 +31,10 @@ export interface GameOption {
 export interface EventConditions {
     tags?: Tag[];          // Tags requeridos
     forbiddenTags?: Tag[]; // Tags que NO debe tener
+    archetype?: string[],
+    financing?: string[],
+    metrics?: Partial<Record<keyof Metrics, { lt?: number; gt?: number }>>;
+    playedBefore?: string[]; // IDs de eventos que ya deben estar en history
 }
 
 export interface GameEvent {
@@ -59,6 +63,17 @@ export interface PendingEvent {
     triggerTurn: number;
 }
 
+export interface DecisionLogEntry {
+    turn: number;
+    eventId: string;
+    eventTitle: string;
+    optionIndex: number;
+    optionText: string;
+    effects: Partial<Metrics>;
+    appliedModifiers?: Partial<Metrics>;
+    learningPill?: string;
+}
+
 export interface GameState {
     currentTurn: number;
     maxTurns: number;
@@ -69,6 +84,10 @@ export interface GameState {
     status: GameStatus;
     lastPill: string | null;
     pendingEvents: PendingEvent[];
+    decisionLog: DecisionLogEntry[];
+    lastDecision?: DecisionLogEntry | null;
+    archetypeId?: string;
+    financingId?: string;
 }
 
 export interface Archetype {

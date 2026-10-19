@@ -222,3 +222,36 @@ export const detectDuplicateImpacts = (events: GameEvent[]): string[] => {
 
   return warnings;
 };
+
+export const validateConditionIds = (
+  events: GameEvent[],
+  archetypes: { id: string }[],
+  financings: { id: string }[],
+): string[] => {
+  const errores: string[] = [];
+  const archetypeIds = new Set(archetypes.map((a) => a.id));
+  const financingIds = new Set(financings.map((f) => f.id));
+  const eventIds = new Set(events.map((e) => e.id));
+
+  events.forEach((ev) => {
+    ev.when?.archetype?.forEach((id) => {
+      if (!archetypeIds.has(id)) {
+        errores.push(`El evento "${ev.id}" referencia un arquetipo inexistente: "${id}".`);
+      }
+    });
+
+    ev.when?.financing?.forEach((id) => {
+      if (!financingIds.has(id)) {
+        errores.push(`El evento "${ev.id}" referencia un financiamiento inexistente: "${id}".`);
+      }
+    });
+
+    ev.when?.playedBefore?.forEach((id) => {
+      if (!eventIds.has(id)) {
+        errores.push(`El evento "${ev.id}" espera en playedBefore un evento inexistente: "${id}".`);
+      }
+    });
+  });
+
+  return errores;
+};

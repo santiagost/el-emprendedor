@@ -98,7 +98,7 @@ export const fase4Events = [
             ),
             defineOption(
                 'Regularizar desprolijidades pasadas pagando multas e intereses.',
-                { capital: -30, reputacion: -20, bienestar: -20 },
+                { capital: -30, reputacion: -35, bienestar: -20 },
                 {
                     learningPill: 'Pasivos Ocultos: La informalidad como atajo financiero suele cobrarse con creces cuando la empresa gana visibilidad.'
                 }

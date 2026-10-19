@@ -2,7 +2,7 @@ import type { GameEvent, GameState, GameStep, Archetype, Financing, PendingEvent
 import { GAME_EVENTS } from '../data/events/index';
 import { MAX_TURNS, phaseForTurn, PHASES, type PhaseId } from './phases';
 import type { RNG } from './rng';
-import type { Tag } from '../data/tags';
+import { TAGS, type Tag } from '../data/tags';
 
 export const clamp = (val: number, min = 0, max = 100): number => Math.max(min, Math.min(max, val));
 
@@ -16,6 +16,8 @@ const INITIAL_STATE: GameState = {
   status: 'playing',
   lastPill: null,
   pendingEvents: [],
+  decisionLog: [],
+  lastDecision: null,
 };
 
 export const getRandomWeightedEvent = (events: readonly GameEvent[], rng: RNG): GameEvent => {
@@ -42,19 +44,56 @@ export const startGame = (archetype: Archetype, financing: Financing): GameState
       reputacion: validateInitialMetrics(INITIAL_STATE.metrics.reputacion, archetype.effects.reputacion, financing.effects.reputacion),
     },
     activeTags: [...(archetype.tags || []), ...(financing.tags || [])],
+    archetypeId: archetype.id,
+    financingId: financing.id
   };
 };
 
-export const passesTagsCondition = (event: GameEvent, activeTags: string[]): boolean => {
-  const hasRequired = event.requiredTags
-    ? event.requiredTags.every((tag) => activeTags.includes(tag))
-    : true;
+export const passesWhenCondition = (event: GameEvent, state: GameState): boolean => {
+  const when = event.when;
 
-  const hasForbidden = event.forbiddenTags
-    ? event.forbiddenTags.some((tag) => activeTags.includes(tag))
-    : false;
+  if (!when && !event.requiredTags && !event.forbiddenTags) {
+    return true;
+  }
 
-  return hasRequired && !hasForbidden;
+  const required = when?.tags ?? event.requiredTags;
+  if (required && required.length > 0) {
+    const hasAll = required.every((t) => state.activeTags.includes(t));
+    if (!hasAll) return false;
+  }
+
+  const forbidden = when?.forbiddenTags ?? event.forbiddenTags;
+  if (forbidden && forbidden.length > 0) {
+    const hasAnyForbidden = forbidden.some((t) => state.activeTags.includes(t));
+    if (hasAnyForbidden) return false;
+  }
+
+  if (when?.archetype && when.archetype.length > 0) {
+    if (!state.archetypeId || !when.archetype.includes(state.archetypeId)) {
+      return false;
+    }
+  }
+
+  if (when?.financing && when.financing.length > 0) {
+    if (!state.financingId || !when.financing.includes(state.financingId)) {
+      return false;
+    }
+  }
+
+  if (when?.playedBefore && when.playedBefore.length > 0) {
+    const hasPlayedAll = when.playedBefore.every((id) => state.history.includes(id));
+    if (!hasPlayedAll) return false;
+  }
+
+  if (when?.metrics) {
+    for (const [key, rule] of Object.entries(when.metrics)) {
+      const metricVal = state.metrics[key as keyof Metrics];
+      if (rule.lt !== undefined && metricVal >= rule.lt) return false;
+      if (rule.gt !== undefined && metricVal <= rule.gt) return false;
+    }
+  }
+
+  return true;
 };
 
 export interface SelectionResult {
@@ -70,7 +109,7 @@ export const selectNextEvent = (state: GameState, rng: RNG): SelectionResult => 
   const pendingIndex = state.pendingEvents.findIndex((pending) => {
     if (state.currentTurn < pending.triggerTurn) return false;
     const targetEvent = eventsMap.get(pending.eventId);
-    return targetEvent ? passesTagsCondition(targetEvent, state.activeTags) : false;
+    return targetEvent ? passesWhenCondition(targetEvent, state) : false;
   })
 
   if (pendingIndex !== -1) {
@@ -88,7 +127,7 @@ export const selectNextEvent = (state: GameState, rng: RNG): SelectionResult => 
   const phasePool = GAME_EVENTS.filter((ev) => {
     if (state.history.includes(ev.id)) return false;
     if (ev.phaseId !== state.phaseId) return false;
-    return passesTagsCondition(ev, state.activeTags)
+    return passesWhenCondition(ev, state)
   })
 
   if (phasePool.length > 0) {
@@ -101,12 +140,12 @@ export const selectNextEvent = (state: GameState, rng: RNG): SelectionResult => 
 
   const globalFallback = GAME_EVENTS.filter((ev) => {
     if (state.history.includes(ev.id)) return false;
-    const isUngated = !ev.requiredTags || ev.requiredTags.length === 0;
+    const isUngated = !ev.when && (!ev.requiredTags || ev.requiredTags.length === 0) && (!ev.forbiddenTags || ev.forbiddenTags.length === 0);
     return isUngated;
   })
 
   if (globalFallback.length > 0) {
-    if (import.meta.env.DEV) {
+    if (import.meta.env?.DEV) {
       console.warn(
         `[GameEngine] Fase ${state.phaseId} sin eventos disponibles en turno ${state.currentTurn}. Usando fallback global.`
       );
@@ -181,13 +220,34 @@ export function canDecide(
   return status === 'playing' && currentEvent !== null && step === 'decision' && turn === currentTurn;
 }
 
+export function calculateModifiersDelta(activeTags: Tag[]): Partial<Metrics> {
+  let capital = 0;
+  let bienestar = 0;
+  let reputacion = 0;
+  for (const tag of activeTags) {
+    const mods: Partial<Metrics> = TAGS[tag]?.modifiers ?? {};
+    capital += mods.capital ?? 0;
+    bienestar += mods.bienestar ?? 0;
+    reputacion += mods.reputacion ?? 0;
+  }
+  return {
+    ...(capital !== 0 ? { capital } : {}),
+    ...(bienestar !== 0 ? { bienestar } : {}),
+    ...(reputacion !== 0 ? { reputacion } : {}),
+  };
+}
+
 export function applyDecision(
   state: GameState,
   option: GameOption,
-  eventId: string
+  eventId: string,
+  eventTitle?: string,
+  optionIndex?: number
 ): GameState {
-  const nextMetrics = applyMetricsEffects(state.metrics, option.effects);
+  const immediateMetrics = applyMetricsEffects(state.metrics, option.effects);
   const nextTags = applyTags(state.activeTags, option.addTags, option.removeTags);
+  const nextMetrics = applyModifiers(immediateMetrics, nextTags);
+  const appliedModifiers = calculateModifiersDelta(nextTags);
 
   const nextPendingEvents = [...(state.pendingEvents ?? [])];
   if (option.scheduledEvent) {
@@ -199,6 +259,17 @@ export function applyDecision(
 
   const status = evaluateGameStatus(nextMetrics, state.currentTurn, state.maxTurns);
 
+  const logEntry = {
+    turn: state.currentTurn,
+    eventId,
+    eventTitle: eventTitle ?? eventId,
+    optionIndex: optionIndex ?? 0,
+    optionText: option.text,
+    effects: option.effects,
+    appliedModifiers,
+    learningPill: option.learningPill,
+  };
+
   return {
     ...state,
     metrics: nextMetrics,
@@ -206,6 +277,24 @@ export function applyDecision(
     history: [...state.history, eventId],
     lastPill: option.learningPill ?? null,
     pendingEvents: nextPendingEvents,
+    decisionLog: [...(state.decisionLog ?? []), logEntry],
+    lastDecision: logEntry,
     status,
+  };
+}
+
+export function applyModifiers(metrics: Metrics, activeTags: Tag[]): Metrics {
+  let { capital, bienestar, reputacion } = metrics;
+  for (const tag of activeTags) {
+    const modifiers: Partial<Metrics> = TAGS[tag]?.modifiers ?? {};
+    capital += modifiers.capital ?? 0;
+    bienestar += modifiers.bienestar ?? 0;
+    reputacion += modifiers.reputacion ?? 0;
+  }
+  
+  return {
+    capital: clamp(capital),
+    bienestar: clamp(bienestar),
+    reputacion: clamp(reputacion),
   };
 }

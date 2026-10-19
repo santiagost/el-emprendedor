@@ -21,7 +21,7 @@ export const fase2Events = [
             ),
             defineOption(
                 'Renegociar plazos con proveedores y congelar retiros propios.',
-                { capital: -5, reputacion: -15, bienestar: -15 },
+                { capital: -5, reputacion: -25, bienestar: -15 },
                 {
                     learningPill: 'Gestión de Liquidez: En momentos de estrés de caja, la transparencia con la cadena comercial evita la quiebra.'
                 }
@@ -38,7 +38,7 @@ export const fase2Events = [
         options: [
             defineOption(
                 'Importar con el proveedor único para maximizar margen.',
-                { capital: +20 },
+                { capital: +20, reputacion: -10 },
                 {
                     addTags: ['proveedor_dependiente'],
                     learningPill: 'Riesgo de Cadena de Suministro: Optimizar solo por costo te vuelve vulnerable a aduanas y devaluaciones.'
@@ -64,7 +64,7 @@ export const fase2Events = [
         options: [
             defineOption(
                 'Exigir horas extras y redoblar el esfuerzo sin sumar gente.',
-                { capital: +15, reputacion: -10, bienestar: -25 },
+                { capital: +15, reputacion: -25, bienestar: -25 },
                 {
                     addTags: ['equipo_sobrecargado'],
                     learningPill: 'Deuda Operativa: Forzar la capacidad instalada genera fallas de calidad y rotación no deseada de talento.'
@@ -98,7 +98,7 @@ export const fase2Events = [
             ),
             defineOption(
                 'Apostar por talento junior con potencial y formarlo mientras operás.',
-                { capital: +10, reputacion: -5, bienestar: -10 },
+                { capital: +10, reputacion: -15, bienestar: -10 },
                 {
                     addTags: ['equipo_sobrecargado'],
                     learningPill: 'Costo de Formación: Formar talento interno es barato en dinero pero caro en tiempo y energía del fundador.'

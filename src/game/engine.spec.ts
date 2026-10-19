@@ -1,19 +1,22 @@
 import { describe, it, expect } from 'vitest';
 import {
   clamp,
+  startGame,
   applyMetricsEffects,
   applyTags,
   evaluateGameStatus,
   advanceTurn,
   applyDecision,
   canDecide,
-  passesTagsCondition,
+  passesWhenCondition,
   selectNextEvent,
+  applyModifiers,
 } from './engine';
 import { createRng } from './rng';
 import { MAX_TURNS } from './phases';
 import type { GameState, GameEvent, GameOption, Metrics } from '../types/game';
 import type { Tag } from '../data/tags';
+import { TAGS } from '../data/tags';
 import { defineEvent, defineOption } from '../data/events/builders';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
 
@@ -127,6 +130,7 @@ describe('Motor de Juego (Engine Spec)', () => {
       status: 'playing',
       lastPill: null,
       pendingEvents: [],
+      decisionLog: [],
     };
 
     const regularOption: GameOption = {
@@ -137,15 +141,25 @@ describe('Motor de Juego (Engine Spec)', () => {
       learningPill: 'Píldora educativa turno 1',
     };
 
-    it('aplica métricas, tags, historial y píldora sin avanzar de turno (el avance vive en advance())', () => {
+    it('aplica effects + modificadores pasivos, tags, historial y píldora sin avanzar de turno', () => {
       const nextState = applyDecision(baseState, regularOption, 'f1_mvp_calidad');
+      const mods: Partial<Metrics> = TAGS.cultura_lean.modifiers;
 
       expect(nextState.currentTurn).toBe(1);
-      expect(nextState.metrics).toEqual({ capital: 60, bienestar: 40, reputacion: 50 });
+      expect(nextState.metrics).toEqual({
+        capital: 60 + (mods.capital ?? 0),
+        bienestar: 40 + (mods.bienestar ?? 0),
+        reputacion: 50 + (mods.reputacion ?? 0),
+      });
       expect(nextState.activeTags).toEqual(['cultura_lean']);
       expect(nextState.history).toEqual(['f1_mvp_calidad']);
       expect(nextState.lastPill).toBe('Píldora educativa turno 1');
       expect(nextState.status).toBe('playing');
+      expect(nextState.lastDecision).toBeDefined();
+      expect(nextState.lastDecision?.eventId).toBe('f1_mvp_calidad');
+      expect(nextState.lastDecision?.optionText).toBe('Opción normal');
+      expect(nextState.decisionLog).toHaveLength(1);
+      expect(nextState.decisionLog[0].eventId).toBe('f1_mvp_calidad');
     });
 
     it('encola eventos diferidos (scheduledEvent) con triggerTurn calculado', () => {
@@ -165,6 +179,7 @@ describe('Motor de Juego (Engine Spec)', () => {
       const fatalOption: GameOption = {
         ...regularOption,
         effects: { capital: -60 }, // 50 - 60 = 0 -> quiebra
+        addTags: [],
       };
 
       const nextState = applyDecision(baseState, fatalOption, 'f1_mvp_calidad');
@@ -189,7 +204,17 @@ describe('Motor de Juego (Engine Spec)', () => {
     });
   });
 
-  describe('passesTagsCondition', () => {
+  describe('startGame', () => {
+    it('registra el perfil del setup en el estado (archetypeId / financingId)', () => {
+      const state = startGame(ARCHETYPES[0], FINANCINGS[1]);
+
+      expect(state.archetypeId).toBe('a1_tecnico');
+      expect(state.financingId).toBe('f2_prestamo_bancario');
+      expect(state.activeTags).toEqual(['calidad_producto', 'deuda_riesgosa']);
+    });
+  });
+
+  describe('passesWhenCondition (condiciones ricas)', () => {
     const baseEvent: GameEvent = defineEvent({
       id: 'f1_evento_prueba',
       phaseId: 1,
@@ -201,26 +226,108 @@ describe('Motor de Juego (Engine Spec)', () => {
       ],
     });
 
+    const stateWith = (overrides: Partial<GameState> = {}): GameState => ({
+      currentTurn: 5,
+      maxTurns: MAX_TURNS,
+      phaseId: 2,
+      metrics: { capital: 50, bienestar: 50, reputacion: 50 },
+      activeTags: [],
+      history: [],
+      status: 'playing',
+      lastPill: null,
+      pendingEvents: [],
+      decisionLog: [],
+      ...overrides,
+    });
+
     it('permite eventos sin ninguna condición', () => {
-      expect(passesTagsCondition(baseEvent, [])).toBe(true);
+      expect(passesWhenCondition(baseEvent, stateWith())).toBe(true);
     });
 
-    it('exige TODOS los requiredTags para permitir el evento', () => {
-      const gated: GameEvent = {
-        ...baseEvent,
-        requiredTags: ['cliente_dependencia', 'deuda_riesgosa'],
-      };
-      expect(passesTagsCondition(gated, ['cliente_dependencia'])).toBe(false);
-      expect(passesTagsCondition(gated, ['cliente_dependencia', 'deuda_riesgosa'])).toBe(true);
+    it('when.tags: exige TODOS los tags activos', () => {
+      const gated: GameEvent = { ...baseEvent, when: { tags: ['cliente_dependencia', 'deuda_riesgosa'] } };
+
+      expect(passesWhenCondition(gated, stateWith({ activeTags: ['cliente_dependencia'] }))).toBe(false);
+      expect(passesWhenCondition(gated, stateWith({ activeTags: ['cliente_dependencia', 'deuda_riesgosa'] }))).toBe(true);
     });
 
-    it('bloquea el evento si tiene CUALQUIER forbiddenTag', () => {
-      const gated: GameEvent = {
+    it('when.forbiddenTags: bloquea con CUALQUIER tag presente', () => {
+      const gated: GameEvent = { ...baseEvent, when: { forbiddenTags: ['socio_alineado'] } };
+
+      expect(passesWhenCondition(gated, stateWith({ activeTags: ['socio_alineado'] }))).toBe(false);
+      expect(passesWhenCondition(gated, stateWith({ activeTags: ['cliente_dependencia'] }))).toBe(true);
+    });
+
+    it('los requiredTags/forbiddenTags legacy siguen funcionando como fallback', () => {
+      const legacy: GameEvent = {
         ...baseEvent,
+        requiredTags: ['cliente_dependencia'],
         forbiddenTags: ['socio_alineado'],
       };
-      expect(passesTagsCondition(gated, ['socio_alineado'])).toBe(false);
-      expect(passesTagsCondition(gated, ['cliente_dependencia'])).toBe(true);
+
+      expect(passesWhenCondition(legacy, stateWith({ activeTags: ['cliente_dependencia'] }))).toBe(true);
+      expect(passesWhenCondition(legacy, stateWith({ activeTags: ['cliente_dependencia', 'socio_alineado'] }))).toBe(false);
+      expect(passesWhenCondition(legacy, stateWith({ activeTags: [] }))).toBe(false);
+    });
+
+    it('when.archetype: filtra por el perfil del jugador', () => {
+      const gated: GameEvent = { ...baseEvent, when: { archetype: ['a3_inversionista'] } };
+
+      expect(passesWhenCondition(gated, stateWith({ archetypeId: 'a3_inversionista' }))).toBe(true);
+      expect(passesWhenCondition(gated, stateWith({ archetypeId: 'a1_tecnico' }))).toBe(false);
+      expect(passesWhenCondition(gated, stateWith())).toBe(false);
+    });
+
+    it('when.financing: filtra por el origen de los fondos', () => {
+      const gated: GameEvent = { ...baseEvent, when: { financing: ['f1_bootstrap'] } };
+
+      expect(passesWhenCondition(gated, stateWith({ financingId: 'f1_bootstrap' }))).toBe(true);
+      expect(passesWhenCondition(gated, stateWith({ financingId: 'f2_prestamo_bancario' }))).toBe(false);
+    });
+
+    it('when.playedBefore: exige que TODOS los eventos estén en history', () => {
+      const gated: GameEvent = { ...baseEvent, when: { playedBefore: ['f1_mvp_calidad', 'f1_primer_socio'] } };
+
+      expect(passesWhenCondition(gated, stateWith({ history: ['f1_mvp_calidad', 'f1_primer_socio'] }))).toBe(true);
+      expect(passesWhenCondition(gated, stateWith({ history: ['f1_mvp_calidad'] }))).toBe(false);
+    });
+
+    it('when.metrics: lt exige estrictamente menor y gt estrictamente mayor', () => {
+      const lowCapital: GameEvent = { ...baseEvent, when: { metrics: { capital: { lt: 30 } } } };
+
+      expect(passesWhenCondition(lowCapital, stateWith({ metrics: { capital: 20, bienestar: 50, reputacion: 50 } }))).toBe(true);
+      expect(passesWhenCondition(lowCapital, stateWith({ metrics: { capital: 30, bienestar: 50, reputacion: 50 } }))).toBe(false);
+
+      const highReputation: GameEvent = { ...baseEvent, when: { metrics: { reputacion: { gt: 80 } } } };
+
+      expect(passesWhenCondition(highReputation, stateWith({ metrics: { capital: 50, bienestar: 50, reputacion: 85 } }))).toBe(true);
+      expect(passesWhenCondition(highReputation, stateWith({ metrics: { capital: 50, bienestar: 50, reputacion: 80 } }))).toBe(false);
+    });
+
+    it('combina varias condiciones: todas deben cumplirse', () => {
+      const gated: GameEvent = {
+        ...baseEvent,
+        when: {
+          tags: ['deuda_riesgosa'],
+          archetype: ['a1_tecnico'],
+          metrics: { capital: { lt: 40 } },
+        },
+      };
+
+      expect(
+        passesWhenCondition(gated, stateWith({
+          activeTags: ['deuda_riesgosa'],
+          archetypeId: 'a1_tecnico',
+          metrics: { capital: 10, bienestar: 50, reputacion: 50 },
+        }))
+      ).toBe(true);
+      expect(
+        passesWhenCondition(gated, stateWith({
+          activeTags: ['deuda_riesgosa'],
+          archetypeId: 'a2_comercial',
+          metrics: { capital: 10, bienestar: 50, reputacion: 50 },
+        }))
+      ).toBe(false);
     });
   });
 
@@ -237,6 +344,7 @@ describe('Motor de Juego (Engine Spec)', () => {
         status: 'playing',
         lastPill: null,
         pendingEvents: [{ eventId: 'f2_crisis_cobro', triggerTurn: 5 }],
+        decisionLog: [],
       };
 
       const { event, remainingPending, endedEarly } = selectNextEvent(state, rng);
@@ -258,6 +366,7 @@ describe('Motor de Juego (Engine Spec)', () => {
         status: 'playing',
         lastPill: null,
         pendingEvents: [{ eventId: 'f2_crisis_cobro', triggerTurn: 6 }],
+        decisionLog: [],
       };
 
       const { event, remainingPending, endedEarly } = selectNextEvent(state, rng);
@@ -265,6 +374,31 @@ describe('Motor de Juego (Engine Spec)', () => {
       expect(endedEarly).toBe(false);
       expect(event?.id).not.toBe('f2_crisis_cobro');
       expect(remainingPending).toEqual([{ eventId: 'f2_crisis_cobro', triggerTurn: 6 }]);
+    });
+
+    it('un pending vencido sin condiciones cumplidas queda en cola y dispara cuando cambian', () => {
+      const rng = createRng(42);
+      const due = { eventId: 'f2_crisis_cobro', triggerTurn: 5 };
+      const base: GameState = {
+        currentTurn: 5,
+        maxTurns: MAX_TURNS,
+        phaseId: 2,
+        metrics: { capital: 50, bienestar: 50, reputacion: 50 },
+        activeTags: [],
+        history: [],
+        status: 'playing',
+        lastPill: null,
+        pendingEvents: [due],
+        decisionLog: [],
+      };
+
+      const blocked = selectNextEvent(base, rng);
+      expect(blocked.event?.id).not.toBe('f2_crisis_cobro');
+      expect(blocked.remainingPending).toEqual([due]);
+
+      const ready = selectNextEvent({ ...base, activeTags: ['cliente_dependencia'] }, rng);
+      expect(ready.event?.id).toBe('f2_crisis_cobro');
+      expect(ready.remainingPending).toEqual([]);
     });
   });
 
@@ -307,6 +441,60 @@ describe('Motor de Juego (Engine Spec)', () => {
         expect(entry.impactPreview.bienestar).toBe(trendOf(entry.effects.bienestar));
         expect(entry.impactPreview.reputacion).toBe(trendOf(entry.effects.reputacion));
       });
+    });
+  });
+  describe('applyModifiers (C3: modificadores pasivos)', () => {
+    it('aplica el modificador pasivo de cada tag activo', () => {
+      const initial: Metrics = { capital: 50, bienestar: 50, reputacion: 50 };
+      const modified = applyModifiers(initial, ['deuda_riesgosa']);
+
+      const expectedDelta = TAGS.deuda_riesgosa?.modifiers?.capital ?? 0;
+      expect(modified.capital).toBe(50 + expectedDelta);
+    });
+
+    it('suma los modificadores de todos los tags activos (Σ)', () => {
+      const tags: Tag[] = ['deuda_riesgosa', 'cultura_lean'];
+      const mods = (tag: Tag): Partial<Metrics> => TAGS[tag].modifiers;
+      const delta = (metric: keyof Metrics): number =>
+        tags.reduce((sum, tag) => sum + (mods(tag)[metric] ?? 0), 0);
+
+      const modified = applyModifiers({ capital: 50, bienestar: 50, reputacion: 50 }, tags);
+
+      expect(modified.capital).toBe(50 + delta('capital'));
+      expect(modified.bienestar).toBe(50 + delta('bienestar'));
+      expect(modified.reputacion).toBe(50 + delta('reputacion'));
+    });
+
+    it('clampa en 0 cuando los modificadores drenan por debajo del piso', () => {
+      const modified = applyModifiers({ capital: 1, bienestar: 50, reputacion: 50 }, ['deuda_riesgosa']);
+      expect(modified.capital).toBe(0);
+    });
+
+    it('un modificador pasivo puede causar derrota: se aplica antes del chequeo de derrota', () => {
+      const state: GameState = {
+        currentTurn: 1,
+        maxTurns: MAX_TURNS,
+        phaseId: 1,
+        metrics: { capital: 3, bienestar: 50, reputacion: 50 },
+        activeTags: ['deuda_riesgosa'],
+        history: [],
+        status: 'playing',
+        lastPill: null,
+        pendingEvents: [],
+        decisionLog: [],
+      };
+
+      const neutralOption: GameOption = {
+        text: 'Opción sin impacto directo',
+        impactPreview: { capital: 'neutral', bienestar: 'neutral', reputacion: 'neutral' },
+        effects: {},
+        learningPill: 'Píldora',
+      };
+
+      const nextState = applyDecision(state, neutralOption, 'f1_test');
+
+      expect(nextState.status).toBe('game_over_capital');
+      expect(nextState.metrics.capital).toBe(0);
     });
   });
 });

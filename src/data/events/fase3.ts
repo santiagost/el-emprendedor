@@ -10,7 +10,7 @@ export const fase3Events = [
         options: [
             defineOption(
                 'Ajustar precios inmediatamente trasladando el 100% de la inflación.',
-                { capital: +10, reputacion: -20, bienestar: -5 },
+                { capital: +10, reputacion: -30, bienestar: -5 },
                 {
                     learningPill: 'Poder de Fijación de Precios (Pricing Power): Trasladar costos sin valor diferencial destruye la fidelidad del cliente.'
                 }
@@ -151,7 +151,7 @@ export const fase3Events = [
             ),
             defineOption(
                 'Aplicar un parche rápido y seguir vendiendo a toda máquina.',
-                { capital: +15, reputacion: -15, bienestar: -10 },
+                { capital: +15, reputacion: -25, bienestar: -15 },
                 {
                     addTags: ['equipo_sobrecargado'],
                     learningPill: 'Costo de la Improvisación: El parche rápido sostiene la facturación hoy y factura el cansancio del equipo mañana.'

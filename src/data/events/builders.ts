@@ -46,7 +46,7 @@ export const defineEvent = (e: {
         throw new Error(`Evento "${e.id}": debe especificar phaseId (o phase).`);
     }
 
-    if (import.meta.env.DEV) {
+    if (import.meta.env?.DEV) {
         if (!e.id.startsWith(`f${phaseId}_`)) {
             throw new Error(`Evento "${e.id}" no coincide con su phaseId (${phaseId}). Debe empezar con "f${phaseId}_".`);
         }

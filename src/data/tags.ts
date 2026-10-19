@@ -1,3 +1,9 @@
+type Modifiers = {
+  capital?: number;
+  bienestar?: number;
+  reputacion?: number;
+};
+
 export const TAGS = {
   // Fase 1: Génesis & Validación
   cultura_lean: {
@@ -100,6 +106,9 @@ export const TAGS = {
     label: 'Expansión Global',
     modifiers: { capital: -2, reputacion: 2, bienestar: -1 },
   },
-} as const;
+} satisfies Record<
+  string,
+  { label: string; modifiers: Modifiers }
+>;
 
 export type Tag = keyof typeof TAGS;

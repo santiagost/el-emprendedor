@@ -10,7 +10,7 @@ export const fase1Events = [
         options: [
             defineOption(
                 'Lanzar ya mismo para validar con usuarios reales.',
-                { capital: 10, reputacion: -10 },
+                { capital: 10, reputacion: -20 },
                 {
                     addTags: ['cultura_lean'],
                     learningPill: 'Metodología Lean: Lanzar un MVP imperfecto ahorra meses de desarrollo en ideas que nadie quiere.'

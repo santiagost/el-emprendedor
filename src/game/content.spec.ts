@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { GAME_EVENTS } from '../data/events';
 import { PHASES } from './phases';
 import { _templateBaseEvent, _templateGatedEvent } from '../data/events/_template';
+import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
 
 import {
   validateEventIds,
@@ -9,6 +10,7 @@ import {
   validateTagsIntegrity,
   validatePhasePacing,
   validateScheduledEvents,
+  validateConditionIds,
   detectOrphanTags,
   detectDuplicateImpacts,
 } from './validation';
@@ -31,6 +33,11 @@ describe('Integridad de Contenido (Content Spec)', () => {
 
   it('los eventos programados (schedule) apuntan a IDs existentes', () => {
     const errors = validateScheduledEvents(GAME_EVENTS);
+    expect(errors).toEqual([]);
+  });
+
+  it('los ids de condiciones ricas (archetype, financing, playedBefore) existen', () => {
+    const errors = validateConditionIds(GAME_EVENTS, ARCHETYPES, FINANCINGS);
     expect(errors).toEqual([]);
   });
 

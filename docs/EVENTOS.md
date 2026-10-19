@@ -33,13 +33,14 @@ Nunca escribas objetos en crudo ni `impactPreview` manual. Usá los helpers de `
   - `text`: texto del botón.
   - `effects`: `{ capital?, bienestar?, reputacion? }` (sugerido entre -30 y +30 para mantener el balance).
   - `extra`: `{ addTags?, removeTags?, learningPill, scheduledEvent? }`.
-  - El `impactPreview` (↑ ↓ →) se deriva solo del signo de `effects`. Imposible desincronizar.
+  - El `impactPreview` (↑ ↓ →) se deriva solo del signo de `effects` y la interfaz lo renderiza automáticamente en los botones de decisión y en el setup inicial (`ImpactBadges`).
 - `defineEvent({ id, phaseId, title, description, weight?, when?, options })`:
   - `phaseId`: 1 | 2 | 3 | 4. El id debe empezar con `f<phaseId>_`.
   - `weight`: probabilidad relativa en el sorteo (por defecto 10). Subir a 20-30 para eventos de crisis o consecuencias inmediatas.
-  - `when`: `{ tags?, forbiddenTags? }`. Un evento **base** es el que no tiene `when.tags` (puede tener `forbiddenTags` y seguir contando como base).
+  - `when`: `{ tags?, forbiddenTags?, archetype?, financing?, metrics?, playedBefore? }`. Un evento **base** es el que no tiene condiciones restrictivas de entrada.
   - Asserts en dev: id con prefijo de fase, 2-3 opciones, `learningPill` en todas.
-- `src/data/events/_template.ts` tiene dos plantillas listas para copiar: evento base y evento condicionado. El validador ignora los exports con prefijo `_`.
+- **Panel de Resultado**: al decidir, el jugador ve los deltas numéricos aplicados (+XX / -XX), los efectos pasivos de tags y la micro-píldora antes de avanzar de turno.
+- `src/data/events/_template.ts` tiene plantillas listas para copiar: evento base y evento condicionado. El validador ignora los exports con prefijo `_`.
 
 ---
 
@@ -52,7 +53,7 @@ Nunca escribas objetos en crudo ni `impactPreview` manual. Usá los helpers de `
 - **Usá `scheduledEvent` (Determinista / Retardo fijo)**:
   - Cuando una opción puntual detona un hecho inevitable en N turnos (ej. "Pedís un préstamo express a 3 turnos" → programa la visita del prestamista con `delayTurns: 3`).
   - Al cumplirse el plazo (`currentTurn >= triggerTurn`), el evento tiene prioridad absoluta en la selección.
-  - El disparo verifica además las condiciones de tags del evento destino: si ya no las cumple, se saltea (queda consumido) y se sortea de la fase.
+  - El disparo verifica además las condiciones del evento destino: si no se cumplen en el turno programado, el evento queda en cola y salta con prioridad apenas las condiciones cambien.
 - **Regla de pulgar**: crónica de un estado ("estás endeudado") = `when`. Factura con vencimiento ("la deuda vence en 2 turnos") = `scheduledEvent`.
 
 ---
@@ -62,7 +63,7 @@ Nunca escribas objetos en crudo ni `impactPreview` manual. Usá los helpers de `
 - Todo tag que nace en una opción debería ser **consumido** por un `when`, un `schedule` o un modifier pasivo. El detector de tags huérfanos (`detectOrphanTags`) avisa los que nadie usa.
 - Los tags del setup (arquetipo + financiamiento) entran activos desde el turno 1: `calidad_producto`, `generacion_ingresos`, `red_contactos`, `inversiones`, `patrimonio`, `autonomia_estrategica`, `deuda_riesgosa`, `equity_diluido`.
 - Hoy `inversiones` y `patrimonio` (los del arquetipo Inversionista) no los consume ningún evento: el detector los reporta como huérfanos. Son candidatos naturales para los primeros eventos condicionados por perfil (Etapa C1).
-- `modifiers` en `src/data/tags.ts` son beneficios/costos pasivos que se aplicarán al avanzar de turno (Etapa C3). Podés definirlos ya; hoy no tienen efecto en el juego.
+- `modifiers` en `src/data/tags.ts` son beneficios/costos pasivos: la suma de los modifiers de todos los tags activos se aplica al resolver cada decisión (una vez por turno), después de los `effects` de la opción y antes del chequeo de derrota.
 
 ---
 
