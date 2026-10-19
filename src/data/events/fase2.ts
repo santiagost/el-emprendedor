@@ -16,14 +16,16 @@ export const fase2Events = [
                 { capital: +15, bienestar: -20 },
                 {
                     addTags: ['deuda_riesgosa'],
-                    learningPill: 'Apalancamiento Tóxico: Endeudarse caro para cubrir costos corrientes suele iniciar una espiral de insolvencia.'
+                    learningPill: 'Apalancamiento Tóxico: Endeudarse caro para cubrir costos corrientes suele iniciar una espiral de insolvencia.',
+                    outcomeText: 'Obtuviste liquidez al instante con un préstamo usurero. Pudiste pagar sueldos hoy, pero las cuotas de intereses se devoran la ganancia de los próximos meses.',
                 }
             ),
             defineOption(
                 'Renegociar plazos con proveedores y congelar retiros propios.',
                 { capital: -5, reputacion: -25, bienestar: -15 },
                 {
-                    learningPill: 'Gestión de Liquidez: En momentos de estrés de caja, la transparencia con la cadena comercial evita la quiebra.'
+                    learningPill: 'Gestión de Liquidez: En momentos de estrés de caja, la transparencia con la cadena comercial evita la quiebra.',
+                    outcomeText: 'Hablaste cara a cara con tus proveedores y acordaron un cronograma de pago. La reputación sufrió un rasguño, pero evitaste la trampa de la deuda financiera.',
                 }
             )
         ]
@@ -41,7 +43,8 @@ export const fase2Events = [
                 { capital: +20, reputacion: -10 },
                 {
                     addTags: ['proveedor_dependiente'],
-                    learningPill: 'Riesgo de Cadena de Suministro: Optimizar solo por costo te vuelve vulnerable a aduanas y devaluaciones.'
+                    learningPill: 'Riesgo de Cadena de Suministro: Optimizar solo por costo te vuelve vulnerable a aduanas y devaluaciones.',
+                    outcomeText: 'Concentraste el 100% de tus compras en el proveedor más barato. Tus márgenes son récord, pero si una entrega aduanera se frena, tu operación se paraliza por completo.',
                 }
             ),
             defineOption(
@@ -49,7 +52,8 @@ export const fase2Events = [
                 { capital: -10, reputacion: +10, bienestar: +5 },
                 {
                     addTags: ['proveedores_diversificados'],
-                    learningPill: 'Resiliencia Operativa: Pagar una prima por proveedores confiables es una póliza de seguro contra crisis.'
+                    learningPill: 'Resiliencia Operativa: Pagar una prima por proveedores confiables es una póliza de seguro contra crisis.',
+                    outcomeText: 'Mantuviste proveedores locales diversificados. Tu margen es algo más ajustado, pero nunca te quedás sin stock ni dependés de los vaivenes de una sola frontera.',
                 }
             )
         ]
@@ -67,7 +71,8 @@ export const fase2Events = [
                 { capital: +15, reputacion: -25, bienestar: -25 },
                 {
                     addTags: ['equipo_sobrecargado'],
-                    learningPill: 'Deuda Operativa: Forzar la capacidad instalada genera fallas de calidad y rotación no deseada de talento.'
+                    learningPill: 'Deuda Operativa: Forzar la capacidad instalada genera fallas de calidad y rotación no deseada de talento.',
+                    outcomeText: 'Exprimiste al equipo con horas extras para despachar los pedidos. Facturaste más, pero el cansancio provocó errores en entregas y el clima interno quedó muy tenso.',
                 }
             ),
             defineOption(
@@ -75,7 +80,8 @@ export const fase2Events = [
                 { capital: -20, reputacion: +15, bienestar: +10 },
                 {
                     addTags: ['procesos_solidos'],
-                    learningPill: 'Crecimiento Sostenible: Escalar antes de estabilizar las operaciones suele romper el negocio.'
+                    learningPill: 'Crecimiento Sostenible: Escalar antes de estabilizar las operaciones suele romper el negocio.',
+                    outcomeText: 'Frenaste la captación de nuevos clientes para estabilizar las entregas y contrataste refuerzos. Menos caja inmediata, pero clientes conformes y equipo protegido.',
                 }
             )
         ]
@@ -93,7 +99,8 @@ export const fase2Events = [
                 { capital: -15, reputacion: +10, bienestar: +5 },
                 {
                     addTags: ['procesos_solidos'],
-                    learningPill: 'Contratación Clave: Un senior caro que resuelve de inmediato suele salir más barato que meses de improvisación.'
+                    learningPill: 'Contratación Clave: Un senior caro que resuelve de inmediato suele salir más barato que meses de improvisación.',
+                    outcomeText: 'Sumaste a un profesional experimentado. Aunque su salario pesa en la nómina, estructuró procesos clave y te liberó 15 horas semanales de micro-gestión.',
                 }
             ),
             defineOption(
@@ -101,7 +108,8 @@ export const fase2Events = [
                 { capital: +10, reputacion: -15, bienestar: -10 },
                 {
                     addTags: ['equipo_sobrecargado'],
-                    learningPill: 'Costo de Formación: Formar talento interno es barato en dinero pero caro en tiempo y energía del fundador.'
+                    learningPill: 'Costo de Formación: Formar talento interno es barato en dinero pero caro en tiempo y energía del fundador.',
+                    outcomeText: 'Contrataste a un perfil junior con ganas. El costo es bajo, pero pasás la mitad del día supervisándolo y corrigiendo errores normales de la inexperiencia.',
                 }
             )
         ]

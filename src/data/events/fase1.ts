@@ -13,7 +13,8 @@ export const fase1Events = [
                 { capital: 10, reputacion: -20 },
                 {
                     addTags: ['cultura_lean'],
-                    learningPill: 'Metodología Lean: Lanzar un MVP imperfecto ahorra meses de desarrollo en ideas que nadie quiere.'
+                    learningPill: 'Metodología Lean: Lanzar un MVP imperfecto ahorra meses de desarrollo en ideas que nadie quiere.',
+                    outcomeText: 'Saliste rápido a la cancha con un producto con bugs. Recibiste críticas duras por fallas visuales, pero los primeros clientes pagaron y confirmaron que la necesidad existe.',
                 }
             ),
             defineOption(
@@ -21,7 +22,8 @@ export const fase1Events = [
                 { capital: -15, reputacion: +15, bienestar: -10 },
                 {
                     addTags: ["obsesion_calidad"],
-                    learningPill: 'Costo de Oportunidad: Perfeccionar un producto sin feedback temprano quema caja sin validar demanda.'
+                    learningPill: 'Costo de Oportunidad: Perfeccionar un producto sin feedback temprano quema caja sin validar demanda.',
+                    outcomeText: 'Puliste cada detalle técnico. El producto salió impecable y generó elogios de los primeros usuarios, aunque quemaste dos meses de ahorros antes de ingresar un solo centavo.',
                 }
             )
         ]
@@ -39,7 +41,8 @@ export const fase1Events = [
                 { reputacion: +5, bienestar: +15 },
                 {
                     addTags: ['socio_alineado'],
-                    learningPill: 'Alineación de Socios: En etapas tempranas, los valores compartidos y la resiliencia pesan más que el CV.'
+                    learningPill: 'Alineación de Socios: En etapas tempranas, los valores compartidos y la resiliencia pesan más que el CV.',
+                    outcomeText: 'Sumaste a alguien con quien compartís valores y ética de trabajo. La velocidad de desarrollo se duplicó y el respaldo emocional reduce la soledad del emprendedor.',
                 }
             ),
             defineOption(
@@ -47,7 +50,8 @@ export const fase1Events = [
                 { capital: +15, bienestar: -10 },
                 {
                     addTags: ['socio_conflictivo', 'equity_diluido'],
-                    learningPill: 'Pactos de Socios (Vesting): Ceder porcentajes fijos al inicio sin metas de permanencia es un riesgo crítico.'
+                    learningPill: 'Pactos de Socios (Vesting): Ceder porcentajes fijos al inicio sin metas de permanencia es un riesgo crítico.',
+                    outcomeText: 'Entró un comercial voraz que trajo los primeros contratos rápidamente, pero desde el día uno presiona por dividendos y cuestiona tus decisiones operativas.',
                 }
             )
         ]
@@ -65,7 +69,8 @@ export const fase1Events = [
                 { capital: -15, reputacion: +20, bienestar: -10 },
                 {
                     addTags: ['cliente_dependencia'],
-                    learningPill: 'Capital de Trabajo: Muchas empresas quiebran siendo rentables por no tener caja mientras esperan cobrar.'
+                    learningPill: 'Capital de Trabajo: Muchas empresas quiebran siendo rentables por no tener caja mientras esperan cobrar.',
+                    outcomeText: 'Cerraste un cliente de renombre que viste tu portfolio. El equipo trabaja al 100% para ellos, pero tus reservas de caja sufren porque no verás un peso hasta dentro de cuatro meses.',
                 }
             ),
             defineOption(
@@ -73,7 +78,8 @@ export const fase1Events = [
                 { capital: +10, reputacion: +5 },
                 {
                     addTags: ['clientes_diversificados'],
-                    learningPill: 'Diversificación de Clientes: Ningún cliente debería representar más del 20% de tu facturación total.'
+                    learningPill: 'Diversificación de Clientes: Ningún cliente debería representar más del 20% de tu facturación total.',
+                    outcomeText: 'Te mantuviste firme con pagos al contado. Cobrás semana a semana y ningún cliente puede amenazar la supervivencia de tu empresa si decide rescindir.',
                 }
             )
         ]

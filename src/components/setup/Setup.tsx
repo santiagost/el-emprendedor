@@ -1,7 +1,7 @@
 import type { Archetype, Financing } from '../../types/game';
 import { ARCHETYPES, FINANCINGS } from '../../data/archetypes';
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, DollarSign, Award, Heart } from 'lucide-react';
 import ImpactBadges from '../game/ImpactBadges';
 
 interface SetupProps {
@@ -26,7 +26,7 @@ export default function Setup({ onComplete }: SetupProps) {
 
     return (
         <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 py-8">
-            <header className="mb-8 space-y-6">
+            <header className="mb-6 space-y-5">
                 <div className="space-y-2">
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-400">
                         El Emprendedor
@@ -35,6 +35,40 @@ export default function Setup({ onComplete }: SetupProps) {
                     <p className="text-sm leading-relaxed text-slate-400">
                         Definí tu estrategia inicial y preparate para tomar decisiones.
                     </p>
+                </div>
+
+                {/* Explicación de Métricas Vitales (Punto 5) */}
+                <div className="bg-slate-900/90 border border-slate-800 p-3.5 rounded-xl space-y-2.5">
+                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                        <span>Métricas de Supervivencia</span>
+                        <span className="text-[10px] text-indigo-400 font-semibold">Tocar 0% = Fin</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-left">
+                        <div className="p-2 bg-slate-950/70 rounded-lg border border-slate-800/80 space-y-1">
+                            <span className="flex items-center text-xs font-bold text-emerald-400">
+                                <DollarSign className="w-3.5 h-3.5 mr-0.5 shrink-0" /> Capital
+                            </span>
+                            <p className="text-[10px] text-slate-400 leading-tight">
+                                Caja y liquidez. Si llega a 0%, quiebra inmediata.
+                            </p>
+                        </div>
+                        <div className="p-2 bg-slate-950/70 rounded-lg border border-slate-800/80 space-y-1">
+                            <span className="flex items-center text-xs font-bold text-blue-400">
+                                <Award className="w-3.5 h-3.5 mr-0.5 shrink-0" /> Reputación
+                            </span>
+                            <p className="text-[10px] text-slate-400 leading-tight">
+                                Confianza del mercado. Si llega a 0%, crisis terminal.
+                            </p>
+                        </div>
+                        <div className="p-2 bg-slate-950/70 rounded-lg border border-slate-800/80 space-y-1">
+                            <span className="flex items-center text-xs font-bold text-rose-400">
+                                <Heart className="w-3.5 h-3.5 mr-0.5 shrink-0" /> Bienestar
+                            </span>
+                            <p className="text-[10px] text-slate-400 leading-tight">
+                                Moral y salud mental. Si llega a 0%, colapso por burnout.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <nav aria-label="Progreso de configuración" className="flex items-center gap-3">

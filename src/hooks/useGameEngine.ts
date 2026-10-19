@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { GameState, GameEvent, Archetype, Financing, GameStep } from '../types/game';
-import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, canDecide } from '../game/engine'
+import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, canDecide, checkTurnInterruption } from '../game/engine'
 import { type RNG, createRng } from '../game/rng';
 
 const STORAGE_KEY = 'el_emprendedor_saved_game';
@@ -96,7 +96,8 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, r
       option,
       currentEvent.id,
       currentEvent.title,
-      optionIndex
+      optionIndex,
+      currentEvent.kind
     );
 
     updateStateAndPersist(nextState, currentEvent, 'outcome');
@@ -107,6 +108,17 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, r
     if (gameState.status !== 'playing') {
       updateStateAndPersist(gameState, null, 'ended');
       return;
+    }
+
+    // Si el evento actual fue un evento principal, chequeamos si hay interrupción en este turno
+    const isInterruption = currentEvent?.kind === 'crisis' || currentEvent?.kind === 'unforeseen';
+
+    if (!isInterruption) {
+      const interruption = checkTurnInterruption(gameState, activeRng);
+      if (interruption) {
+        updateStateAndPersist(gameState, interruption.event, 'decision');
+        return;
+      }
     }
 
     const { nextTurn, nextPhaseId } = advanceTurn(gameState.currentTurn, gameState.maxTurns);

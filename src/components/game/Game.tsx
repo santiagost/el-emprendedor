@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useGameEngine } from '../../hooks/useGameEngine';
 import type { Archetype, Financing } from '../../types/game';
-import { DollarSign, Award, Heart, ArrowRight } from 'lucide-react';
+import { DollarSign, Award, Heart, ArrowRight, RotateCcw, AlertTriangle, Zap } from 'lucide-react';
 import ImpactBadges from './ImpactBadges';
 import EndGameReport from './EndGameReport';
 
@@ -24,6 +25,8 @@ const renderDeltaBadge = (value: number | undefined, label: string, color: strin
 };
 
 export default function Game({ arquetipo, financiamiento, onResetToSetup }: GameProps) {
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+
   const {
     gameState,
     currentEvent,
@@ -60,12 +63,26 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
   const isGameOverOrVictory = status !== 'playing';
 
   return (
-    <main className="max-w-md mx-auto p-4 flex flex-col min-h-screen justify-between">
+    <main className="max-w-md mx-auto p-4 flex flex-col min-h-screen justify-between relative">
       {/* Header & Métricas */}
       <header className="space-y-4">
         <div className="flex justify-between items-center text-xs font-semibold text-slate-400">
-          <span>TURNO {currentTurn} / {maxTurns}</span>
-          <span className="uppercase tracking-widest text-indigo-400">Fase {gameState.phaseId}</span>
+          <div className="flex items-center gap-2">
+            <span>TURNO {currentTurn} / {maxTurns}</span>
+            <span className="text-slate-600">•</span>
+            <span className="uppercase tracking-widest text-indigo-400">Fase {gameState.phaseId}</span>
+          </div>
+
+          {/* Botón para volver al setup (Punto 6) */}
+          <button
+            type="button"
+            onClick={() => setShowExitConfirm(true)}
+            title="Cambiar estrategia / Volver al inicio"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 transition-colors text-[11px]"
+          >
+            <RotateCcw className="w-3 h-3 text-slate-400" />
+            <span>Reiniciar</span>
+          </button>
         </div>
 
         <div className="grid grid-cols-3 gap-2 bg-slate-900 p-3 rounded-xl border border-slate-800">
@@ -115,8 +132,18 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
         {currentEvent && (
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between min-h-[300px]">
             <div>
-              <div className="flex items-center justify-between text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-1.5">
-                <span>Dilema {currentTurn}</span>
+              <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider mb-1.5">
+                {currentEvent.kind === 'crisis' ? (
+                  <span className="text-rose-400 font-bold flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5" /> Crisis Operativa • Turno {currentTurn}
+                  </span>
+                ) : currentEvent.kind === 'unforeseen' ? (
+                  <span className="text-amber-400 font-bold flex items-center gap-1">
+                    <Zap className="w-3.5 h-3.5" /> Suceso Imprevisto • Turno {currentTurn}
+                  </span>
+                ) : (
+                  <span className="text-indigo-400">Dilema {currentTurn}</span>
+                )}
                 {step === 'outcome' && (
                   <span className="text-amber-400 font-bold">Resultado</span>
                 )}
@@ -130,7 +157,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
               <div className="mt-4 space-y-3 pt-3 border-t border-slate-800/80">
                 {/* Opción seleccionada */}
                 {lastDecision && (
-                  <div className="p-2.5 bg-slate-950/70 rounded-lg border border-slate-800/80 space-y-2">
+                  <div className="p-3 bg-slate-950/70 rounded-lg border border-slate-800/80 space-y-2">
                     <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
                       Elegiste: <span className="text-slate-200 normal-case font-normal">"{lastDecision.optionText}"</span>
                     </p>
@@ -141,16 +168,14 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
                       {renderDeltaBadge(lastDecision.effects.reputacion, 'Reputación', 'text-blue-400')}
                       {renderDeltaBadge(lastDecision.effects.bienestar, 'Bienestar', 'text-rose-400')}
                     </div>
+                  </div>
+                )}
 
-                    {/* Modificadores pasivos si aplican */}
-                    {lastDecision.appliedModifiers && Object.keys(lastDecision.appliedModifiers).length > 0 && (
-                      <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-800/50 flex flex-wrap gap-2 items-center">
-                        <span className="text-slate-500">Efecto pasivo de tags:</span>
-                        {renderDeltaBadge(lastDecision.appliedModifiers.capital, 'Cap', 'text-emerald-400')}
-                        {renderDeltaBadge(lastDecision.appliedModifiers.reputacion, 'Rep', 'text-blue-400')}
-                        {renderDeltaBadge(lastDecision.appliedModifiers.bienestar, 'Bien', 'text-rose-400')}
-                      </div>
-                    )}
+                {/* Texto de consecuencia narrativa personalizada */}
+                {lastDecision?.outcomeText && (
+                  <div className="p-3 bg-slate-950/50 border border-slate-800/70 rounded-lg text-xs text-slate-300 leading-relaxed">
+                    <span className="font-semibold text-slate-200">Consecuencia: </span>
+                    {lastDecision.outcomeText}
                   </div>
                 )}
 
@@ -201,10 +226,58 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
             onClick={advance}
             className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-semibold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25"
           >
-            <span>{isGameOverOrVictory ? 'Ver Desenlace Final' : 'Siguiente Turno'}</span>
+            <span>
+              {isGameOverOrVictory
+                ? 'Ver Desenlace Final'
+                : (currentEvent?.kind === 'crisis' || currentEvent?.kind === 'unforeseen')
+                  ? 'Continuar al Siguiente Turno'
+                  : 'Siguiente Turno'}
+            </span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </footer>
+      )}
+
+      {/* Modal de confirmación para salir o reiniciar (Punto 6) */}
+      {showExitConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 text-center">
+            <div className="w-12 h-12 bg-rose-950/60 border border-rose-800/60 rounded-full flex items-center justify-center mx-auto text-rose-400">
+              <RotateCcw className="w-5 h-5" />
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="text-base font-bold text-slate-100">
+                ¿Abandonar partida actual?
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Se perderá el progreso de esta trayectoria y volverás a la pantalla de configuración para elegir perfil y financiamiento.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowExitConfirm(false)}
+                className="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-colors"
+              >
+                Seguir jugando
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExitConfirm(false);
+                  if (onResetToSetup) {
+                    onResetToSetup();
+                  } else {
+                    restartGame();
+                  }
+                }}
+                className="py-2.5 px-3 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-xl transition-colors shadow-md shadow-rose-600/20"
+              >
+                Sí, salir
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );

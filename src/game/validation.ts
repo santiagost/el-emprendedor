@@ -7,7 +7,8 @@ export const validateEventIds = (events: GameEvent[]): string[] => {
     const errores: string[] = [];
 
     events.forEach((ev) => {
-        if (!ev.id.startsWith(`f${ev.phaseId}_`)) {
+        const isSpecial = ev.kind === 'crisis' || ev.kind === 'unforeseen' || ev.id.startsWith('crisis_') || ev.id.startsWith('imp_');
+        if (!isSpecial && !ev.id.startsWith(`f${ev.phaseId}_`)) {
             errores.push(
                 `El evento "${ev.id}" está mal nombrado. Debería comenzar con "f${ev.phaseId}_".`
             )
@@ -122,12 +123,16 @@ export const validatePhasePacing = (events: GameEvent[], phases: readonly Phase[
         // Cantidad de turnos que abarca la fase actual
         const turnsInPhase = phase.toTurn - phase.fromTurn + 1;
 
-        // Eventos base: pertenecen a la fase y no tienen requerimientos previos de tags
+        // Eventos base: pertenecen a la fase, son de tipo principal y no tienen requerimientos previos de tags
         const baseEvents = events.filter((ev) => {
+            if (ev.kind === 'crisis' || ev.kind === 'unforeseen') return false;
+            if (ev.id.startsWith('crisis_') || ev.id.startsWith('imp_')) return false;
             if (ev.phaseId !== phase.id) return false;
             const hasRequired =
                 (ev.requiredTags && ev.requiredTags.length > 0) ||
-                (ev.when?.tags && ev.when.tags.length > 0);
+                (ev.when?.tags && ev.when.tags.length > 0) ||
+                (ev.when?.archetype && ev.when.archetype.length > 0) ||
+                (ev.when?.financing && ev.when.financing.length > 0);
             return !hasRequired;
         });
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn } from './engine';
+import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, checkTurnInterruption } from './engine';
 import { createRng } from './rng';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
 import type { GameState, GameEvent, GameOption } from '../types/game';
@@ -60,11 +60,20 @@ function simulateGame(strategy: Strategy, seed: number): GameState['status'] {
 
   while (state.status === 'playing' && currentEvent) {
     const option = pickOption(currentEvent, state, strategy, rng);
-    state = applyDecision(state, option, currentEvent.id);
+    state = applyDecision(state, option, currentEvent.id, currentEvent.title, undefined, currentEvent.kind);
 
     if (state.status !== 'playing') break;
 
-    // Replica exactamente el advance() del hook: primero avanza el turno, después sortea
+    // Replica exactamente el advance() del hook:
+    const isInterruption = currentEvent.kind === 'crisis' || currentEvent.kind === 'unforeseen';
+    if (!isInterruption) {
+      const interruption = checkTurnInterruption(state, rng);
+      if (interruption) {
+        currentEvent = interruption.event;
+        continue;
+      }
+    }
+
     const { nextTurn, nextPhaseId } = advanceTurn(state.currentTurn, state.maxTurns);
     const advanced: GameState = { ...state, currentTurn: nextTurn, phaseId: nextPhaseId };
 

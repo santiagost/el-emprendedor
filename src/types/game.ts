@@ -15,6 +15,8 @@ export interface ImpactPreview {
     reputacion: ImpactDirection;
 }
 
+export type GameEventKind = 'main' | 'crisis' | 'unforeseen';
+
 export interface GameOption {
     text: string;
     impactPreview: ImpactPreview;
@@ -22,6 +24,7 @@ export interface GameOption {
     addTags?: Tag[];
     removeTags?: Tag[];
     learningPill?: string;
+    outcomeText?: string;
     scheduledEvent?: {
         eventId: string;
         delayTurns: number;
@@ -42,6 +45,7 @@ export interface GameEvent {
     phaseId: PhaseId;
     title: string;
     description: string;
+    kind?: GameEventKind;
     weight?: number;
     when?: EventConditions;
     requiredTags?: Tag[];  // Compatibilidad con engine.ts actual
@@ -67,8 +71,10 @@ export interface DecisionLogEntry {
     turn: number;
     eventId: string;
     eventTitle: string;
+    kind?: GameEventKind;
     optionIndex: number;
     optionText: string;
+    outcomeText?: string;
     effects: Partial<Metrics>;
     appliedModifiers?: Partial<Metrics>;
     learningPill?: string;
@@ -86,6 +92,7 @@ export interface GameState {
     pendingEvents: PendingEvent[];
     decisionLog: DecisionLogEntry[];
     lastDecision?: DecisionLogEntry | null;
+    unforeseenEventsPlayed?: number;
     archetypeId?: string;
     financingId?: string;
 }

@@ -11,6 +11,7 @@ import {
   passesWhenCondition,
   selectNextEvent,
   applyModifiers,
+  checkTurnInterruption,
 } from './engine';
 import { createRng } from './rng';
 import { MAX_TURNS } from './phases';
@@ -495,6 +496,127 @@ describe('Motor de Juego (Engine Spec)', () => {
 
       expect(nextState.status).toBe('game_over_capital');
       expect(nextState.metrics.capital).toBe(0);
+    });
+  });
+
+  describe('checkTurnInterruption', () => {
+    const baseState: GameState = {
+      currentTurn: 3,
+      maxTurns: MAX_TURNS,
+      phaseId: 1,
+      metrics: { capital: 50, bienestar: 50, reputacion: 50 },
+      activeTags: [],
+      history: [],
+      status: 'playing',
+      lastPill: null,
+      pendingEvents: [],
+      decisionLog: [],
+      unforeseenEventsPlayed: 0,
+    };
+
+    it('no interrumpe si la partida terminó (status !== playing)', () => {
+      const rng = createRng(42);
+      const endedState: GameState = { ...baseState, status: 'game_over_capital', metrics: { ...baseState.metrics, capital: 10 } };
+      expect(checkTurnInterruption(endedState, rng)).toBeNull();
+    });
+
+    it('dispara crisis cuando una métrica cae al 25% o menos', () => {
+      const rng = createRng(42);
+      const crisisState: GameState = { ...baseState, metrics: { capital: 25, bienestar: 60, reputacion: 60 } };
+      const interruption = checkTurnInterruption(crisisState, rng);
+
+      expect(interruption).not.toBeNull();
+      expect(interruption?.kind).toBe('crisis');
+      expect(interruption?.event.id).toBe('crisis_quiebra_inminente');
+    });
+
+    it('no repite un evento de crisis ya jugado (presente en history)', () => {
+      const rng = createRng(42);
+      const playedCrisisState: GameState = {
+        ...baseState,
+        metrics: { capital: 20, bienestar: 60, reputacion: 60 },
+        history: ['crisis_quiebra_inminente'],
+      };
+      // Con capital bajo pero su crisis ya jugada, si bienestar y reputacion están sanos no dispara crisis
+      // Podría disparar imprevisto según la tirada de dados
+      const interruption = checkTurnInterruption(playedCrisisState, rng);
+      if (interruption) {
+        expect(interruption.event.id).not.toBe('crisis_quiebra_inminente');
+      }
+    });
+
+    const createMockRng = (roll: number) => {
+      const base = createRng(1);
+      return {
+        ...base,
+        next: () => roll,
+      };
+    };
+
+    it('sortea imprevistos exógenos con RNG determinístico', () => {
+      const interruption = checkTurnInterruption(baseState, createMockRng(0.1));
+      expect(interruption).not.toBeNull();
+      expect(interruption?.kind).toBe('unforeseen');
+    });
+
+    it('no dispara imprevisto si la tirada supera el umbral de probabilidad', () => {
+      const interruption = checkTurnInterruption(baseState, createMockRng(0.9));
+      expect(interruption).toBeNull();
+    });
+
+    it('aumenta la probabilidad a 45% si estamos en turno 7+ y aún no ocurrió ningún imprevisto', () => {
+      const turn7State: GameState = {
+        ...baseState,
+        currentTurn: 7,
+        unforeseenEventsPlayed: 0,
+      };
+
+      const interruption = checkTurnInterruption(turn7State, createMockRng(0.35));
+      expect(interruption).not.toBeNull();
+      expect(interruption?.kind).toBe('unforeseen');
+    });
+
+    it('respeta el tope máximo de 3 imprevistos por partida', () => {
+      const maxedState: GameState = {
+        ...baseState,
+        unforeseenEventsPlayed: 3,
+      };
+
+      const interruption = checkTurnInterruption(maxedState, createMockRng(0.01));
+      expect(interruption).toBeNull();
+    });
+  });
+
+  describe('applyDecision con consecuencias narrativas y tipo de evento', () => {
+    const baseState: GameState = {
+      currentTurn: 2,
+      maxTurns: MAX_TURNS,
+      phaseId: 1,
+      metrics: { capital: 50, bienestar: 50, reputacion: 50 },
+      activeTags: [],
+      history: [],
+      status: 'playing',
+      lastPill: null,
+      pendingEvents: [],
+      decisionLog: [],
+      unforeseenEventsPlayed: 0,
+    };
+
+    it('registra outcomeText y kind en lastDecision y decisionLog', () => {
+      const option: GameOption = {
+        text: 'Decisión con consecuencia narrativa',
+        impactPreview: { capital: 'up', bienestar: 'down', reputacion: 'neutral' },
+        effects: { capital: 10, bienestar: -10 },
+        learningPill: 'Píldora educativa',
+        outcomeText: 'Se aceleró el producto pero el equipo quedó cansado.',
+      };
+
+      const next = applyDecision(baseState, option, 'imp_salto_inflacionario', 'Salto Inflacionario', 0, 'unforeseen');
+
+      expect(next.lastDecision?.outcomeText).toBe('Se aceleró el producto pero el equipo quedó cansado.');
+      expect(next.lastDecision?.kind).toBe('unforeseen');
+      expect(next.unforeseenEventsPlayed).toBe(1);
+      expect(next.decisionLog[0].outcomeText).toBe('Se aceleró el producto pero el equipo quedó cansado.');
     });
   });
 });

@@ -1,5 +1,5 @@
-import type { GameEvent, GameState, GameStep, Archetype, Financing, PendingEvent, Metrics, GameStatus, GameOption } from '../types/game';
-import { GAME_EVENTS } from '../data/events/index';
+import type { GameEvent, GameState, GameStep, Archetype, Financing, PendingEvent, Metrics, GameStatus, GameOption, GameEventKind } from '../types/game';
+import { GAME_EVENTS, MAIN_EVENTS, CRISIS_EVENTS, UNFORESEEN_EVENTS } from '../data/events/index';
 import { MAX_TURNS, phaseForTurn, PHASES, type PhaseId } from './phases';
 import type { RNG } from './rng';
 import { TAGS, type Tag } from '../data/tags';
@@ -18,6 +18,7 @@ const INITIAL_STATE: GameState = {
   pendingEvents: [],
   decisionLog: [],
   lastDecision: null,
+  unforeseenEventsPlayed: 0,
 };
 
 export const getRandomWeightedEvent = (events: readonly GameEvent[], rng: RNG): GameEvent => {
@@ -25,7 +26,7 @@ export const getRandomWeightedEvent = (events: readonly GameEvent[], rng: RNG): 
 };
 
 export const getInitialEvent = (rng: RNG): GameEvent => {
-  const phaseOneEvents = GAME_EVENTS.filter(
+  const phaseOneEvents = MAIN_EVENTS.filter(
     (ev) => ev.phaseId === 1 && (!ev.requiredTags || ev.requiredTags.length === 0));
   return getRandomWeightedEvent(phaseOneEvents, rng);
 }
@@ -124,7 +125,7 @@ export const selectNextEvent = (state: GameState, rng: RNG): SelectionResult => 
     }
   }
 
-  const phasePool = GAME_EVENTS.filter((ev) => {
+  const phasePool = MAIN_EVENTS.filter((ev) => {
     if (state.history.includes(ev.id)) return false;
     if (ev.phaseId !== state.phaseId) return false;
     return passesWhenCondition(ev, state)
@@ -138,7 +139,7 @@ export const selectNextEvent = (state: GameState, rng: RNG): SelectionResult => 
     }
   }
 
-  const globalFallback = GAME_EVENTS.filter((ev) => {
+  const globalFallback = MAIN_EVENTS.filter((ev) => {
     if (state.history.includes(ev.id)) return false;
     const isUngated = !ev.when && (!ev.requiredTags || ev.requiredTags.length === 0) && (!ev.forbiddenTags || ev.forbiddenTags.length === 0);
     return isUngated;
@@ -237,12 +238,72 @@ export function calculateModifiersDelta(activeTags: Tag[]): Partial<Metrics> {
   };
 }
 
+export interface InterruptionResult {
+  event: GameEvent;
+  kind: 'crisis' | 'unforeseen';
+}
+
+export function checkTurnInterruption(
+  state: GameState,
+  rng: RNG
+): InterruptionResult | null {
+  if (state.status !== 'playing') {
+    return null;
+  }
+
+  // 1. Chequeo de Crisis: si cualquier métrica está en zona crítica (<= 25%)
+  const isCritical =
+    state.metrics.capital <= 25 ||
+    state.metrics.bienestar <= 25 ||
+    state.metrics.reputacion <= 25;
+
+  if (isCritical) {
+    const eligibleCrisis = CRISIS_EVENTS.filter((ev) => {
+      if (state.history.includes(ev.id)) return false;
+      return passesWhenCondition(ev, state);
+    });
+
+    if (eligibleCrisis.length > 0) {
+      return {
+        event: getRandomWeightedEvent(eligibleCrisis, rng),
+        kind: 'crisis',
+      };
+    }
+  }
+
+  // 2. Chequeo de Imprevistos (Cisnes negros / Macro):
+  // Máximo 3 imprevistos por partida
+  const playedCount = state.unforeseenEventsPlayed ?? 0;
+  if (playedCount < 3) {
+    // Probabilidad base 25%. Si estamos en turno 7+ y aún no ocurrió ninguno, sube a 45%
+    const prob = (state.currentTurn >= 7 && playedCount === 0) ? 0.45 : 0.25;
+    const roll = rng.next();
+
+    if (roll < prob) {
+      const eligibleUnforeseen = UNFORESEEN_EVENTS.filter((ev) => {
+        if (state.history.includes(ev.id)) return false;
+        return passesWhenCondition(ev, state);
+      });
+
+      if (eligibleUnforeseen.length > 0) {
+        return {
+          event: getRandomWeightedEvent(eligibleUnforeseen, rng),
+          kind: 'unforeseen',
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
 export function applyDecision(
   state: GameState,
   option: GameOption,
   eventId: string,
   eventTitle?: string,
-  optionIndex?: number
+  optionIndex?: number,
+  eventKind?: GameEventKind
 ): GameState {
   const immediateMetrics = applyMetricsEffects(state.metrics, option.effects);
   const nextTags = applyTags(state.activeTags, option.addTags, option.removeTags);
@@ -258,13 +319,16 @@ export function applyDecision(
   }
 
   const status = evaluateGameStatus(nextMetrics, state.currentTurn, state.maxTurns);
+  const resolvedKind = eventKind ?? (eventId.startsWith('crisis_') ? 'crisis' : eventId.startsWith('imp_') ? 'unforeseen' : 'main');
 
   const logEntry = {
     turn: state.currentTurn,
     eventId,
     eventTitle: eventTitle ?? eventId,
+    kind: resolvedKind,
     optionIndex: optionIndex ?? 0,
     optionText: option.text,
+    outcomeText: option.outcomeText,
     effects: option.effects,
     appliedModifiers,
     learningPill: option.learningPill,
@@ -279,6 +343,7 @@ export function applyDecision(
     pendingEvents: nextPendingEvents,
     decisionLog: [...(state.decisionLog ?? []), logEntry],
     lastDecision: logEntry,
+    unforeseenEventsPlayed: (state.unforeseenEventsPlayed ?? 0) + (resolvedKind === 'unforeseen' ? 1 : 0),
     status,
   };
 }
