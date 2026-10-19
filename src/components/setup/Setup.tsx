@@ -2,6 +2,7 @@ import type { Archetype, Financing } from '../../types/game';
 import { ARCHETYPES, FINANCINGS } from '../../data/archetypes';
 import { useState } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import ImpactBadges from '../game/ImpactBadges';
 
 interface SetupProps {
     onComplete: (arquetipo: Archetype, financiamiento: Financing) => void;
@@ -111,6 +112,10 @@ export default function Setup({ onComplete }: SetupProps) {
                                     <p className="mt-2 text-xs leading-relaxed text-slate-400">
                                         {item.descripcion}
                                     </p>
+                                    <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                                        <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Impacto inicial:</span>
+                                        <ImpactBadges impactPreview={item.impactPreview} />
+                                    </div>
                                 </button>
                             );
                         })}
@@ -167,6 +172,10 @@ export default function Setup({ onComplete }: SetupProps) {
                                     <p className="mt-2 text-xs leading-relaxed text-slate-400">
                                         {item.descripcion}
                                     </p>
+                                    <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                                        <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Impacto inicial:</span>
+                                        <ImpactBadges impactPreview={item.impactPreview} />
+                                    </div>
                                 </button>
                             );
                         })}

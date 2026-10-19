@@ -15,11 +15,26 @@ export default function App() {
     setSetupComplete(true);
   };
 
+  const handleResetToSetup = () => {
+    try {
+      localStorage.removeItem('el_emprendedor_saved_game');
+    } catch {
+      // ignore
+    }
+    setSetupComplete(false);
+    setArquetipo(null);
+    setFinanciamiento(null);
+  };
+
   if (!setupComplete || !arquetipo || !financiamiento) {
     return <Setup onComplete={handleSetupComplete} />;
   }
 
   return (
-    <Game arquetipo={arquetipo} financiamiento={financiamiento} />
+    <Game
+      arquetipo={arquetipo}
+      financiamiento={financiamiento}
+      onResetToSetup={handleResetToSetup}
+    />
   );
 }
