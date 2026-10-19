@@ -1,0 +1,57 @@
+import { PHASES } from '../../game/phases';
+
+interface TimelineBarProps {
+  currentTurn: number;
+  maxTurns: number;
+}
+
+export default function TimelineBar({ currentTurn, maxTurns }: TimelineBarProps) {
+  return (
+    <div className="w-full space-y-1.5 py-1">
+      {/* 15 barras / segmentos de turno */}
+      <div className="flex gap-1 sm:gap-1.5 w-full items-center">
+        {Array.from({ length: maxTurns }).map((_, index) => {
+          const turn = index + 1;
+          const isCompleted = turn < currentTurn;
+          const isCurrent = turn === currentTurn;
+
+          let barStyle = 'bg-slate-800 border-slate-700/60';
+          if (isCompleted) {
+            barStyle = 'bg-indigo-500 border-indigo-400';
+          } else if (isCurrent) {
+            barStyle = 'bg-amber-400 border-amber-300 ring-2 ring-amber-400/40 animate-pulse';
+          }
+
+          return (
+            <div
+              key={turn}
+              title={`Turno ${turn}`}
+              className={`h-1.5 sm:h-2 flex-1 rounded-full border transition-all duration-300 ${barStyle}`}
+            />
+          );
+        })}
+      </div>
+
+      {/* Rótulos de fases simplificados */}
+      <div className="flex justify-between items-center text-[9px] text-slate-500 font-medium px-0.5">
+        {PHASES.map((phase) => {
+          const isPhaseActive = currentTurn >= phase.fromTurn && currentTurn <= phase.toTurn;
+          const isPhaseCompleted = currentTurn > phase.toTurn;
+
+          let phaseTextColor = 'text-slate-500';
+          if (isPhaseActive) {
+            phaseTextColor = 'text-indigo-300 font-bold';
+          } else if (isPhaseCompleted) {
+            phaseTextColor = 'text-slate-400';
+          }
+
+          return (
+            <span key={phase.id} className={phaseTextColor}>
+              F{phase.id}: {phase.label}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

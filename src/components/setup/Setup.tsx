@@ -25,7 +25,7 @@ export default function Setup({ onComplete }: SetupProps) {
     };
 
     return (
-        <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 py-8">
+        <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col px-4 sm:px-6 py-8">
             <header className="mb-6 space-y-5">
                 <div className="space-y-2">
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-400">
@@ -117,7 +117,7 @@ export default function Setup({ onComplete }: SetupProps) {
                         </p>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                         {ARCHETYPES.map((item) => {
                             const isSelected = arquetipo?.id === item.id;
 
@@ -177,7 +177,7 @@ export default function Setup({ onComplete }: SetupProps) {
                         </p>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                         {FINANCINGS.map((item) => {
                             const isSelected = financiamiento?.id === item.id;
 

@@ -125,152 +125,166 @@ export default function EndGameReport({
   const isVictory = status === 'victory';
 
   return (
-    <div className="space-y-6 pb-8 animate-fade-in">
+    <div className="w-full max-w-4xl mx-auto space-y-6 pb-8 animate-in fade-in">
       {/* Header del resultado */}
-      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center space-y-3">
+      <div className="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl text-center space-y-3 shadow-xl">
         <div className="inline-flex p-3 rounded-full bg-slate-800/80 mb-1">
           {isVictory ? (
-            <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+            <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12 text-emerald-400" />
           ) : status === 'ended_early' ? (
-            <AlertTriangle className="w-10 h-10 text-amber-400" />
+            <AlertTriangle className="w-10 h-10 sm:w-12 sm:h-12 text-amber-400" />
           ) : (
-            <XCircle className="w-10 h-10 text-rose-400" />
+            <XCircle className="w-10 h-10 sm:w-12 sm:h-12 text-rose-400" />
           )}
         </div>
 
         <div className="space-y-1">
-          <h2 className={`text-xl font-bold tracking-tight ${epilogue.color}`}>
+          <h2 className={`text-xl sm:text-2xl font-black tracking-tight ${epilogue.color}`}>
             {epilogue.title}
           </h2>
-          <p className="text-xs uppercase tracking-widest text-slate-400 font-semibold">
+          <p className="text-xs sm:text-sm uppercase tracking-widest text-slate-400 font-semibold">
             {epilogue.subtitle}
           </p>
         </div>
 
-        <p className="text-sm text-slate-300 leading-relaxed max-w-sm mx-auto">
+        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl mx-auto">
           {epilogue.description}
         </p>
 
         {/* Perfil Inicial Jugado */}
-        <div className="pt-3 border-t border-slate-800/80 flex items-center justify-center gap-2 text-xs text-slate-400">
+        <div className="pt-3 border-t border-slate-800/80 flex items-center justify-center gap-2 text-xs text-slate-400 flex-wrap">
           <span>Perfil: <strong className="text-slate-200">{arquetipo.titulo}</strong></span>
           <span>•</span>
           <span>Financiamiento: <strong className="text-slate-200">{financiamiento.titulo}</strong></span>
         </div>
       </div>
 
-      {/* Métricas Finales */}
-      <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-3">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-          Métricas Finales de la Trayectoria
-        </h3>
-        <div className="grid grid-cols-3 gap-2">
-          <div className="flex flex-col items-center p-2.5 bg-slate-950/60 rounded-lg border border-slate-800/60">
-            <span className="flex items-center text-xs text-emerald-400 font-bold mb-1">
-              <DollarSign className="w-3.5 h-3.5 mr-0.5" /> {metrics.capital}%
-            </span>
-            <span className="text-[10px] text-slate-500">Capital</span>
+      {/* Grid Responsive de 2 columnas en Desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Columna Izquierda: Métricas, Tags y Botones */}
+        <div className="lg:col-span-6 space-y-5">
+          {/* Métricas Finales */}
+          <div className="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl space-y-3 shadow-md">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Métricas Finales de la Trayectoria
+            </h3>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <div className="flex flex-col items-center p-3 bg-slate-950/60 rounded-xl border border-slate-800/60">
+                <span className="flex items-center text-xs sm:text-sm text-emerald-400 font-black mb-1">
+                  <DollarSign className="w-3.5 h-3.5 mr-0.5" /> {metrics.capital}%
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium">Capital</span>
+              </div>
+
+              <div className="flex flex-col items-center p-3 bg-slate-950/60 rounded-xl border border-slate-800/60">
+                <span className="flex items-center text-xs sm:text-sm text-blue-400 font-black mb-1">
+                  <Award className="w-3.5 h-3.5 mr-0.5" /> {metrics.reputacion}%
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium">Reputación</span>
+              </div>
+
+              <div className="flex flex-col items-center p-3 bg-slate-950/60 rounded-xl border border-slate-800/60">
+                <span className="flex items-center text-xs sm:text-sm text-rose-400 font-black mb-1">
+                  <Heart className="w-3.5 h-3.5 mr-0.5" /> {metrics.bienestar}%
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium">Bienestar</span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col items-center p-2.5 bg-slate-950/60 rounded-lg border border-slate-800/60">
-            <span className="flex items-center text-xs text-blue-400 font-bold mb-1">
-              <Award className="w-3.5 h-3.5 mr-0.5" /> {metrics.reputacion}%
-            </span>
-            <span className="text-[10px] text-slate-500">Reputación</span>
-          </div>
-
-          <div className="flex flex-col items-center p-2.5 bg-slate-950/60 rounded-lg border border-slate-800/60">
-            <span className="flex items-center text-xs text-rose-400 font-bold mb-1">
-              <Heart className="w-3.5 h-3.5 mr-0.5" /> {metrics.bienestar}%
-            </span>
-            <span className="text-[10px] text-slate-500">Bienestar</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Tags adquiridos */}
-      {activeTags.length > 0 && (
-        <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-2.5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Cultura & Tags Activos
-          </h3>
-          <div className="flex flex-wrap gap-1.5">
-            {activeTags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-800/90 text-indigo-300 border border-indigo-900/40"
-              >
-                {TAGS[tag]?.label ?? tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Registro de Decisiones (Acordeón) */}
-      {decisionLog && decisionLog.length > 0 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-          <button
-            onClick={() => setShowLog(!showLog)}
-            className="w-full flex items-center justify-between p-4 text-xs font-bold uppercase tracking-wider text-slate-300 hover:bg-slate-800/50 transition-colors"
-          >
-            <span>Historial de Decisiones ({decisionLog.length})</span>
-            {showLog ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-
-          {showLog && (
-            <div className="p-4 pt-0 space-y-3 border-t border-slate-800/60 max-h-72 overflow-y-auto">
-              {decisionLog.map((log, index) => (
-                <div key={index} className="p-3 bg-slate-950/50 rounded-lg border border-slate-800/60 space-y-1">
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold">
-                    <span className="text-indigo-400">Turno {log.turn}</span>
-                    <span className="truncate max-w-[200px] text-slate-300">{log.eventTitle}</span>
-                  </div>
-                  <p className="text-xs text-slate-200">"{log.optionText}"</p>
-                  {log.learningPill && (
-                    <p className="text-[10px] text-indigo-300/80 italic pt-1">
-                      💡 {log.learningPill}
-                    </p>
-                  )}
-                </div>
-              ))}
+          {/* Tags adquiridos */}
+          {activeTags.length > 0 && (
+            <div className="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl space-y-2.5 shadow-md">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Cultura & Rasgos Incorporados ({activeTags.length})
+              </h3>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {activeTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-950 border border-indigo-900/40 text-indigo-300"
+                  >
+                    {TAGS[tag]?.label ?? tag}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
-        </div>
-      )}
 
-      {/* CTA al Simulador Comercial (GDD §10) */}
-      <div className="p-5 bg-gradient-to-br from-indigo-950/80 via-slate-900 to-indigo-900/40 border border-indigo-700/50 rounded-2xl space-y-3 relative overflow-hidden">
-        <div className="flex items-center gap-2 text-indigo-300 font-bold text-sm">
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>Siguiente Nivel: El Mercado Real</span>
+          {/* Botones de Acción */}
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            <button
+              onClick={onRestart}
+              className="inline-flex items-center justify-center px-4 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-bold rounded-xl border border-slate-700 transition-colors gap-2 shadow-sm"
+            >
+              <RefreshCw className="w-4 h-4" /> Reintentar
+            </button>
+            <button
+              onClick={onResetToSetup}
+              className="inline-flex items-center justify-center px-4 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-colors gap-2 shadow-md shadow-indigo-600/25"
+            >
+              <RotateCcw className="w-4 h-4" /> Cambiar Perfil
+            </button>
+          </div>
         </div>
-        <p className="text-xs text-slate-300 leading-relaxed">
-          Dominaste el camino del fundador. Ahora es momento de entrar a la arena comercial: competí definiendo precio, calidad, distribución y posicionamiento de producto.
-        </p>
-        <button
-          onClick={() => setShowCtaModal(true)}
-          className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
-        >
-          <span>Conocer el Simulador Comercial</span>
-          <ExternalLink className="w-3.5 h-3.5" />
-        </button>
-      </div>
 
-      {/* Botones de Acción */}
-      <div className="grid grid-cols-2 gap-3 pt-2">
-        <button
-          onClick={onRestart}
-          className="inline-flex items-center justify-center px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-colors gap-2"
-        >
-          <RefreshCw className="w-3.5 h-3.5" /> Reintentar
-        </button>
-        <button
-          onClick={onResetToSetup}
-          className="inline-flex items-center justify-center px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-colors gap-2 shadow-md shadow-indigo-600/20"
-        >
-          <RotateCcw className="w-3.5 h-3.5" /> Cambiar Perfil
-        </button>
+        {/* Columna Derecha: Acordeón de Decisiones y CTA Simulador */}
+        <div className="lg:col-span-6 space-y-5">
+          {/* Registro de Decisiones (Acordeón) */}
+          {decisionLog && decisionLog.length > 0 && (
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-md">
+              <button
+                onClick={() => setShowLog(!showLog)}
+                className="w-full flex items-center justify-between p-4 sm:p-5 text-xs font-bold uppercase tracking-wider text-slate-300 hover:bg-slate-800/50 transition-colors"
+              >
+                <span>Historial de Decisiones ({decisionLog.length})</span>
+                {showLog ? <ChevronUp className="w-4 h-4 text-indigo-400" /> : <ChevronDown className="w-4 h-4 text-indigo-400" />}
+              </button>
+
+              {showLog && (
+                <div className="p-4 pt-0 space-y-2.5 border-t border-slate-800/60 max-h-80 overflow-y-auto">
+                  {decisionLog.map((log, index) => (
+                    <div key={index} className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/60 space-y-1">
+                      <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold">
+                        <span className="text-indigo-400 font-bold">Turno {log.turn}</span>
+                        <span className="truncate max-w-[220px] text-slate-300">{log.eventTitle}</span>
+                      </div>
+                      <p className="text-xs text-slate-200">"{log.optionText}"</p>
+                      {log.outcomeText && (
+                        <p className="text-[11px] text-slate-400 pt-0.5 leading-snug">
+                          {log.outcomeText}
+                        </p>
+                      )}
+                      {log.learningPill && (
+                        <p className="text-[10px] text-indigo-300/80 italic pt-1">
+                          💡 {log.learningPill}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* CTA al Simulador Comercial (GDD §10) */}
+          <div className="p-5 sm:p-6 bg-gradient-to-br from-indigo-950/80 via-slate-900 to-indigo-900/40 border border-indigo-700/50 rounded-2xl space-y-3.5 relative overflow-hidden shadow-lg">
+            <div className="flex items-center gap-2 text-indigo-300 font-bold text-sm">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>Siguiente Nivel: El Mercado Real</span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Dominaste el camino del fundador. Ahora es momento de entrar a la arena comercial: competí definiendo precio, calidad, distribución y posicionamiento de producto en vivo.
+            </p>
+            <button
+              onClick={() => setShowCtaModal(true)}
+              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25"
+            >
+              <span>Conocer el Simulador Comercial</span>
+              <ExternalLink className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Modal informativo CTA */}
