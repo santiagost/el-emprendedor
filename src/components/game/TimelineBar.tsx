@@ -15,11 +15,11 @@ export default function TimelineBar({ currentTurn, maxTurns }: TimelineBarProps)
           const isCompleted = turn < currentTurn;
           const isCurrent = turn === currentTurn;
 
-          let barStyle = 'bg-slate-800 border-slate-700/60';
+          let barStyle = 'bg-slate-200 border-slate-300 dark:bg-slate-800 dark:border-slate-700/60';
           if (isCompleted) {
-            barStyle = 'bg-indigo-500 border-indigo-400';
+            barStyle = 'bg-[#0052CC] border-[#0052CC] dark:bg-blue-600 dark:border-blue-500';
           } else if (isCurrent) {
-            barStyle = 'bg-amber-400 border-amber-300 ring-2 ring-amber-400/40 animate-pulse';
+            barStyle = 'bg-amber-400 border-amber-400 ring-2 ring-amber-400/50 animate-pulse';
           }
 
           return (
@@ -33,16 +33,16 @@ export default function TimelineBar({ currentTurn, maxTurns }: TimelineBarProps)
       </div>
 
       {/* Rótulos de fases simplificados */}
-      <div className="flex justify-between items-center text-[9px] text-slate-500 font-medium px-0.5">
+      <div className="flex justify-between items-center text-[9px] text-slate-500 dark:text-slate-400 font-medium px-0.5">
         {PHASES.map((phase) => {
           const isPhaseActive = currentTurn >= phase.fromTurn && currentTurn <= phase.toTurn;
           const isPhaseCompleted = currentTurn > phase.toTurn;
 
-          let phaseTextColor = 'text-slate-500';
+          let phaseTextColor = 'text-slate-400 dark:text-slate-500';
           if (isPhaseActive) {
-            phaseTextColor = 'text-indigo-300 font-bold';
+            phaseTextColor = 'text-[#0052CC] dark:text-blue-400 font-bold';
           } else if (isPhaseCompleted) {
-            phaseTextColor = 'text-slate-400';
+            phaseTextColor = 'text-slate-600 dark:text-slate-400';
           }
 
           return (

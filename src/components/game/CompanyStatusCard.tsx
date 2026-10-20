@@ -17,17 +17,17 @@ export default function CompanyStatusCard({
   const [isOpenMobile, setIsOpenMobile] = useState(false);
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-lg">
+    <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800/90 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-sm transition-colors">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-indigo-950/70 border border-indigo-800/60 flex items-center justify-center text-indigo-400">
+          <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-indigo-950/70 border border-blue-200 dark:border-indigo-800/60 flex items-center justify-center text-[#0052CC] dark:text-blue-400">
             <Building2 className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-xs sm:text-sm font-bold text-slate-200">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
               Estado de la Empresa
             </h3>
-            <p className="text-[10px] text-slate-400">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">
               ADN estratégico y rasgos pasivos activos
             </p>
           </div>
@@ -37,7 +37,7 @@ export default function CompanyStatusCard({
         <button
           type="button"
           onClick={() => setIsOpenMobile(!isOpenMobile)}
-          className="lg:hidden flex items-center gap-1 text-[11px] font-semibold text-indigo-400 bg-slate-800 px-2 py-1 rounded-lg border border-slate-700"
+          className="lg:hidden flex items-center gap-1 text-[11px] font-semibold text-[#0052CC] dark:text-blue-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700"
         >
           <span>{activeTags.length} rasgos</span>
           {isOpenMobile ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -46,20 +46,20 @@ export default function CompanyStatusCard({
 
       {/* Perfil y Financiamiento */}
       <div className="grid grid-cols-2 gap-2 text-left">
-        <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/70 space-y-0.5">
-          <span className="text-[9px] uppercase tracking-wider font-bold text-slate-500">
+        <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/70 space-y-0.5">
+          <span className="text-[9px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500">
             Perfil de Fundador
           </span>
-          <p className="text-xs font-bold text-slate-200 truncate">
+          <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
             {arquetipo.titulo}
           </p>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/70 space-y-0.5">
-          <span className="text-[9px] uppercase tracking-wider font-bold text-slate-500">
+        <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/70 space-y-0.5">
+          <span className="text-[9px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500">
             Financiamiento
           </span>
-          <p className="text-xs font-bold text-slate-200 truncate">
+          <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
             {financiamiento.titulo}
           </p>
         </div>
@@ -67,18 +67,18 @@ export default function CompanyStatusCard({
 
       {/* Rasgos y Tags Activos (siempre visible en desktop, colapsable en mobile) */}
       <div className={`space-y-2 ${isOpenMobile ? 'block' : 'hidden lg:block'}`}>
-        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 pt-1 border-t border-slate-800/60">
+        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/60">
           <span className="flex items-center gap-1">
             <Layers className="w-3 h-3 text-slate-400" />
             Efectos Pasivos en Operación ({activeTags.length}):
           </span>
           {activeTags.length > 0 && (
-            <span className="text-indigo-400 font-semibold">Impactan cada turno</span>
+            <span className="text-[#0052CC] dark:text-blue-400 font-semibold">Impactan cada turno</span>
           )}
         </div>
 
         {activeTags.length === 0 ? (
-          <p className="text-xs text-slate-500 italic py-1">
+          <p className="text-xs text-slate-400 dark:text-slate-500 italic py-1">
             No acumulaste rasgos pasivos aún. Se desbloquearán según tus elecciones.
           </p>
         ) : (
@@ -100,15 +100,15 @@ export default function CompanyStatusCard({
                   key={tag}
                   title={
                     hasMod
-                      ? `Modificador por turno: ${mods?.capital ? `Cap: ${mods.capital} ` : ''}${mods?.bienestar ? `Bien: ${mods.bienestar} ` : ''}${mods?.reputacion ? `Rep: ${mods.reputacion} ` : ''}`
+                      ? `Modificador por turno: ${mods.capital ? `Cap: ${mods.capital} ` : ''}${mods.bienestar ? `Bien: ${mods.bienestar} ` : ''}${mods.reputacion ? `Rep: ${mods.reputacion} ` : ''}`
                       : 'Rasgo de identidad empresarial'
                   }
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border ${
                     isHarmful
-                      ? 'bg-rose-950/40 border-rose-800/60 text-rose-300'
+                      ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-300'
                       : hasMod
-                      ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-300'
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-300'
+                      : 'bg-slate-100 border-slate-200 text-slate-700 dark:bg-slate-950/60 dark:border-slate-800 dark:text-slate-300'
                   }`}
                 >
                   <TagIcon className="w-2.5 h-2.5 opacity-70" />
