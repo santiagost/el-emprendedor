@@ -16,6 +16,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import ThemeToggle from '../common/ThemeToggle';
+import EffectsToggle from '../common/EffectsToggle';
 
 interface EndGameReportProps {
   gameState: GameState;
@@ -25,6 +26,8 @@ interface EndGameReportProps {
   onResetToSetup: () => void;
   theme?: 'light' | 'dark';
   onToggleTheme?: () => void;
+  fxEnabled?: boolean;
+  onToggleFx?: () => void;
 }
 
 export default function EndGameReport({
@@ -35,6 +38,8 @@ export default function EndGameReport({
   onResetToSetup,
   theme,
   onToggleTheme,
+  fxEnabled,
+  onToggleFx,
 }: EndGameReportProps) {
   const { status, metrics, activeTags, decisionLog } = gameState;
   const [showLog, setShowLog] = useState(false);
@@ -131,10 +136,15 @@ export default function EndGameReport({
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 pb-8 animate-in fade-in">
-      {/* Barra superior con ThemeToggle si está provisto */}
-      {theme && onToggleTheme && (
-        <div className="flex justify-end items-center">
-          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+      {/* Barra superior con ThemeToggle y EffectsToggle si están provistos */}
+      {(theme || fxEnabled !== undefined) && (
+        <div className="flex justify-end items-center gap-2">
+          {fxEnabled !== undefined && onToggleFx && (
+            <EffectsToggle fxEnabled={fxEnabled} onToggle={onToggleFx} />
+          )}
+          {theme && onToggleTheme && (
+            <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+          )}
         </div>
       )}
 

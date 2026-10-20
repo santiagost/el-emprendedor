@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useGameEngine } from '../../hooks/useGameEngine';
 import { useTheme } from '../../hooks/useTheme';
 import type { Archetype, Financing } from '../../types/game';
@@ -10,6 +10,8 @@ import TimelineBar from './TimelineBar';
 import CompanyStatusCard from './CompanyStatusCard';
 import IncomingAlertModal from './IncomingAlertModal';
 import ThemeToggle from '../common/ThemeToggle';
+import EffectsToggle from '../common/EffectsToggle';
+import { useEffectsToggle } from '../../lib/motion';
 import { PHASES } from '../../game/phases';
 
 interface GameProps {
@@ -33,6 +35,7 @@ const renderDeltaBadge = (value: number | undefined, label: string, color: strin
 
 export default function Game({ arquetipo, financiamiento, onResetToSetup }: GameProps) {
   const { theme, toggleTheme } = useTheme();
+  const { fxEnabled, toggleFx } = useEffectsToggle();
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [seenAlertForEventId, setSeenAlertForEventId] = useState<string | null>(null);
 
@@ -54,6 +57,41 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
     lastDecision,
     phaseId,
   } = gameState;
+
+  // Seguimiento de deltas reales para animaciones de métricas
+  const prevMetricsRef = useRef(metrics);
+  const lastStepRef = useRef(step);
+  const [metricDeltas, setMetricDeltas] = useState<{
+    capital?: number;
+    reputacion?: number;
+    bienestar?: number;
+    key: number;
+  }>({ key: 0 });
+
+  useEffect(() => {
+    if (step === 'outcome' && lastStepRef.current === 'decision') {
+      const dCap = metrics.capital - prevMetricsRef.current.capital;
+      const dRep = metrics.reputacion - prevMetricsRef.current.reputacion;
+      const dBien = metrics.bienestar - prevMetricsRef.current.bienestar;
+
+      setMetricDeltas((prev) => ({
+        capital: dCap !== 0 ? dCap : undefined,
+        reputacion: dRep !== 0 ? dRep : undefined,
+        bienestar: dBien !== 0 ? dBien : undefined,
+        key: prev.key + 1,
+      }));
+      prevMetricsRef.current = metrics;
+    } else if (step === 'decision') {
+      prevMetricsRef.current = metrics;
+    }
+    lastStepRef.current = step;
+  }, [step, metrics]);
+
+  const handleRestartGame = () => {
+    setSeenAlertForEventId(null);
+    setMetricDeltas({ key: 0 });
+    restartGame();
+  };
 
   const currentPhase = PHASES.find((p) => p.id === phaseId) ?? PHASES[0];
 
@@ -99,13 +137,12 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
           gameState={gameState}
           arquetipo={arquetipo}
           financiamiento={financiamiento}
-          onRestart={() => {
-            setSeenAlertForEventId(null);
-            restartGame();
-          }}
-          onResetToSetup={onResetToSetup ?? restartGame}
+          onRestart={handleRestartGame}
+          onResetToSetup={onResetToSetup ?? handleRestartGame}
           theme={theme}
           onToggleTheme={toggleTheme}
+          fxEnabled={fxEnabled}
+          onToggleFx={toggleFx}
         />
       </main>
     );
@@ -140,8 +177,9 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
             </span>
           </div>
 
-          {/* Botones de acción del header: ThemeToggle y Reiniciar */}
+          {/* Botones de acción del header: EffectsToggle, ThemeToggle y Reiniciar */}
           <div className="flex items-center gap-2">
+            <EffectsToggle fxEnabled={fxEnabled} onToggle={toggleFx} />
             <ThemeToggle theme={theme} onToggle={toggleTheme} />
             <button
               type="button"
@@ -158,25 +196,34 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
         {/* Línea de tiempo visual de 15 turnos */}
         <TimelineBar currentTurn={currentTurn} maxTurns={maxTurns} />
 
-        {/* Panel de Métricas Vitales (con dorado al 100% y titileo al peligro <= 25%) */}
+        {/* Panel de Métricas Vitales (con dorado al 100%, pulso y deltas flotantes) */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-1">
           <MetricCard
             label="Capital"
             value={metrics.capital}
             icon={DollarSign}
             variant="capital"
+            delta={metricDeltas.capital}
+            deltaKey={metricDeltas.key}
+            delayMs={0}
           />
           <MetricCard
             label="Reputación"
             value={metrics.reputacion}
             icon={Award}
             variant="reputacion"
+            delta={metricDeltas.reputacion}
+            deltaKey={metricDeltas.key}
+            delayMs={150}
           />
           <MetricCard
             label="Bienestar"
             value={metrics.bienestar}
             icon={Heart}
             variant="bienestar"
+            delta={metricDeltas.bienestar}
+            deltaKey={metricDeltas.key}
+            delayMs={300}
           />
         </div>
       </header>
@@ -348,8 +395,8 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
 
       {/* Modal de confirmación para salir o reiniciar (Punto 6) */}
       {showExitConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 text-center shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 text-center shadow-2xl ">
             <div className="w-12 h-12 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 rounded-full flex items-center justify-center mx-auto text-rose-600 dark:text-rose-400">
               <RotateCcw className="w-5 h-5" />
             </div>
@@ -374,6 +421,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
                 onClick={() => {
                   setShowExitConfirm(false);
                   setSeenAlertForEventId(null);
+                  setMetricDeltas({ key: 0 });
                   if (onResetToSetup) {
                     onResetToSetup();
                   } else {

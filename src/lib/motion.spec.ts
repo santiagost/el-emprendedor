@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { prefersReducedMotion, isFxEnabled, setFxEnabled } from './motion';
+import { prefersReducedMotion, isFxEnabled, setFxEnabled, syncReducedMotionClass } from './motion';
 import { vibrate, confetti } from './fx';
 import canvasConfetti from 'canvas-confetti';
 
@@ -7,11 +7,14 @@ vi.mock('canvas-confetti', () => ({
   default: vi.fn(),
 }));
 
-describe('motion and fx library (A0)', () => {
+describe('motion and fx library (A0 & A1)', () => {
   let mockStore: Record<string, string> = {};
+  const mockClassList = new Set<string>();
 
   beforeEach(() => {
     mockStore = {};
+    mockClassList.clear();
+
     const mockLocalStorage = {
       getItem: (key: string) => mockStore[key] ?? null,
       setItem: (key: string, val: string) => {
@@ -24,6 +27,17 @@ describe('motion and fx library (A0)', () => {
         mockStore = {};
       },
     };
+
+    // Mock document
+    vi.stubGlobal('document', {
+      documentElement: {
+        classList: {
+          add: (cls: string) => mockClassList.add(cls),
+          remove: (cls: string) => mockClassList.delete(cls),
+          contains: (cls: string) => mockClassList.has(cls),
+        },
+      },
+    });
 
     // Mock window and localStorage
     vi.stubGlobal('window', {
@@ -64,6 +78,16 @@ describe('motion and fx library (A0)', () => {
   it('prefersReducedMotion returns true if fx is disabled', () => {
     setFxEnabled(false);
     expect(prefersReducedMotion()).toBe(true);
+  });
+
+  it('syncReducedMotionClass adds and removes reduced-motion class on document.documentElement', () => {
+    setFxEnabled(false);
+    expect(syncReducedMotionClass()).toBe(true);
+    expect(mockClassList.has('reduced-motion')).toBe(true);
+
+    setFxEnabled(true);
+    expect(syncReducedMotionClass()).toBe(false);
+    expect(mockClassList.has('reduced-motion')).toBe(false);
   });
 
   it('vibrate does nothing if reduced motion is preferred', () => {

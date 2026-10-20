@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, DollarSign, Award, Heart } from 'lucide-react';
 import ImpactBadges from '../game/ImpactBadges';
 import ThemeToggle from '../common/ThemeToggle';
+import EffectsToggle from '../common/EffectsToggle';
 import { useTheme } from '../../hooks/useTheme';
+import { useEffectsToggle } from '../../lib/motion';
 
 interface SetupProps {
     onComplete: (arquetipo: Archetype, financiamiento: Financing) => void;
@@ -12,6 +14,7 @@ interface SetupProps {
 
 export default function Setup({ onComplete }: SetupProps) {
     const { theme, toggleTheme } = useTheme();
+    const { fxEnabled, toggleFx } = useEffectsToggle();
     const [arquetipo, setArquetipo] = useState<Archetype | null>(null);
     const [financiamiento, setFinanciamiento] = useState<Financing | null>(null);
     const [step, setStep] = useState<1 | 2>(1);
@@ -42,7 +45,10 @@ export default function Setup({ onComplete }: SetupProps) {
                         </p>
                     </div>
 
-                    <ThemeToggle theme={theme} onToggle={toggleTheme} />
+                    <div className="flex items-center gap-2">
+                        <EffectsToggle fxEnabled={fxEnabled} onToggle={toggleFx} />
+                        <ThemeToggle theme={theme} onToggle={toggleTheme} />
+                    </div>
                 </div>
 
                 {/* Explicación de Métricas Vitales (Stitch: Capital Esmeralda, Reputación Cobalto, Bienestar Ámbar) */}

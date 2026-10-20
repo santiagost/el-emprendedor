@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react';
 
 /**
+ * Sincroniza la clase `.reduced-motion` en `<html>` para que las reglas CSS
+ * desactiven animaciones y parpadeos automáticamente.
+ */
+export const syncReducedMotionClass = (): boolean => {
+  if (typeof document === 'undefined') return false;
+  const isReduced = prefersReducedMotion();
+  if (isReduced) {
+    document.documentElement.classList.add('reduced-motion');
+  } else {
+    document.documentElement.classList.remove('reduced-motion');
+  }
+  return isReduced;
+};
+
+/**
  * Verifica si los efectos visuales y hápticos están habilitados en la app.
  */
 export const isFxEnabled = (): boolean => {
@@ -15,12 +30,13 @@ export const isFxEnabled = (): boolean => {
 };
 
 /**
- * Guarda la preferencia de efectos del usuario y despacha un evento para reactividad.
+ * Guarda la preferencia de efectos del usuario, actualiza el DOM y despacha un evento.
  */
 export const setFxEnabled = (enabled: boolean): void => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem('el_emprendedor_fx_enabled', enabled ? 'true' : 'false');
+    syncReducedMotionClass();
     window.dispatchEvent(new CustomEvent('el_emprendedor_fx_change', { detail: enabled }));
   } catch {
     // ignore
@@ -47,14 +63,18 @@ export const prefersReducedMotion = (): boolean => {
  * o al toggle de efectos de la app.
  */
 export function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState<boolean>(() => prefersReducedMotion());
+  const [reduced, setReduced] = useState<boolean>(() => {
+    syncReducedMotionClass();
+    return prefersReducedMotion();
+  });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const mediaQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
     const update = () => {
-      setReduced(prefersReducedMotion());
+      const isRed = syncReducedMotionClass();
+      setReduced(isRed);
     };
 
     update();
@@ -63,7 +83,6 @@ export function useReducedMotion(): boolean {
       if (mediaQuery.addEventListener) {
         mediaQuery.addEventListener('change', update);
       } else if ('addListener' in mediaQuery) {
-        // Soporte para navegadores más antiguos
         (mediaQuery as { addListener: (cb: () => void) => void }).addListener(update);
       }
     }
@@ -85,4 +104,41 @@ export function useReducedMotion(): boolean {
   }, []);
 
   return reduced;
+}
+
+/**
+ * Hook de React para controlar el toggle interactivo de Efectos (on/off).
+ */
+export function useEffectsToggle(): {
+  fxEnabled: boolean;
+  toggleFx: () => void;
+  isReducedMotion: boolean;
+} {
+  const isReducedMotion = useReducedMotion();
+  const [fxEnabled, setFxState] = useState<boolean>(() => isFxEnabled());
+
+  useEffect(() => {
+    const update = () => {
+      setFxState(isFxEnabled());
+    };
+    window.addEventListener('storage', update);
+    window.addEventListener('el_emprendedor_fx_change', update);
+    return () => {
+      window.removeEventListener('storage', update);
+      window.removeEventListener('el_emprendedor_fx_change', update);
+    };
+  }, []);
+
+  const toggleFx = () => {
+    const next = !fxEnabled;
+    setFxEnabled(next);
+    setFxState(next);
+  };
+
+  return { fxEnabled, toggleFx, isReducedMotion };
+}
+
+// Sincronizar al cargar el módulo en el cliente
+if (typeof document !== 'undefined') {
+  syncReducedMotionClass();
 }
