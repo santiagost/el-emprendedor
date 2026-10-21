@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useGameEngine } from '../../hooks/useGameEngine';
 import { useTheme } from '../../hooks/useTheme';
-import type { Archetype, Financing } from '../../types/game';
+import { useSequence } from '../../hooks/useSequence';
+import type { Archetype, DecisionLogEntry, Financing, Metrics } from '../../types/game';
 import { DollarSign, Award, Heart, ArrowRight, RotateCcw, AlertTriangle, Zap, CheckCircle2 } from 'lucide-react';
 import ImpactBadges from './ImpactBadges';
 import EndGameReport from './EndGameReport';
@@ -11,8 +12,22 @@ import CompanyStatusCard from './CompanyStatusCard';
 import IncomingAlertModal from './IncomingAlertModal';
 import ThemeToggle from '../common/ThemeToggle';
 import EffectsToggle from '../common/EffectsToggle';
-import { useEffectsToggle } from '../../lib/motion';
+import { useEffectsToggle, useReducedMotion } from '../../lib/motion';
 import { PHASES } from '../../game/phases';
+import { computeMetricDeltas, getRevealingDuration, netDecisionEffect, stressLevel } from '../../game/ui';
+import { confetti } from '../../lib/fx';
+import type { SequenceStep } from '../../hooks/useSequence';
+
+// Fuera del componente: una referencia estable evita reiniciar los timers de useSequence
+const OUTCOME_STEPS: SequenceStep[] = [
+  { at: 0 },    // Paso ①: Selección y deltas
+  { at: 700 },  // Paso ②: Consecuencia narrativa
+  { at: 1500 }, // Paso ③: Concepto clave
+];
+
+const METRIC_KEYS: (keyof Metrics)[] = ['capital', 'reputacion', 'bienestar'];
+
+const decisionIdOf = (entry: DecisionLogEntry) => `${entry.turn}-${entry.eventId}-${entry.optionIndex}`;
 
 interface GameProps {
   arquetipo: Archetype;
@@ -58,42 +73,156 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
     phaseId,
   } = gameState;
 
-  // Seguimiento de deltas reales para animaciones de métricas
+  // Estado de suspenso UI antes de revelar el impacto (A4)
+  const isReducedMotion = useReducedMotion();
+  const [isRevealing, setIsRevealing] = useState(false);
+  // Métricas previas a la decisión: el HUD las muestra mientras dura el suspenso
+  const [heldMetrics, setHeldMetrics] = useState<Metrics | null>(null);
+  const revealingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const displayMetrics = heldMetrics ?? metrics;
+
+  // Seguimiento de deltas reales para animaciones de métricas.
+  // Se calculan recién cuando termina el suspenso, para no revelar el impacto antes de tiempo.
   const prevMetricsRef = useRef(metrics);
-  const lastStepRef = useRef(step);
+  const deltasPendingRef = useRef(false);
+  // Hitos de confeti: una vez por métrica y por partida (las que ya arrancan en 100 no cuentan)
+  const celebratedMetricsRef = useRef<Set<keyof Metrics>>(
+    new Set(METRIC_KEYS.filter((k) => metrics[k] >= 100))
+  );
   const [metricDeltas, setMetricDeltas] = useState<{
     capital?: number;
     reputacion?: number;
     bienestar?: number;
     key: number;
+    decisionId?: string;
   }>({ key: 0 });
 
   useEffect(() => {
-    if (step === 'outcome' && lastStepRef.current === 'decision') {
-      const dCap = metrics.capital - prevMetricsRef.current.capital;
-      const dRep = metrics.reputacion - prevMetricsRef.current.reputacion;
-      const dBien = metrics.bienestar - prevMetricsRef.current.bienestar;
+    if (step === 'decision') {
+      prevMetricsRef.current = metrics;
+      deltasPendingRef.current = true;
+      return;
+    }
 
-      setMetricDeltas((prev) => ({
-        capital: dCap !== 0 ? dCap : undefined,
-        reputacion: dRep !== 0 ? dRep : undefined,
-        bienestar: dBien !== 0 ? dBien : undefined,
-        key: prev.key + 1,
+    if (step === 'outcome' && !isRevealing && deltasPendingRef.current) {
+      deltasPendingRef.current = false;
+      const prev = prevMetricsRef.current;
+      const deltas = computeMetricDeltas(prev, metrics);
+
+      setMetricDeltas((current) => ({
+        ...deltas,
+        key: current.key + 1,
+        decisionId: lastDecision ? decisionIdOf(lastDecision) : undefined,
       }));
       prevMetricsRef.current = metrics;
-    } else if (step === 'decision') {
-      prevMetricsRef.current = metrics;
+
+      // A6: confeti dorado cuando una métrica llega a 100 por primera vez en la partida
+      const reachedMax = METRIC_KEYS.filter(
+        (k) => metrics[k] >= 100 && prev[k] < 100 && !celebratedMetricsRef.current.has(k)
+      );
+      if (reachedMax.length > 0) {
+        reachedMax.forEach((k) => celebratedMetricsRef.current.add(k));
+        confetti('gold');
+      }
     }
-    lastStepRef.current = step;
-  }, [step, metrics]);
+  }, [step, metrics, isRevealing, lastDecision]);
+
+  const handleDecide = useCallback(
+    (optionIndex: number, turn: number) => {
+      if (isRevealing || step !== 'decision') return;
+
+      const duration = getRevealingDuration(currentEvent?.kind, isReducedMotion);
+      if (duration > 0) {
+        setHeldMetrics(metrics);
+        setIsRevealing(true);
+      }
+
+      // Ejecutar de inmediato en el engine para persistir en localStorage
+      decide(optionIndex, turn);
+
+      // Si reduced motion está activo, no hay suspenso (duración 0)
+      if (duration <= 0) {
+        return;
+      }
+
+      revealingTimerRef.current = setTimeout(() => {
+        setHeldMetrics(null);
+        setIsRevealing(false);
+      }, duration);
+    },
+    [isRevealing, step, decide, currentEvent?.kind, isReducedMotion, metrics]
+  );
 
   const handleRestartGame = () => {
+    if (revealingTimerRef.current) {
+      clearTimeout(revealingTimerRef.current);
+    }
+    setIsRevealing(false);
+    setHeldMetrics(null);
     setSeenAlertForEventId(null);
     setMetricDeltas({ key: 0 });
+    celebratedMetricsRef.current = new Set();
     restartGame();
   };
 
+  useEffect(() => {
+    return () => {
+      if (revealingTimerRef.current) {
+        clearTimeout(revealingTimerRef.current);
+      }
+    };
+  }, []);
+
   const currentPhase = PHASES.find((p) => p.id === phaseId) ?? PHASES[0];
+
+  // A6: confeti al pasar a una fase nueva (no al montar ni al reiniciar)
+  const prevPhaseRef = useRef(phaseId);
+  useEffect(() => {
+    if (phaseId > prevPhaseRef.current) {
+      confetti('default');
+    }
+    prevPhaseRef.current = phaseId;
+  }, [phaseId]);
+
+  // A6: confeti de victoria al llegar al desenlace final
+  const celebratedVictoryRef = useRef(false);
+  useEffect(() => {
+    if (step === 'ended' && status === 'victory' && !celebratedVictoryRef.current) {
+      celebratedVictoryRef.current = true;
+      confetti('victory');
+    } else if (step !== 'ended') {
+      celebratedVictoryRef.current = false;
+    }
+  }, [step, status]);
+
+  // A5: tinte tonal según el estrés de las métricas visibles
+  const stress = stressLevel(displayMetrics);
+  const isCalm = stress === 0;
+  const isLowWellbeing = displayMetrics.bienestar < 30;
+
+  // Deltas que muestra el panel "Elegiste": los mismos que el HUD (reales, con modificadores).
+  // Si no hay delta medido (recarga en pleno outcome), se usa el efecto neto del log.
+  const decisionDeltas = !lastDecision
+    ? {}
+    : metricDeltas.decisionId === decisionIdOf(lastDecision)
+    ? metricDeltas
+    : netDecisionEffect(lastDecision);
+
+  // Orquestador de la secuencia de capas en outcome (A3)
+  const [initialWasOutcome] = useState(() => step === 'outcome');
+  const outcomeSequenceKey = isRevealing
+    ? 'revealing'
+    : lastDecision
+    ? `${currentTurn}-${lastDecision.eventId}-${lastDecision.optionIndex}`
+    : `turn-${currentTurn}`;
+
+  const outcomeSequence = useSequence(
+    OUTCOME_STEPS,
+    {
+      key: outcomeSequenceKey,
+      initialCompleted: initialWasOutcome,
+    }
+  );
 
   // Chequeo de alerta animada para interrupciones (Crisis o Imprevistos)
   const isInterruption = currentEvent?.kind === 'crisis' || currentEvent?.kind === 'unforeseen';
@@ -104,30 +233,34 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
     seenAlertForEventId !== currentEvent.id
   );
 
-  // Atajos de teclado en Desktop (1, 2, 3 para elegir opción; Espacio/Enter para avanzar)
+  // Atajos de teclado en Desktop (1, 2, 3 para elegir opción; Espacio/Enter para avanzar o saltar)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (showExitConfirm || showIncomingAlert) return;
+      if (showExitConfirm || showIncomingAlert || isRevealing) return;
 
       if (step === 'decision' && currentEvent && status === 'playing') {
         if (e.key === '1' && currentEvent.options[0]) {
-          decide(0, currentTurn);
+          handleDecide(0, currentTurn);
         } else if (e.key === '2' && currentEvent.options[1]) {
-          decide(1, currentTurn);
+          handleDecide(1, currentTurn);
         } else if (e.key === '3' && currentEvent.options[2]) {
-          decide(2, currentTurn);
+          handleDecide(2, currentTurn);
         }
       } else if (step === 'outcome') {
         if (e.key === ' ' || e.key === 'Enter') {
           e.preventDefault();
-          advance();
+          if (!outcomeSequence.isCompleted) {
+            outcomeSequence.skipToEnd();
+          } else {
+            advance();
+          }
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [step, currentEvent, status, currentTurn, showExitConfirm, showIncomingAlert, decide, advance]);
+  }, [step, currentEvent, status, currentTurn, showExitConfirm, showIncomingAlert, advance, outcomeSequence, isRevealing, handleDecide]);
 
   // Si la partida terminó y estamos en el paso final
   if (step === 'ended') {
@@ -151,7 +284,15 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
   const isGameOverOrVictory = status !== 'playing';
 
   return (
-    <main className="w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col min-h-screen justify-between relative">
+    <main
+      className="w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col min-h-screen justify-between relative"
+      style={{ '--stress': stress } as React.CSSProperties}
+    >
+      {/* Atmósfera tonal por estrés (A5): tinte + viñeta, o resplandor cálido si todo está sano */}
+      <div aria-hidden="true" className="stress-layer stress-tint" />
+      <div aria-hidden="true" className="stress-layer stress-vignette" />
+      <div aria-hidden="true" className={`stress-layer calm-glow ${isCalm ? 'is-on' : ''}`} />
+
       {/* Alerta de animación entrante previa a la decisión (Punto Crisis / Imprevisto) */}
       {showIncomingAlert && currentEvent && (
         <IncomingAlertModal
@@ -200,36 +341,39 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
         <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-1">
           <MetricCard
             label="Capital"
-            value={metrics.capital}
+            value={displayMetrics.capital}
             icon={DollarSign}
             variant="capital"
             delta={metricDeltas.capital}
             deltaKey={metricDeltas.key}
             delayMs={0}
+            isCalculating={isRevealing}
           />
           <MetricCard
             label="Reputación"
-            value={metrics.reputacion}
+            value={displayMetrics.reputacion}
             icon={Award}
             variant="reputacion"
             delta={metricDeltas.reputacion}
             deltaKey={metricDeltas.key}
             delayMs={150}
+            isCalculating={isRevealing}
           />
           <MetricCard
             label="Bienestar"
-            value={metrics.bienestar}
+            value={displayMetrics.bienestar}
             icon={Heart}
             variant="bienestar"
             delta={metricDeltas.bienestar}
             deltaKey={metricDeltas.key}
             delayMs={300}
+            isCalculating={isRevealing}
           />
         </div>
       </header>
 
       {/* Contenido Principal Adaptable a Desktop (Grid de 2 Columnas en lg:) */}
-      <div className="w-full my-auto py-6 lg:grid lg:grid-cols-12 lg:gap-8 items-start">
+      <div className={`w-full my-auto py-6 lg:grid lg:grid-cols-12 lg:gap-8 items-start stress-content ${isLowWellbeing ? 'is-desaturated' : ''}`}>
         {/* Columna Izquierda: Tarjeta del Dilema + Estado de la Empresa */}
         <div className="lg:col-span-7 space-y-5">
           {currentEvent && (
@@ -251,7 +395,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
                     </span>
                   )}
 
-                  {step === 'outcome' && (
+                  {step === 'outcome' && !isRevealing && (
                     <span className="text-amber-600 dark:text-amber-400 font-extrabold flex items-center gap-1 text-[11px]">
                       <CheckCircle2 className="w-3.5 h-3.5" /> Decisión Registrada
                     </span>
@@ -266,12 +410,27 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
                 </p>
               </div>
 
-              {/* Panel de Resultado (D2) */}
-              {step === 'outcome' && (
-                <div className="mt-5 space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800/80 animate-in fade-in duration-200">
-                  {/* Opción seleccionada */}
-                  {lastDecision && (
-                    <div className="p-3.5 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-slate-200 dark:border-slate-800/80 space-y-2">
+              {/* Estado de Suspenso / Calculando (A4) */}
+              {isRevealing && (
+                <div className="mt-5 p-5 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-indigo-200/60 dark:border-indigo-900/40 flex flex-col items-center justify-center space-y-2.5 py-6 text-center animate-in fade-in duration-200 shadow-sm">
+                  <div className="w-6 h-6 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" />
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                      {isInterruption ? 'Analizando impacto de la crisis…' : 'Calculando consecuencias…'}
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Simulando reacción de mercado y métricas vitales
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Panel de Resultado por capas (A3) */}
+              {step === 'outcome' && !isRevealing && (
+                <div className="mt-5 space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+                  {/* Paso ① (currentStep >= 0): Opción seleccionada y deltas */}
+                  {outcomeSequence.currentStep >= 0 && lastDecision && (
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-slate-200 dark:border-slate-800/80 space-y-2 animate-in fade-in duration-200">
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
                         Elegiste:{' '}
                         <span className="text-slate-900 dark:text-slate-100 normal-case font-medium">
@@ -281,24 +440,24 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
 
                       {/* Deltas de la decisión */}
                       <div className="flex flex-wrap gap-1.5">
-                        {renderDeltaBadge(lastDecision.effects.capital, 'Capital', 'text-emerald-600 dark:text-emerald-400')}
-                        {renderDeltaBadge(lastDecision.effects.reputacion, 'Reputación', 'text-[#0052CC] dark:text-blue-400')}
-                        {renderDeltaBadge(lastDecision.effects.bienestar, 'Bienestar', 'text-amber-600 dark:text-amber-400')}
+                        {renderDeltaBadge(decisionDeltas.capital, 'Capital', 'text-emerald-600 dark:text-emerald-400')}
+                        {renderDeltaBadge(decisionDeltas.reputacion, 'Reputación', 'text-[#0052CC] dark:text-blue-400')}
+                        {renderDeltaBadge(decisionDeltas.bienestar, 'Bienestar', 'text-amber-600 dark:text-amber-400')}
                       </div>
                     </div>
                   )}
 
-                  {/* Texto de consecuencia narrativa personalizada */}
-                  {lastDecision?.outcomeText && (
-                    <div className="p-3.5 bg-slate-50/80 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/70 rounded-xl text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                  {/* Paso ② (currentStep >= 1): Texto de consecuencia narrativa personalizada */}
+                  {outcomeSequence.currentStep >= 1 && lastDecision?.outcomeText && (
+                    <div className="p-3.5 bg-slate-50/80 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/70 rounded-xl text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed animate-in fade-in duration-200">
                       <span className="font-semibold text-slate-900 dark:text-slate-200">Consecuencia: </span>
                       {lastDecision.outcomeText}
                     </div>
                   )}
 
-                  {/* Micro-píldora didáctica */}
-                  {lastPill && (
-                    <div className="p-3.5 bg-indigo-50/80 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/70 rounded-xl">
+                  {/* Paso ③ (currentStep >= 2): Micro-píldora didáctica que entra deslizándose */}
+                  {outcomeSequence.currentStep >= 2 && lastPill && (
+                    <div className="p-3.5 bg-indigo-50/80 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/70 rounded-xl animate-slide-up-fade shadow-sm">
                       <p className="text-xs text-indigo-900 dark:text-indigo-200 leading-normal">
                         💡 <span className="font-semibold text-indigo-700 dark:text-indigo-300">Concepto clave:</span> {lastPill}
                       </p>
@@ -335,8 +494,9 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => decide(idx, currentTurn)}
-                  className="w-full text-left p-4 bg-white hover:bg-slate-50 active:bg-slate-100 dark:bg-[#0E243A] dark:hover:bg-[#14304D] dark:active:bg-[#18395B] border border-slate-200 dark:border-slate-700/70 hover:border-[#0052CC]/50 dark:hover:border-indigo-500/60 rounded-xl transition-all text-xs sm:text-sm text-slate-800 dark:text-slate-200 space-y-2.5 group shadow-sm hover:shadow-[#0052CC]/10 focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50"
+                  disabled={isRevealing}
+                  onClick={() => handleDecide(idx, currentTurn)}
+                  className="w-full text-left p-4 bg-white hover:bg-slate-50 active:bg-slate-100 dark:bg-[#0E243A] dark:hover:bg-[#14304D] dark:active:bg-[#18395B] border border-slate-200 dark:border-slate-700/70 hover:border-[#0052CC]/50 dark:hover:border-indigo-500/60 rounded-xl transition-all text-xs sm:text-sm text-slate-800 dark:text-slate-200 space-y-2.5 group shadow-sm hover:shadow-[#0052CC]/10 focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex items-start gap-2.5">
                     <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-600 dark:text-slate-400 group-hover:bg-[#0052CC] dark:group-hover:bg-indigo-600 group-hover:text-white group-hover:border-[#0052CC] dark:group-hover:border-indigo-500 transition-colors">
@@ -361,33 +521,43 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
           {/* Panel de Outcome / Botón Siguiente (Paso: outcome) */}
           {step === 'outcome' && (
             <div className="space-y-3">
-              <div className="p-4 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-xl text-left space-y-2 shadow-sm">
-                <p className="text-xs font-semibold text-slate-800 dark:text-slate-300">
-                  Decisión procesada con éxito.
-                </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Las consecuencias sobre el capital, reputación y bienestar ya fueron calculadas. Presioná para continuar tu camino emprendedor.
-                </p>
-              </div>
+              {isRevealing ? (
+                <div className="p-4 bg-slate-100/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 rounded-xl text-center space-y-1 animate-in fade-in duration-200 shadow-sm">
+                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 animate-pulse">
+                    Procesando decisión…
+                  </p>
+                </div>
+              ) : outcomeSequence.isCompleted ? (
+                <div className="space-y-3 animate-in fade-in duration-200">
+                  <button
+                    type="button"
+                    onClick={advance}
+                    className="w-full py-4 px-4 bg-[#0A2540] hover:bg-[#0052CC] active:bg-[#081c30] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white font-bold text-sm sm:text-base rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#0052CC]/25 group"
+                  >
+                    <span>
+                      {isGameOverOrVictory
+                        ? 'Ver Desenlace Final'
+                        : isInterruption
+                        ? 'Continuar al Siguiente Turno'
+                        : 'Siguiente Turno'}
+                    </span>
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
 
-              <button
-                type="button"
-                onClick={advance}
-                className="w-full py-4 px-4 bg-[#0A2540] hover:bg-[#0052CC] active:bg-[#081c30] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white font-bold text-sm sm:text-base rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#0052CC]/25 group"
-              >
-                <span>
-                  {isGameOverOrVictory
-                    ? 'Ver Desenlace Final'
-                    : isInterruption
-                    ? 'Continuar al Siguiente Turno'
-                    : 'Siguiente Turno'}
-                </span>
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-
-              <p className="text-center text-[11px] text-slate-400 dark:text-slate-500 hidden sm:block">
-                Presioná <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Espacio</kbd> o <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Enter</kbd> para avanzar
-              </p>
+                  <p className="text-center text-[11px] text-slate-400 dark:text-slate-500 hidden sm:block">
+                    Presioná <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Espacio</kbd> o <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Enter</kbd> para avanzar
+                  </p>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={outcomeSequence.skipToEnd}
+                  className="w-full py-3.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <span>Saltar animación</span>
+                  <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">(Espacio)</span>
+                </button>
+              )}
             </div>
           )}
         </div>

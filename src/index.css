@@ -125,6 +125,21 @@ body {
   animation: deltaPulseRed 350ms ease-out 1;
 }
 
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-fade {
+  animation: slideUpFade 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Accesibilidad: Reduced Motion global y toggle de efectos */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
@@ -133,7 +148,7 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  :is(.metric-danger-blink, .metric-max-glow, .incoming-alert-pulse, .animate-float-delta, .metric-pulse-positive, .metric-pulse-negative) {
+  :is(.metric-danger-blink, .metric-max-glow, .incoming-alert-pulse, .animate-float-delta, .metric-pulse-positive, .metric-pulse-negative, .animate-slide-up-fade) {
     animation: none !important;
   }
 }
@@ -145,7 +160,51 @@ html.reduced-motion {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  & :is(.metric-danger-blink, .metric-max-glow, .incoming-alert-pulse, .animate-float-delta, .metric-pulse-positive, .metric-pulse-negative) {
+  & :is(.metric-danger-blink, .metric-max-glow, .incoming-alert-pulse, .animate-float-delta, .metric-pulse-positive, .metric-pulse-negative, .animate-slide-up-fade) {
     animation: none !important;
   }
+}
+
+/* A5: Atmósfera tonal por estrés (--stress 0-1, definido en <main>) */
+.stress-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 800ms ease;
+}
+
+.stress-tint {
+  background: color-mix(in oklab, rgb(244 63 94) 10%, transparent);
+  opacity: var(--stress, 0);
+}
+
+.stress-vignette {
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(136, 19, 55, 0.22) 100%);
+  opacity: var(--stress, 0);
+}
+
+.dark .stress-tint {
+  background: color-mix(in oklab, rgb(225 29 72) 12%, transparent);
+}
+
+.dark .stress-vignette {
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.calm-glow {
+  background: radial-gradient(ellipse at top, rgba(251, 191, 36, 0.14), transparent 60%);
+  opacity: 0;
+}
+
+.calm-glow.is-on {
+  opacity: 1;
+}
+
+.stress-content {
+  transition: filter 800ms ease;
+}
+
+.stress-content.is-desaturated {
+  filter: saturate(0.8);
 }

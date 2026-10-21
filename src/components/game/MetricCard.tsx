@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { AlertTriangle, Gauge } from 'lucide-react';
+import { AlertTriangle, CircleStar } from 'lucide-react';
 import { useCountUp } from '../../hooks/useCountUp';
 import FloatingDelta from './FloatingDelta';
 
@@ -12,6 +12,7 @@ interface MetricCardProps {
   delta?: number;
   deltaKey?: number | string;
   delayMs?: number;
+  isCalculating?: boolean;
 }
 
 export default function MetricCard({
@@ -22,6 +23,7 @@ export default function MetricCard({
   delta,
   deltaKey,
   delayMs = 0,
+  isCalculating = false,
 }: MetricCardProps) {
   const animatedValue = useCountUp(value, 700, delayMs);
   const isMax = value >= 100;
@@ -124,6 +126,10 @@ export default function MetricCard({
     barClasses += ` ${variantStyles.bar}`;
   }
 
+  if (isCalculating) {
+    cardClasses += ' ring-2 ring-indigo-500/40 border-indigo-400/60 dark:border-indigo-500/60 transition-all';
+  }
+
   return (
     <div className={cardClasses}>
       {/* Delta flotante animado con su respectivo stagger */}
@@ -132,21 +138,33 @@ export default function MetricCard({
       {/* Badge de estado superior */}
       <div className="w-full flex items-center justify-between text-[10px] font-semibold mb-1">
         <span className="flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[9px] sm:text-[10px] font-bold">
-          <Icon className={`w-3.5 h-3.5 mr-1 shrink-0 ${isMax ? 'text-amber-500 dark:text-amber-400' : isCritical ? 'text-rose-600 dark:text-rose-400' : variantStyles.iconText}`} />
+          <Icon
+            className={`w-3.5 h-3.5 mr-1 shrink-0 ${
+              isCalculating
+                ? 'animate-pulse text-indigo-500 dark:text-indigo-400'
+                : isMax
+                ? 'text-amber-500 dark:text-amber-400'
+                : isCritical
+                ? 'text-rose-600 dark:text-rose-400'
+                : variantStyles.iconText
+            }`}
+          />
           {label}
         </span>
 
-        {isMax && (
-          <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[8px] font-bold uppercase tracking-wider border border-amber-400/50">
-            <Gauge className="w-2.5 h-2.5" /> MÁX
+        {isCalculating ? (
+          <span className="flex items-center gap-1 text-[8px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider animate-pulse">
+            Calculando…
           </span>
-        )}
-
-        {isCritical && (
+        ) : isMax ? (
+          <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[8px] font-bold uppercase tracking-wider border border-amber-400/50">
+            <CircleStar className="w-2.5 h-2.5" /> MÁX
+          </span>
+        ) : isCritical ? (
           <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-rose-600/20 dark:bg-rose-600/30 text-rose-700 dark:text-rose-200 text-[8px] font-extrabold uppercase tracking-wider border border-rose-500 animate-pulse">
             <AlertTriangle className="w-2.5 h-2.5" /> CRÍTICO
           </span>
-        )}
+        ) : null}
       </div>
 
       {/* Valor numérico con interpolación useCountUp */}
