@@ -132,8 +132,15 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, p
       updateStateAndPersist(endedState, null, 'ended');
     } else {
       const runningState: GameState = { ...advanced, pendingEvents: remainingPending };
-      updateStateAndPersist(runningState, nextEvent, 'decision');
+      // Al cerrar una fase (que no es la última) se muestra su resumen antes del primer dilema de la siguiente
+      const phaseChanged = nextPhaseId !== gameState.phaseId;
+      updateStateAndPersist(runningState, nextEvent, phaseChanged ? 'phase_recap' : 'decision');
     }
+  };
+
+  const continueFromRecap = () => {
+    if (step !== 'phase_recap') return;
+    updateStateAndPersist(gameState, currentEvent, 'decision');
   };
 
   const restartGame = () => {
@@ -152,6 +159,7 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, p
     step,
     decide,
     advance,
+    continueFromRecap,
     restartGame,
   };
 };

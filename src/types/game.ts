@@ -78,6 +78,8 @@ export interface DecisionLogEntry {
     effects: Partial<Metrics>;
     appliedModifiers?: Partial<Metrics>;
     learningPill?: string;
+    /** Métricas resultantes tras esta decisión (con modificadores y clamp). Opcional: guardados viejos no lo tienen. */
+    metricsAfter?: Metrics;
 }
 
 export interface GameState {
@@ -85,6 +87,8 @@ export interface GameState {
     maxTurns: number;
     phaseId: PhaseId;
     metrics: Metrics;
+    /** Métricas al iniciar la partida (tras arquetipo y financiamiento); base del recorrido de la fase 1. */
+    initialMetrics?: Metrics;
     activeTags: Tag[];
     history: string[]; // ids de eventos jugados
     status: GameStatus;
@@ -117,4 +121,4 @@ export interface Financing {
     tags?: Tag[];
 }
 
-export type GameStep = 'decision' | 'outcome' | 'ended'
+export type GameStep = 'decision' | 'outcome' | 'phase_recap' | 'ended'

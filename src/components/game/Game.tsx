@@ -7,6 +7,7 @@ import type { Archetype, DecisionLogEntry, Financing, Metrics } from '../../type
 import { DollarSign, Award, Heart, ArrowRight, RotateCcw, AlertTriangle, Zap, CheckCircle2, Building2, X } from 'lucide-react';
 import ImpactBadges from './ImpactBadges';
 import EndGameReport from './EndGameReport';
+import PhaseRecap from './PhaseRecap';
 import MetricCard from './MetricCard';
 import TimelineBar from './TimelineBar';
 import CompanyStatusCard from './CompanyStatusCard';
@@ -14,7 +15,8 @@ import IncomingAlertModal from './IncomingAlertModal';
 import ThemeToggle from '../common/ThemeToggle';
 import EffectsToggle from '../common/EffectsToggle';
 import { useEffectsToggle, useReducedMotion } from '../../lib/motion';
-import { PHASES } from '../../game/phases';
+import { PHASES, type PhaseId } from '../../game/phases';
+import { buildPhaseRecap } from '../../game/recap';
 import { computeMetricDeltas, getRevealingDuration, netDecisionEffect, stressLevel } from '../../game/ui';
 import { confetti } from '../../lib/fx';
 import { localizeEvent, personalize } from '../../lib/personalize';
@@ -67,6 +69,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
     step,
     decide,
     advance,
+    continueFromRecap,
     restartGame,
   } = useGameEngine(arquetipo, financiamiento, playerName);
 
@@ -187,6 +190,13 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
     [currentEvent, displayName]
   );
 
+  // B2: resumen de la fase que acaba de cerrarse (el estado ya avanzó a la siguiente)
+  const [initialWasRecap] = useState(() => step === 'phase_recap');
+  const phaseRecap = useMemo(
+    () => (step === 'phase_recap' ? buildPhaseRecap(gameState, (phaseId - 1) as PhaseId, displayName) : null),
+    [step, gameState, phaseId, displayName]
+  );
+
   const currentPhase = PHASES.find((p) => p.id === phaseId) ?? PHASES[0];
 
   // A6: confeti al pasar a una fase nueva (no al montar ni al reiniciar)
@@ -284,6 +294,10 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [step, currentEvent, status, currentTurn, showExitConfirm, showCompanyDrawer, showIncomingAlert, advance, outcomeSequence, isRevealing, handleDecide]);
+
+  if (step === 'phase_recap' && phaseRecap) {
+    return <PhaseRecap recap={phaseRecap} initialCompleted={initialWasRecap} onContinue={continueFromRecap} />;
+  }
 
   // Si la partida terminó y estamos en el paso final
   if (step === 'ended') {

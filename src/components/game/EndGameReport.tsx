@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { GameState, Archetype, Financing } from '../../types/game';
 import { TAGS } from '../../data/tags';
 import { personalize } from '../../lib/personalize';
+import { buildJourney } from '../../game/recap';
+import { PHASES } from '../../game/phases';
 import {
   DollarSign,
   Award,
@@ -43,6 +45,7 @@ export default function EndGameReport({
   onToggleFx,
 }: EndGameReportProps) {
   const { status, metrics, activeTags, decisionLog, playerName } = gameState;
+  const journey = useMemo(() => buildJourney(gameState, playerName), [gameState, playerName]);
   const [showLog, setShowLog] = useState(false);
   const [showCtaModal, setShowCtaModal] = useState(false);
 
@@ -253,6 +256,32 @@ export default function EndGameReport({
 
         {/* Columna Derecha: Acordeón de Decisiones y CTA Simulador */}
         <div className="lg:col-span-6 space-y-5">
+          {/* Tu recorrido: una línea por fase (la fase 4 se resume acá y no en una pantalla aparte) */}
+          {journey.length > 0 && (
+            <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-2xl space-y-3 shadow-sm dark:shadow-md transition-colors">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Tu recorrido</h3>
+              <ol className="space-y-2.5">
+                {journey.map((recap) => {
+                  const phase = PHASES.find((p) => p.id === recap.phaseId);
+                  return (
+                    <li key={recap.phaseId} className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200/80 dark:border-slate-800/60 space-y-1">
+                      <div className="flex items-center justify-between gap-2 text-[11px] font-semibold">
+                        <span className="text-[#0052CC] dark:text-indigo-400 font-bold truncate">
+                          Fase {recap.phaseId}: {phase?.label}
+                          {recap.partial ? ' (incompleta)' : ''}
+                        </span>
+                        <span className="shrink-0 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/70 text-indigo-700 dark:text-indigo-300 font-bold">
+                          {recap.trend.label}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-700 dark:text-slate-300 leading-snug">{recap.headline}</p>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          )}
+
           {/* Registro de Decisiones (Acordeón) */}
           {decisionLog && decisionLog.length > 0 && (
             <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-md transition-colors">

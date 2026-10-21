@@ -37,13 +37,15 @@ export const validateInitialMetrics = (initialMetric: number, archetypeEffect = 
 };
 
 export const startGame = (archetype: Archetype, financing: Financing): GameState => {
+  const metrics: Metrics = {
+    capital: validateInitialMetrics(INITIAL_STATE.metrics.capital, archetype.effects.capital, financing.effects.capital),
+    bienestar: validateInitialMetrics(INITIAL_STATE.metrics.bienestar, archetype.effects.bienestar, financing.effects.bienestar),
+    reputacion: validateInitialMetrics(INITIAL_STATE.metrics.reputacion, archetype.effects.reputacion, financing.effects.reputacion),
+  };
   return {
     ...INITIAL_STATE,
-    metrics: {
-      capital: validateInitialMetrics(INITIAL_STATE.metrics.capital, archetype.effects.capital, financing.effects.capital),
-      bienestar: validateInitialMetrics(INITIAL_STATE.metrics.bienestar, archetype.effects.bienestar, financing.effects.bienestar),
-      reputacion: validateInitialMetrics(INITIAL_STATE.metrics.reputacion, archetype.effects.reputacion, financing.effects.reputacion),
-    },
+    metrics,
+    initialMetrics: { ...metrics },
     activeTags: [...(archetype.tags || []), ...(financing.tags || [])],
     archetypeId: archetype.id,
     financingId: financing.id
@@ -332,6 +334,7 @@ export function applyDecision(
     effects: option.effects,
     appliedModifiers,
     learningPill: option.learningPill,
+    metricsAfter: nextMetrics,
   };
 
   return {
