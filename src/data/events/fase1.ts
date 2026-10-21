@@ -5,7 +5,7 @@ export const fase1Events = [
         id: 'f1_mvp_calidad',
         phaseId: 1,
         title: 'El Primer Prototipo',
-        description: 'El producto funciona pero tiene fallas visuales y bugs menores. ¿Cómo salís al mercado?',
+        description: 'El producto funciona pero tiene fallas visuales y bugs menores. ¿Cómo salís al mercado, {nombre}?',
         weight: 10,
         options: [
             defineOption(
@@ -34,7 +34,7 @@ export const fase1Events = [
         phaseId: 1,
         title: 'La Elección del Co-Fundador',
         weight: 10,
-        description: 'Necesitás complementar tus habilidades. Aparecen dos personas interesadas en sumarse.',
+        description: '{nombre}, necesitás complementar tus habilidades. Aparecen dos personas interesadas en sumarse.',
         options: [
             defineOption(
                 'Sumar a un amigo de confianza técnica que comparte tu visión.',

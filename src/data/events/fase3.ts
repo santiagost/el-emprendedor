@@ -32,7 +32,7 @@ export const fase3Events = [
         phaseId: 3,
         title: 'Llega un Fondo de Inversión',
         weight: 10,
-        description: 'Un fondo de Venture Capital ofrece 200k USD, pero exige el 35% de la empresa y una silla con derecho a veto en el directorio.',
+        description: '{nombre}, un fondo de Venture Capital ofrece 200k USD, pero exige el 35% de la empresa y una silla con derecho a veto en el directorio.',
         options: [
             defineOption(
                 'Aceptar la inversión para pisar el acelerador.',
@@ -63,7 +63,7 @@ export const fase3Events = [
         when: {
             tags: ['socio_conflictivo']
         },
-        description: 'Tu co-fundador quiere cambiar el rumbo del negocio y amenaza con bloquear las decisiones o llevarse clientes.',
+        description: 'Tu co-fundador quiere cambiar el rumbo del negocio y amenaza con bloquear las decisiones o llevarse clientes. ¿Qué hacés, {nombre}?',
         options: [
             defineOption(
                 'Comprar su parte pagando una prima alta para recuperar el control.',
@@ -94,7 +94,7 @@ export const fase3Events = [
         when: {
             tags: ['equipo_sobrecargado']
         },
-        description: 'Renuncian dos personas clave de tu equipo en plena entrega importante. El resto amenaza con irse.',
+        description: '{nombre}, renuncian dos personas clave de tu equipo en plena entrega importante. El resto amenaza con irse.',
         options: [
             defineOption(
                 'Hacerte cargo personalmente de todo el trabajo operativo faltante.',

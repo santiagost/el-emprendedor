@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useGameEngine } from '../../hooks/useGameEngine';
 import { useTheme } from '../../hooks/useTheme';
 import { useSequence } from '../../hooks/useSequence';
@@ -17,6 +17,7 @@ import { useEffectsToggle, useReducedMotion } from '../../lib/motion';
 import { PHASES } from '../../game/phases';
 import { computeMetricDeltas, getRevealingDuration, netDecisionEffect, stressLevel } from '../../game/ui';
 import { confetti } from '../../lib/fx';
+import { localizeEvent, personalize } from '../../lib/personalize';
 import type { SequenceStep } from '../../hooks/useSequence';
 
 // Fuera del componente: una referencia estable evita reiniciar los timers de useSequence
@@ -33,7 +34,9 @@ const decisionIdOf = (entry: DecisionLogEntry) => `${entry.turn}-${entry.eventId
 interface GameProps {
   arquetipo: Archetype;
   financiamiento: Financing;
-  onResetToSetup?: () => void;
+  /** Nombre elegido en Setup; en una partida retomada se usa el guardado en la sesión. */
+  playerName?: string;
+  onResetToSetup?: (currentName?: string) => void;
 }
 
 const renderDeltaBadge = (value: number | undefined, label: string, color: string) => {
@@ -49,7 +52,7 @@ const renderDeltaBadge = (value: number | undefined, label: string, color: strin
   );
 };
 
-export default function Game({ arquetipo, financiamiento, onResetToSetup }: GameProps) {
+export default function Game({ arquetipo, financiamiento, playerName, onResetToSetup }: GameProps) {
   const { theme, toggleTheme } = useTheme();
   const { fxEnabled, toggleFx } = useEffectsToggle();
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -65,7 +68,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
     decide,
     advance,
     restartGame,
-  } = useGameEngine(arquetipo, financiamiento);
+  } = useGameEngine(arquetipo, financiamiento, playerName);
 
   const {
     metrics,
@@ -177,6 +180,13 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
     };
   }, []);
 
+  // B1: los textos con {nombre} se resuelven en el render; el motor guarda los textos crudos
+  const displayName = gameState.playerName;
+  const displayEvent = useMemo(
+    () => (currentEvent ? localizeEvent(currentEvent, displayName) : null),
+    [currentEvent, displayName]
+  );
+
   const currentPhase = PHASES.find((p) => p.id === phaseId) ?? PHASES[0];
 
   // A6: confeti al pasar a una fase nueva (no al montar ni al reiniciar)
@@ -284,7 +294,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
           arquetipo={arquetipo}
           financiamiento={financiamiento}
           onRestart={handleRestartGame}
-          onResetToSetup={onResetToSetup ?? handleRestartGame}
+          onResetToSetup={() => (onResetToSetup ? onResetToSetup(displayName) : handleRestartGame())}
           theme={theme}
           onToggleTheme={toggleTheme}
           fxEnabled={fxEnabled}
@@ -307,9 +317,9 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
       <div aria-hidden="true" className={`stress-layer calm-glow ${isCalm ? 'is-on' : ''}`} />
 
       {/* Alerta de animación entrante previa a la decisión (Punto Crisis / Imprevisto) */}
-      {showIncomingAlert && currentEvent && (
+      {showIncomingAlert && currentEvent && displayEvent && (
         <IncomingAlertModal
-          event={currentEvent}
+          event={displayEvent}
           onDismiss={() => setSeenAlertForEventId(currentEvent.id)}
         />
       )}
@@ -413,7 +423,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
 
         {/* Columna central: carta del dilema + opciones juntas */}
         <div className="min-w-0 w-full max-w-[640px] mx-auto space-y-5">
-          {currentEvent && (
+          {currentEvent && displayEvent && (
             <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 p-5 sm:p-7 rounded-2xl shadow-sm dark:shadow-xl flex flex-col justify-between transition-colors">
               <div>
                 {/* Header del tipo de evento */}
@@ -440,10 +450,10 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
                 </div>
 
                 <h2 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2.5 leading-snug">
-                  {currentEvent.title}
+                  {displayEvent.title}
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                  {currentEvent.description}
+                  {displayEvent.description}
                 </p>
               </div>
 
@@ -471,7 +481,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
                         Elegiste:{' '}
                         <span className="text-slate-900 dark:text-slate-100 normal-case font-medium">
-                          "{lastDecision.optionText}"
+                          "{personalize(lastDecision.optionText, displayName)}"
                         </span>
                       </p>
 
@@ -488,7 +498,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
                   {outcomeSequence.currentStep >= 1 && lastDecision?.outcomeText && (
                     <div className="p-3.5 bg-slate-50/80 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/70 rounded-xl text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed animate-in fade-in duration-200">
                       <span className="font-semibold text-slate-900 dark:text-slate-200">Consecuencia: </span>
-                      {lastDecision.outcomeText}
+                      {personalize(lastDecision.outcomeText, displayName)}
                     </div>
                   )}
 
@@ -496,7 +506,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
                   {outcomeSequence.currentStep >= 2 && lastPill && (
                     <div className="p-3.5 bg-indigo-50/80 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/70 rounded-xl animate-slide-up-fade shadow-sm">
                       <p className="text-xs text-indigo-900 dark:text-indigo-200 leading-normal">
-                        💡 <span className="font-semibold text-indigo-700 dark:text-indigo-300">Concepto clave:</span> {lastPill}
+                        💡 <span className="font-semibold text-indigo-700 dark:text-indigo-300">Concepto clave:</span> {personalize(lastPill, displayName)}
                       </p>
                     </div>
                   )}
@@ -509,7 +519,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
           {/* Alternativas de Decisión o Botón Siguiente, debajo de la carta */}
           <div className="space-y-4">
           {/* Opciones de Decisión (Paso: decision) */}
-          {status === 'playing' && currentEvent && step === 'decision' && (
+          {status === 'playing' && displayEvent && step === 'decision' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between px-1">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -520,7 +530,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
                 </span>
               </div>
 
-              {currentEvent.options.map((option, idx) => (
+              {displayEvent.options.map((option, idx) => (
                 <button
                   key={idx}
                   type="button"
@@ -640,26 +650,26 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
             <div className="grid grid-cols-2 gap-2.5 pt-2">
               <button
                 type="button"
-                onClick={() => setShowExitConfirm(false)}
-                className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-colors"
-              >
-                Seguir jugando
-              </button>
-              <button
-                type="button"
                 onClick={() => {
                   setShowExitConfirm(false);
                   setSeenAlertForEventId(null);
                   setMetricDeltas({ key: 0 });
                   if (onResetToSetup) {
-                    onResetToSetup();
+                    onResetToSetup(displayName);
                   } else {
-                    restartGame();
+                    handleRestartGame();
                   }
                 }}
                 className="py-2.5 px-3 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-xl transition-colors shadow-md shadow-rose-600/20"
               >
                 Sí, salir
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowExitConfirm(false)}
+                className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-colors"
+              >
+                Seguir jugando
               </button>
             </div>
           </div>

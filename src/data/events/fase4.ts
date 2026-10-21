@@ -35,7 +35,7 @@ export const fase4Events = [
         when: {
             tags: ['equity_diluido']
         },
-        description: 'Un competidor se alió en secreto con tus inversores externos y te ofrecen comprar tu parte obligadamente.',
+        description: '{nombre}, un competidor se alió en secreto con tus inversores externos y te ofrecen comprar tu parte obligadamente.',
         options: [
             defineOption(
                 'Vender tus acciones y aceptar un cheque millonario para retirarte.',
@@ -119,7 +119,7 @@ export const fase4Events = [
         phaseId: 4,
         title: 'Soltar la Operación',
         weight: 10,
-        description: 'La empresa ya funciona sin vos en el día a día. Podés contratar un gerente general y soltar, o seguir decidiendo cada detalle.',
+        description: 'La empresa ya funciona sin vos en el día a día, {nombre}. Podés contratar un gerente general y soltar, o seguir decidiendo cada detalle.',
         options: [
             defineOption(
                 'Contratar un gerente general y pasar a un rol estratégico.',

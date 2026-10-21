@@ -2,6 +2,18 @@ import { defineEvent, defineOption } from './builders';
 import type { GameEvent } from '../../types/game';
 
 // ============================================================================
+// PERSONALIZACIÓN: token opcional {nombre}
+// Se puede usar en title, description, option.text, outcomeText y learningPill.
+// Se resuelve en el render (el motor guarda el texto crudo) y el texto debe leerse
+// bien CON y SIN nombre. Convención:
+//   - Al inicio de una oración: '{nombre}, un inversor pide una reunión.'
+//     (sin nombre queda 'Un inversor pide una reunión.')
+//   - Al final, antes de la puntuación: '¿Cómo salís al mercado, {nombre}?'
+//   - O entre comas: 'Mirá, {nombre}, esto cambia todo.'
+// Evitar género ("bienvenido/a"): usar voseo neutro. content.spec.ts valida la convención.
+// ============================================================================
+
+// ============================================================================
 // PLANTILLA 1: Evento Base (sin condiciones de entrada)
 // Aporta al cupo mínimo obligatorio de la fase para evitar softlocks.
 // ============================================================================

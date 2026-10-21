@@ -95,6 +95,8 @@ export interface GameState {
     unforeseenEventsPlayed?: number;
     archetypeId?: string;
     financingId?: string;
+    /** Nombre opcional del jugador; resuelve el token {nombre} de los textos en el render. */
+    playerName?: string;
 }
 
 export interface Archetype {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { GameState, Archetype, Financing } from '../../types/game';
 import { TAGS } from '../../data/tags';
+import { personalize } from '../../lib/personalize';
 import {
   DollarSign,
   Award,
@@ -41,7 +42,7 @@ export default function EndGameReport({
   fxEnabled,
   onToggleFx,
 }: EndGameReportProps) {
-  const { status, metrics, activeTags, decisionLog } = gameState;
+  const { status, metrics, activeTags, decisionLog, playerName } = gameState;
   const [showLog, setShowLog] = useState(false);
   const [showCtaModal, setShowCtaModal] = useState(false);
 
@@ -269,17 +270,17 @@ export default function EndGameReport({
                     <div key={index} className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200/80 dark:border-slate-800/60 space-y-1">
                       <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
                         <span className="text-[#0052CC] dark:text-indigo-400 font-bold">Turno {log.turn}</span>
-                        <span className="truncate max-w-[220px] text-slate-700 dark:text-slate-300">{log.eventTitle}</span>
+                        <span className="truncate max-w-[220px] text-slate-700 dark:text-slate-300">{personalize(log.eventTitle, playerName)}</span>
                       </div>
-                      <p className="text-xs text-slate-800 dark:text-slate-200">"{log.optionText}"</p>
+                      <p className="text-xs text-slate-800 dark:text-slate-200">"{personalize(log.optionText, playerName)}"</p>
                       {log.outcomeText && (
                         <p className="text-[11px] text-slate-600 dark:text-slate-400 pt-0.5 leading-snug">
-                          {log.outcomeText}
+                          {personalize(log.outcomeText, playerName)}
                         </p>
                       )}
                       {log.learningPill && (
                         <p className="text-[10px] text-indigo-700 dark:text-indigo-300/80 italic pt-1">
-                          💡 {log.learningPill}
+                          💡 {personalize(log.learningPill, playerName)}
                         </p>
                       )}
                     </div>

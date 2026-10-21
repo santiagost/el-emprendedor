@@ -67,7 +67,22 @@ Nunca escribas objetos en crudo ni `impactPreview` manual. Usá los helpers de `
 
 ---
 
-## 5. Flujo de Trabajo
+## 5. Personalización con el nombre del jugador (`{nombre}`)
+
+El jugador puede cargar su nombre (opcional) en el Setup. Los textos de contenido pueden usar el token `{nombre}`: se resuelve **en el render** (`src/lib/personalize.ts`), no en el motor, así que el `decisionLog` y las partidas guardadas conservan el texto crudo.
+
+- **Dónde se puede usar:** `title`, `description`, `option.text`, `outcomeText` y `learningPill`.
+- **Tiene que leerse bien con y sin nombre.** Sin nombre, `personalize` quita el token y arregla puntuación y mayúscula inicial, pero solo para estas formas:
+  - Al inicio de una oración: `'{nombre}, un inversor pide una reunión.'` → sin nombre: *"Un inversor pide una reunión."*
+  - Al final, antes de la puntuación: `'¿Cómo salís al mercado, {nombre}?'` → *"¿Cómo salís al mercado?"*
+  - Entre comas: `'Mirá, {nombre}, esto cambia todo.'` → *"Mirá, esto cambia todo."*
+- **Evitá marcas de género** ("bienvenido/a"): usá voseo neutro.
+- **Un solo token permitido:** `{nombre}`. Cualquier otra llave falla en `content.spec.ts`, que además verifica con y sin nombre que no queden llaves, dobles espacios ni minúscula inicial de oración.
+- No hace falta tocar todos los eventos: hoy 10 eventos clave lo usan (socios, inversores, crisis).
+
+---
+
+## 6. Flujo de Trabajo
 
 1. Para agregar eventos a la fase N, editá `src/data/events/faseN.ts`.
 2. Si inventás un tag nuevo, agregalo primero en `src/data/tags.ts` con su label y modifier pasivo.

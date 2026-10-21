@@ -7,17 +7,25 @@ import ThemeToggle from '../common/ThemeToggle';
 import EffectsToggle from '../common/EffectsToggle';
 import { useTheme } from '../../hooks/useTheme';
 import { useEffectsToggle } from '../../lib/motion';
+import { MAX_PLAYER_NAME_LENGTH, sanitizePlayerName } from '../../lib/personalize';
+import { forgetName, loadRememberedName, rememberName } from '../../lib/playerName';
 
 interface SetupProps {
-    onComplete: (arquetipo: Archetype, financiamiento: Financing) => void;
+    onComplete: (arquetipo: Archetype, financiamiento: Financing, nombre?: string) => void;
+    /** Nombre de la sesión actual (al volver a Setup desde una partida), si no hay uno recordado. */
+    initialName?: string;
 }
 
-export default function Setup({ onComplete }: SetupProps) {
+export default function Setup({ onComplete, initialName }: SetupProps) {
     const { theme, toggleTheme } = useTheme();
     const { fxEnabled, toggleFx } = useEffectsToggle();
     const [arquetipo, setArquetipo] = useState<Archetype | null>(null);
     const [financiamiento, setFinanciamiento] = useState<Financing | null>(null);
     const [step, setStep] = useState<1 | 2>(1);
+    // Nombre opcional: se precarga el recordado (casilla tildada) o el de la sesión actual
+    const [remembered] = useState(() => loadRememberedName());
+    const [nombre, setNombre] = useState(() => remembered ?? initialName ?? '');
+    const [recordar, setRecordar] = useState(() => remembered !== undefined);
 
     const handleArquetipoContinue = () => {
         if (!arquetipo) return;
@@ -26,7 +34,15 @@ export default function Setup({ onComplete }: SetupProps) {
 
     const handleStart = () => {
         if (!arquetipo || !financiamiento) return;
-        onComplete(arquetipo, financiamiento);
+        const cleanName = sanitizePlayerName(nombre);
+        if (cleanName && recordar) {
+            rememberName(cleanName);
+        } else if (cleanName) {
+            // Casilla apagada: este nombre es solo para esta partida y no queda uno recordado anterior
+            forgetName();
+        }
+        // Sin nombre: no se toca lo recordado (jugar anónimo una vez no lo borra)
+        onComplete(arquetipo, financiamiento, cleanName);
     };
 
     return (
@@ -234,7 +250,37 @@ export default function Setup({ onComplete }: SetupProps) {
                         })}
                     </div>
 
-                    <div className="mt-6 flex gap-3">
+                    <div className="mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1E33] p-4 sm:p-5 shadow-sm">
+                        <label htmlFor="player-name" className="block text-sm font-bold text-slate-900 dark:text-slate-100">
+                            ¿Cómo te llamás? <span className="font-normal text-slate-400 dark:text-slate-500">(opcional)</span>
+                        </label>
+                        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                            Algunas situaciones del juego se dirigirán a vos por tu nombre.
+                        </p>
+                        <input
+                            id="player-name"
+                            type="text"
+                            value={nombre}
+                            maxLength={MAX_PLAYER_NAME_LENGTH}
+                            autoComplete="given-name"
+                            onChange={(e) => setNombre(e.target.value.replace(/[{}]/g, ''))}
+                            placeholder="Tu nombre"
+                            className="mt-3 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50 focus:border-[#0052CC]"
+                        />
+                        {sanitizePlayerName(nombre) && (
+                            <label className="mt-3 flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer select-none animate-in fade-in duration-200">
+                                <input
+                                    type="checkbox"
+                                    checked={recordar}
+                                    onChange={(e) => setRecordar(e.target.checked)}
+                                    className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 accent-[#0052CC]"
+                                />
+                                Recordar nombre para futuras partidas
+                            </label>
+                        )}
+                    </div>
+
+                    <div className="mt-4 flex gap-3">
                         <button
                             type="button"
                             onClick={() => setStep(1)}

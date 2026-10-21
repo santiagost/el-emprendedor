@@ -6,7 +6,7 @@ export const crisisEvents = [
     title: 'Alerta Roja: Caja en Zona de Quiebra',
     kind: 'crisis',
     description:
-      'Tus reservas de liquidez cayeron por debajo del 25%. Quedan días antes de que los pagos reboten y no puedas cubrir los costos fijos. Es necesaria una medida extrema.',
+      '{nombre}, tus reservas de liquidez cayeron por debajo del 25%. Quedan días antes de que los pagos reboten y no puedas cubrir los costos fijos. Es necesaria una medida extrema.',
     weight: 40,
     when: {
       metrics: { capital: { lt: 26 } },
