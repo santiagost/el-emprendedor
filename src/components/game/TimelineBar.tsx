@@ -7,7 +7,7 @@ interface TimelineBarProps {
 
 export default function TimelineBar({ currentTurn, maxTurns }: TimelineBarProps) {
   return (
-    <div className="w-full space-y-1.5 py-1">
+    <div className="w-full space-y-1 sm:space-y-1.5 py-0.5 sm:py-1">
       {/* 15 barras / segmentos de turno */}
       <div className="flex gap-1 sm:gap-1.5 w-full items-center">
         {Array.from({ length: maxTurns }).map((_, index) => {
@@ -47,7 +47,7 @@ export default function TimelineBar({ currentTurn, maxTurns }: TimelineBarProps)
 
           return (
             <span key={phase.id} className={phaseTextColor}>
-              F{phase.id}: {phase.label}
+              F{phase.id}<span className="hidden sm:inline">: {phase.label}</span>
             </span>
           );
         })}

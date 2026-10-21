@@ -2,8 +2,9 @@ import { useState } from 'react';
 import type { GameState, GameEvent, Archetype, Financing, GameStep } from '../types/game';
 import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, canDecide, checkTurnInterruption } from '../game/engine'
 import { type RNG, createRng } from '../game/rng';
+import { SAVED_GAME_STORAGE_KEY } from '../game/savedSession';
 
-const STORAGE_KEY = 'el_emprendedor_saved_game';
+const STORAGE_KEY = SAVED_GAME_STORAGE_KEY;
 
 const getInitialSeed = (): number => {
   if (typeof window !== 'undefined') {

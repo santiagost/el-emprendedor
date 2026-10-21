@@ -1,23 +1,59 @@
-import { useState } from 'react';
 import type { Archetype, Financing, Metrics } from '../../types/game';
 import { TAGS, type Tag } from '../../data/tags';
-import { Building2, ChevronDown, ChevronUp, Layers, Tag as TagIcon } from 'lucide-react';
+import { Building2, Landmark, Layers, PanelLeftClose, PanelLeftOpen, Tag as TagIcon, UserRound } from 'lucide-react';
 
 interface CompanyStatusCardProps {
   arquetipo: Archetype;
   financiamiento: Financing;
   activeTags: Tag[];
+  /** Panel lateral de escritorio: solo íconos (56 px). */
+  collapsed?: boolean;
+  /** Si se pasa, se muestra el botón de colapsar/expandir (solo panel de escritorio). */
+  onToggleCollapse?: () => void;
 }
 
 export default function CompanyStatusCard({
   arquetipo,
   financiamiento,
   activeTags,
+  collapsed = false,
+  onToggleCollapse,
 }: CompanyStatusCardProps) {
-  const [isOpenMobile, setIsOpenMobile] = useState(false);
+  if (collapsed) {
+    const iconBox =
+      'w-9 h-9 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/70 flex items-center justify-center text-slate-600 dark:text-slate-300';
+    return (
+      <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800/90 rounded-2xl py-2.5 flex flex-col items-center gap-2 shadow-sm transition-colors">
+        {onToggleCollapse && (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            title="Expandir Mi empresa"
+            aria-label="Expandir panel Mi empresa"
+            aria-expanded={false}
+            className={`${iconBox} hover:text-[#0052CC] dark:hover:text-blue-400 hover:border-slate-300 dark:hover:border-slate-700 transition-colors`}
+          >
+            <PanelLeftOpen className="w-4 h-4" />
+          </button>
+        )}
+        <div className={iconBox} title={`Perfil: ${arquetipo.titulo}`}>
+          <UserRound className="w-4 h-4" />
+        </div>
+        <div className={iconBox} title={`Financiamiento: ${financiamiento.titulo}`}>
+          <Landmark className="w-4 h-4" />
+        </div>
+        <div className={`${iconBox} relative`} title={`${activeTags.length} efectos pasivos activos`}>
+          <Layers className="w-4 h-4" />
+          <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#0052CC] text-white text-[9px] font-bold flex items-center justify-center tabular-nums">
+            {activeTags.length}
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800/90 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-sm transition-colors">
+    <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800/90 rounded-2xl p-4 space-y-3.5 shadow-sm transition-colors">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-indigo-950/70 border border-blue-200 dark:border-indigo-800/60 flex items-center justify-center text-[#0052CC] dark:text-blue-400">
@@ -25,27 +61,30 @@ export default function CompanyStatusCard({
           </div>
           <div>
             <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
-              Estado de la Empresa
+              Mi empresa
             </h3>
             <p className="text-[10px] text-slate-500 dark:text-slate-400">
-              ADN estratégico y rasgos pasivos activos
+              ADN y rasgos pasivos
             </p>
           </div>
         </div>
 
-        {/* Toggle para móviles */}
-        <button
-          type="button"
-          onClick={() => setIsOpenMobile(!isOpenMobile)}
-          className="lg:hidden flex items-center gap-1 text-[11px] font-semibold text-[#0052CC] dark:text-blue-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700"
-        >
-          <span>{activeTags.length} rasgos</span>
-          {isOpenMobile ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-        </button>
+        {onToggleCollapse && (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            title="Colapsar Mi empresa"
+            aria-label="Colapsar panel Mi empresa"
+            aria-expanded={true}
+            className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-[#0052CC] dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            <PanelLeftClose className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Perfil y Financiamiento */}
-      <div className="grid grid-cols-2 gap-2 text-left">
+      <div className="grid grid-cols-1 gap-2 text-left">
         <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/70 space-y-0.5">
           <span className="text-[9px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500">
             Perfil de Fundador
@@ -65,15 +104,15 @@ export default function CompanyStatusCard({
         </div>
       </div>
 
-      {/* Rasgos y Tags Activos (siempre visible en desktop, colapsable en mobile) */}
-      <div className={`space-y-2 ${isOpenMobile ? 'block' : 'hidden lg:block'}`}>
-        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/60">
+      {/* Rasgos y Tags Activos */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/60">
           <span className="flex items-center gap-1">
             <Layers className="w-3 h-3 text-slate-400" />
-            Efectos Pasivos en Operación ({activeTags.length}):
+            Efectos pasivos ({activeTags.length})
           </span>
           {activeTags.length > 0 && (
-            <span className="text-[#0052CC] dark:text-blue-400 font-semibold">Impactan cada turno</span>
+            <span className="text-[#0052CC] dark:text-blue-400 font-semibold normal-case tracking-normal">Cada turno</span>
           )}
         </div>
 

@@ -2,8 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useGameEngine } from '../../hooks/useGameEngine';
 import { useTheme } from '../../hooks/useTheme';
 import { useSequence } from '../../hooks/useSequence';
+import { useStoredFlag } from '../../hooks/useStoredFlag';
 import type { Archetype, DecisionLogEntry, Financing, Metrics } from '../../types/game';
-import { DollarSign, Award, Heart, ArrowRight, RotateCcw, AlertTriangle, Zap, CheckCircle2 } from 'lucide-react';
+import { DollarSign, Award, Heart, ArrowRight, RotateCcw, AlertTriangle, Zap, CheckCircle2, Building2, X } from 'lucide-react';
 import ImpactBadges from './ImpactBadges';
 import EndGameReport from './EndGameReport';
 import MetricCard from './MetricCard';
@@ -53,6 +54,9 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
   const { fxEnabled, toggleFx } = useEffectsToggle();
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [seenAlertForEventId, setSeenAlertForEventId] = useState<string | null>(null);
+  // A7: panel lateral "Mi empresa" (colapsable en escritorio, drawer en pantallas chicas)
+  const [companyCollapsed, setCompanyCollapsed] = useStoredFlag('el_emprendedor_company_panel_collapsed', false);
+  const [showCompanyDrawer, setShowCompanyDrawer] = useState(false);
 
   const {
     gameState,
@@ -233,10 +237,19 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
     seenAlertForEventId !== currentEvent.id
   );
 
+  useEffect(() => {
+    if (!showCompanyDrawer) return;
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowCompanyDrawer(false);
+    };
+    window.addEventListener('keydown', onEsc);
+    return () => window.removeEventListener('keydown', onEsc);
+  }, [showCompanyDrawer]);
+
   // Atajos de teclado en Desktop (1, 2, 3 para elegir opción; Espacio/Enter para avanzar o saltar)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (showExitConfirm || showIncomingAlert || isRevealing) return;
+      if (showExitConfirm || showCompanyDrawer || showIncomingAlert || isRevealing) return;
 
       if (step === 'decision' && currentEvent && status === 'playing') {
         if (e.key === '1' && currentEvent.options[0]) {
@@ -260,7 +273,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [step, currentEvent, status, currentTurn, showExitConfirm, showIncomingAlert, advance, outcomeSequence, isRevealing, handleDecide]);
+  }, [step, currentEvent, status, currentTurn, showExitConfirm, showCompanyDrawer, showIncomingAlert, advance, outcomeSequence, isRevealing, handleDecide]);
 
   // Si la partida terminó y estamos en el paso final
   if (step === 'ended') {
@@ -285,7 +298,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
 
   return (
     <main
-      className="w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col min-h-screen justify-between relative"
+      className="w-full max-w-5xl lg:max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col min-h-screen justify-between relative"
       style={{ '--stress': stress } as React.CSSProperties}
     >
       {/* Atmósfera tonal por estrés (A5): tinte + viñeta, o resplandor cálido si todo está sano */}
@@ -302,7 +315,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
       )}
 
       {/* Header Fijo con Blur (Sticky Top si hay scroll) */}
-      <header className="sticky top-0 z-30 bg-[#F4F7FB]/90 dark:bg-[#071322]/90 backdrop-blur-md pt-3 pb-3 border-b border-slate-200 dark:border-slate-800/80 -mx-4 sm:-mx-6 px-4 sm:px-6 transition-colors shadow-sm space-y-3">
+      <header className="sticky top-0 z-30 bg-[#F4F7FB]/90 dark:bg-[#071322]/90 backdrop-blur-md pt-2 sm:pt-3 pb-2 sm:pb-3 border-b border-slate-200 dark:border-slate-800/80 -mx-4 sm:-mx-6 px-4 sm:px-6 transition-colors shadow-sm space-y-2 sm:space-y-3">
         <div className="flex justify-between items-center text-xs font-semibold text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <span className="text-slate-800 dark:text-slate-200 font-bold tracking-wide">
@@ -310,7 +323,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
             </span>
             <span className="text-slate-300 dark:text-slate-700">•</span>
             <span className="uppercase tracking-widest text-[#0052CC] dark:text-indigo-400 font-bold text-[11px] sm:text-xs">
-              Fase {phaseId}: {currentPhase.label}
+              Fase {phaseId}<span className="hidden sm:inline">: {currentPhase.label}</span>
             </span>
             <span className="hidden md:inline-block text-slate-300 dark:text-slate-700">•</span>
             <span className="hidden md:inline-block text-slate-600 dark:text-slate-400 font-normal">
@@ -320,6 +333,16 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
 
           {/* Botones de acción del header: EffectsToggle, ThemeToggle y Reiniciar */}
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowCompanyDrawer(true)}
+              title="Mi empresa"
+              aria-label="Abrir panel Mi empresa"
+              className="lg:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors text-[11px] font-medium shadow-sm"
+            >
+              <Building2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+              <span className="hidden min-[420px]:inline">Mi empresa</span>
+            </button>
             <EffectsToggle fxEnabled={fxEnabled} onToggle={toggleFx} />
             <ThemeToggle theme={theme} onToggle={toggleTheme} />
             <button
@@ -338,7 +361,7 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
         <TimelineBar currentTurn={currentTurn} maxTurns={maxTurns} />
 
         {/* Panel de Métricas Vitales (con dorado al 100%, pulso y deltas flotantes) */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-1">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 sm:pt-1">
           <MetricCard
             label="Capital"
             value={displayMetrics.capital}
@@ -372,10 +395,24 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
         </div>
       </header>
 
-      {/* Contenido Principal Adaptable a Desktop (Grid de 2 Columnas en lg:) */}
-      <div className={`w-full my-auto py-6 lg:grid lg:grid-cols-12 lg:gap-8 items-start stress-content ${isLowWellbeing ? 'is-desaturated' : ''}`}>
-        {/* Columna Izquierda: Tarjeta del Dilema + Estado de la Empresa */}
-        <div className="lg:col-span-7 space-y-5">
+      {/* Contenido Principal (A7): en lg: panel "Mi empresa" | carta + opciones | columna reservada (xl:) */}
+      <div
+        style={{ '--side-w': companyCollapsed ? '56px' : '260px' } as React.CSSProperties}
+        className={`w-full my-auto py-6 lg:grid lg:grid-cols-[var(--side-w)_minmax(0,1fr)] xl:grid-cols-[var(--side-w)_minmax(0,1fr)_var(--side-w)] lg:gap-6 items-start lg:transition-[grid-template-columns] lg:duration-300 stress-content ${isLowWellbeing ? 'is-desaturated' : ''}`}
+      >
+        {/* Columna izquierda: panel Mi empresa (solo escritorio, sticky bajo el header) */}
+        <aside className="hidden lg:block sticky top-60 self-start max-h-[calc(100vh-16rem)] overflow-y-auto overflow-x-hidden">
+          <CompanyStatusCard
+            arquetipo={arquetipo}
+            financiamiento={financiamiento}
+            activeTags={gameState.activeTags}
+            collapsed={companyCollapsed}
+            onToggleCollapse={() => setCompanyCollapsed(!companyCollapsed)}
+          />
+        </aside>
+
+        {/* Columna central: carta del dilema + opciones juntas */}
+        <div className="min-w-0 w-full max-w-[640px] mx-auto space-y-5">
           {currentEvent && (
             <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 p-5 sm:p-7 rounded-2xl shadow-sm dark:shadow-xl flex flex-col justify-between transition-colors">
               <div>
@@ -468,16 +505,9 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
             </div>
           )}
 
-          {/* Tarjeta de Estado de Empresa y Rasgos Pasivos (llena espacio en desktop) */}
-          <CompanyStatusCard
-            arquetipo={arquetipo}
-            financiamiento={financiamiento}
-            activeTags={gameState.activeTags}
-          />
-        </div>
 
-        {/* Columna Derecha: Alternativas de Decisión o Botón Siguiente */}
-        <div className="lg:col-span-5 space-y-4 pt-4 lg:pt-0">
+          {/* Alternativas de Decisión o Botón Siguiente, debajo de la carta */}
+          <div className="space-y-4">
           {/* Opciones de Decisión (Paso: decision) */}
           {status === 'playing' && currentEvent && step === 'decision' && (
             <div className="space-y-3">
@@ -560,13 +590,42 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
               )}
             </div>
           )}
+          </div>
         </div>
+
+        {/* Columna derecha reservada (futuro: avatar / log); mantiene centrada la carta */}
+        <div className="hidden xl:block" aria-hidden="true" />
       </div>
+
+      {/* Drawer "Mi empresa" para pantallas menores a lg */}
+      {showCompanyDrawer && (
+        <div className="lg:hidden fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label="Mi empresa">
+          <div
+            className="absolute inset-0 bg-black/60 animate-in fade-in duration-200"
+            onClick={() => setShowCompanyDrawer(false)}
+          />
+          <div className="relative w-[88vw] max-w-sm h-full overflow-y-auto bg-[#F4F7FB] dark:bg-[#071322] p-4 space-y-3 shadow-2xl animate-in slide-in-from-left duration-200">
+            <button
+              type="button"
+              onClick={() => setShowCompanyDrawer(false)}
+              aria-label="Cerrar panel Mi empresa"
+              className="ml-auto flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+            >
+              <X className="w-3.5 h-3.5" /> Cerrar
+            </button>
+            <CompanyStatusCard
+              arquetipo={arquetipo}
+              financiamiento={financiamiento}
+              activeTags={gameState.activeTags}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Modal de confirmación para salir o reiniciar (Punto 6) */}
       {showExitConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in-95 duration-200">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 text-center shadow-2xl ">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="w-12 h-12 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 rounded-full flex items-center justify-center mx-auto text-rose-600 dark:text-rose-400">
               <RotateCcw className="w-5 h-5" />
             </div>

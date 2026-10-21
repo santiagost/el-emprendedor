@@ -2,12 +2,15 @@ import type { Archetype, Financing } from './types/game';
 import { useState } from 'react';
 import Setup from './components/setup/Setup';
 import Game from './components/game/Game';
+import { SAVED_GAME_STORAGE_KEY, loadSavedProfile } from './game/savedSession';
 
 export default function App() {
 
-  const [setupComplete, setSetupComplete] = useState(false);
-  const [arquetipo, setArquetipo] = useState<Archetype | null>(null);
-  const [financiamiento, setFinanciamiento] = useState<Financing | null>(null);
+  // Si hay una partida en curso guardada, se retoma directo sin pasar por Setup
+  const [savedProfile] = useState(() => loadSavedProfile());
+  const [setupComplete, setSetupComplete] = useState(savedProfile !== null);
+  const [arquetipo, setArquetipo] = useState<Archetype | null>(savedProfile?.arquetipo ?? null);
+  const [financiamiento, setFinanciamiento] = useState<Financing | null>(savedProfile?.financiamiento ?? null);
 
   const handleSetupComplete = (selectedArquetipo: Archetype, selectedFinanciamiento: Financing) => {
     setArquetipo(selectedArquetipo);
@@ -17,7 +20,7 @@ export default function App() {
 
   const handleResetToSetup = () => {
     try {
-      localStorage.removeItem('el_emprendedor_saved_game');
+      localStorage.removeItem(SAVED_GAME_STORAGE_KEY);
     } catch {
       // ignore
     }
