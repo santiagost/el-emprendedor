@@ -61,21 +61,22 @@ export function classifyTrend(m: Metrics): Trend {
 }
 
 // Bancos de texto por perfil: 3 variantes cada uno. {nombre} sigue la convención de personalize().
-const HEADLINES: Record<TrendId, [string, string, string]> = {
+// El perfil sale del NIVEL al cierre, no del movimiento: los textos no deben decir que algo subió o bajó.
+export const HEADLINES: Record<TrendId, [string, string, string]> = {
   quema_naves: [
     '{nombre}, la caja respira, pero tu cuerpo ya lo está pagando.',
     'Hay plata en caja y poca energía para disfrutarla, {nombre}.',
-    'Crecés rápido y a costa tuya: el capital sube mientras el bienestar se desgasta.',
+    'Tenés caja, pero la estás pagando con tu energía.',
   ],
   querido_pero_justo: [
     'El mercado te respeta, aunque la caja pide aire.',
     '{nombre}, tu nombre vale más que tu saldo por ahora.',
-    'Ganaste confianza, pero la liquidez quedó ajustada.',
+    'Tenés la confianza del mercado, pero la liquidez está ajustada.',
   ],
   equilibrista: [
     '{nombre}, vas sosteniendo las tres patas de la mesa.',
     'Ninguna métrica se te escapa: avanzás con equilibrio.',
-    'La empresa crece sin sacrificar caja, reputación ni bienestar.',
+    'Caja, reputación y bienestar: las tres están en buen nivel.',
   ],
   cuesta_arriba: [
     '{nombre}, fue un tramo cuesta arriba: las tres métricas están bajas.',
@@ -85,24 +86,24 @@ const HEADLINES: Record<TrendId, [string, string, string]> = {
   sostenible: [
     'Estás bien por dentro, pero la caja todavía no acompaña.',
     '{nombre}, el equipo está sano; falta que el negocio lo esté también.',
-    'Cuidaste el clima y la energía, aunque el capital quedó corto.',
+    'El clima y la energía están bien, pero el capital está corto.',
   ],
   rumbo_abierto: [
     '{nombre}, la fase no marcó un perfil claro: todavía podés inclinar la balanza.',
-    'Fue un tramo mixto: algunas cosas mejoraron y otras se resintieron.',
+    'Terminaste la fase sin extremos: nada sobra y nada está al límite.',
     'Sin extremos a la vista, lo que viene depende de tus próximas apuestas.',
   ],
 };
 
-const OUTLOOKS: Record<TrendId, [string, string, string]> = {
+export const OUTLOOKS: Record<TrendId, [string, string, string]> = {
   quema_naves: [
-    'Si el bienestar sigue cayendo, tarde o temprano va a cobrar su factura. Conviene delegar o descansar antes de que una crisis lo decida por vos.',
+    'Si el bienestar no se recupera, tarde o temprano va a cobrar su factura. Conviene delegar o descansar antes de que una crisis lo decida por vos.',
     'Lo que viene va a pedirte límites: la caja ya te da margen para cuidar al equipo y a vos mismo.',
     'Sostener este ritmo es caro. Usá el colchón de capital para invertir en tu energía y en la del equipo.',
   ],
   querido_pero_justo: [
     'La próxima tarea es convertir esa confianza en ingresos antes de que la caja se vuelva un problema.',
-    'Con el mercado de tu lado, es buen momento para cobrar mejor o cuidar costos, sin gastar la reputación que ganaste.',
+    'Con el mercado de tu lado, es buen momento para cobrar mejor o cuidar costos, sin gastar la reputación que construiste.',
     'La reputación abre puertas, pero no paga sueldos: buscá que el próximo tramo sume liquidez.',
   ],
   equilibrista: [

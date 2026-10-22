@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPhaseRecap, buildJourney, classifyTrend } from './recap';
+import { buildPhaseRecap, buildJourney, classifyTrend, HEADLINES, OUTLOOKS } from './recap';
 import { startGame, applyDecision } from './engine';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
 import { MAIN_EVENTS } from '../data/events';
@@ -39,6 +39,17 @@ describe('classifyTrend', () => {
     [m(65, 50, 50), 'rumbo_abierto'],
   ])('%j → %s', (metrics, expected) => {
     expect(classifyTrend(metrics).id).toBe(expected);
+  });
+});
+
+describe('text banks', () => {
+  // El perfil se calcula con el nivel al cierre: un titular que habla de movimiento puede contradecir las curvas
+  const MOVEMENT = /(?<!\p{L})(sube|subió|baja|bajó|cae|cayó|cayendo|crece|creció|crecés|mejoró|mejoraron|empeoró|ganaste|perdiste|se resintieron)(?!\p{L})/iu;
+  it.each(Object.entries(HEADLINES))('headlines of %s talk about levels, not movement', (_, texts) => {
+    texts.forEach((t) => expect(t).not.toMatch(MOVEMENT));
+  });
+  it.each(Object.entries(OUTLOOKS))('outlooks of %s do not assume a direction', (_, texts) => {
+    texts.forEach((t) => expect(t).not.toMatch(MOVEMENT));
   });
 });
 

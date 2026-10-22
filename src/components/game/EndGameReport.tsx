@@ -3,6 +3,8 @@ import type { GameState, Archetype, Financing } from '../../types/game';
 import { TAGS } from '../../data/tags';
 import { personalize } from '../../lib/personalize';
 import { buildJourney } from '../../game/recap';
+import { buildRetrospective } from '../../game/retrospective';
+import RetrospectiveCard, { VerdictBadge } from './RetrospectiveCard';
 import { PHASES } from '../../game/phases';
 import {
   DollarSign,
@@ -46,6 +48,11 @@ export default function EndGameReport({
 }: EndGameReportProps) {
   const { status, metrics, activeTags, decisionLog, playerName } = gameState;
   const journey = useMemo(() => buildJourney(gameState, playerName), [gameState, playerName]);
+  const retrospective = useMemo(() => buildRetrospective(gameState, playerName), [gameState, playerName]);
+  const verdictByLogIndex = useMemo(
+    () => new Map(retrospective.analyses.map((a) => [a.logIndex, a.verdict])),
+    [retrospective]
+  );
   const [showLog, setShowLog] = useState(false);
   const [showCtaModal, setShowCtaModal] = useState(false);
 
@@ -282,6 +289,9 @@ export default function EndGameReport({
             </div>
           )}
 
+          {/* Retrospectiva "¿y si…?" */}
+          <RetrospectiveCard retrospective={retrospective} />
+
           {/* Registro de Decisiones (Acordeón) */}
           {decisionLog && decisionLog.length > 0 && (
             <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-md transition-colors">
@@ -301,6 +311,7 @@ export default function EndGameReport({
                         <span className="text-[#0052CC] dark:text-indigo-400 font-bold">Turno {log.turn}</span>
                         <span className="truncate max-w-[220px] text-slate-700 dark:text-slate-300">{personalize(log.eventTitle, playerName)}</span>
                       </div>
+                      {verdictByLogIndex.get(index) && <VerdictBadge verdict={verdictByLogIndex.get(index)!} />}
                       <p className="text-xs text-slate-800 dark:text-slate-200">"{personalize(log.optionText, playerName)}"</p>
                       {log.outcomeText && (
                         <p className="text-[11px] text-slate-600 dark:text-slate-400 pt-0.5 leading-snug">
