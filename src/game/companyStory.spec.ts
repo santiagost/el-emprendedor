@@ -72,3 +72,25 @@ describe('buildCompanyStory', () => {
     }
   });
 });
+
+describe('tiempo pasado (informe final)', () => {
+  it.each(ALL_TAGS)('%s tiene storyPast bien formado', (tag) => {
+    const { storyPast } = TAGS[tag];
+    expect(storyPast).toMatch(/^[[a-záéíóúñ]/);
+    expect(storyPast).not.toMatch(/\.$/);
+    expect(storyToText(parseStory(storyPast))).not.toMatch(/[[\]]/);
+    expect(parseStory(storyPast).some((s) => s.tone)).toBe(true);
+  });
+
+  it('usa el fragmento en pasado al pedirlo', () => {
+    const text = storyToText(buildCompanyStory(['red_contactos', 'clientes_diversificados'], 4, 'past'));
+    expect(text).toBe(
+      'Repartiste tus ventas entre muchos clientes. Además, conociste a la gente indicada y tu nombre te abrió puertas.',
+    );
+  });
+
+  it('por defecto sigue en presente', () => {
+    const text = storyToText(buildCompanyStory(['red_contactos']));
+    expect(text).toBe('Conocés a la gente indicada y tu nombre te abre puertas.');
+  });
+});
