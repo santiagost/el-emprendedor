@@ -237,7 +237,7 @@ export default function EndGameReport({
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Cómo queda tu empresa
               </h3>
-              <CompanyStory segments={buildCompanyStory(activeTags, 5)} className="text-sm" />
+              <CompanyStory segments={buildCompanyStory(activeTags, 5, 'past')} className="text-sm" />
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {activeTags.map((tag) => (
                   <span

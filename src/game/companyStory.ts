@@ -6,6 +6,9 @@ export interface StorySegment {
   tone?: TagTone;
 }
 
+/** Presente para el panel (cómo está hoy), pasado para el informe final (lo que ya hiciste). */
+export type StoryTense = 'present' | 'past';
+
 /** Los tags sin modificadores (latentes) pesan en el relato porque anticipan eventos futuros. */
 const LATENT_BONUS = 2;
 
@@ -46,6 +49,10 @@ export function parseStory(fragment: string): StorySegment[] {
   return segments;
 }
 
+function fragmentOf(tag: Tag, tense: StoryTense): string {
+  return tense === 'past' ? TAGS[tag].storyPast : TAGS[tag].story;
+}
+
 function sentence(lead: string, fragment: string): StorySegment[] {
   const segments = parseStory(fragment);
   if (lead) return [{ text: lead }, ...segments, { text: '.' }];
@@ -58,15 +65,15 @@ function sentence(lead: string, fragment: string): StorySegment[] {
  * Relato corto de cómo está la empresa, uniendo los fragmentos de hasta `limit` tags:
  * primero lo que suma, después lo que resta, con conectores para que se lea de corrido.
  */
-export function buildCompanyStory(activeTags: Tag[], limit = 4): StorySegment[] {
+export function buildCompanyStory(activeTags: Tag[], limit = 4, tense: StoryTense = 'present'): StorySegment[] {
   const picked = pickStoryTags(activeTags, limit);
   const good = picked.filter((tag) => TAGS[tag].tone === 'good');
   const bad = picked.filter((tag) => TAGS[tag].tone === 'bad');
   const badLeads = good.length > 0 ? BAD_LEADS_AFTER_GOOD : BAD_LEADS_ALONE;
 
   const sentences = [
-    ...good.map((tag, i) => sentence(GOOD_LEADS[Math.min(i, GOOD_LEADS.length - 1)], TAGS[tag].story)),
-    ...bad.map((tag, i) => sentence(badLeads[Math.min(i, badLeads.length - 1)], TAGS[tag].story)),
+    ...good.map((tag, i) => sentence(GOOD_LEADS[Math.min(i, GOOD_LEADS.length - 1)], fragmentOf(tag, tense))),
+    ...bad.map((tag, i) => sentence(badLeads[Math.min(i, badLeads.length - 1)], fragmentOf(tag, tense))),
   ];
 
   return sentences.flatMap((segments, i) => (i === 0 ? segments : [{ text: ' ' }, ...segments]));
