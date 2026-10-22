@@ -1,5 +1,7 @@
 import type { Archetype, Financing, Metrics } from '../../types/game';
 import { TAGS, type Tag } from '../../data/tags';
+import { buildCompanyStory } from '../../game/companyStory';
+import CompanyStory from './CompanyStory';
 import { Building2, Landmark, Layers, PanelLeftClose, PanelLeftOpen, Tag as TagIcon, UserRound } from 'lucide-react';
 
 interface CompanyStatusCardProps {
@@ -19,6 +21,8 @@ export default function CompanyStatusCard({
   collapsed = false,
   onToggleCollapse,
 }: CompanyStatusCardProps) {
+  const story = buildCompanyStory(activeTags, 4);
+
   if (collapsed) {
     const iconBox =
       'w-9 h-9 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/70 flex items-center justify-center text-slate-600 dark:text-slate-300';
@@ -104,6 +108,16 @@ export default function CompanyStatusCard({
         </div>
       </div>
 
+      {/* Relato del estado actual */}
+      {story.length > 0 && (
+        <div className="space-y-1 pt-1 border-t border-slate-100 dark:border-slate-800/60">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Cómo está tu empresa
+          </span>
+          <CompanyStory segments={story} className="text-xs" />
+        </div>
+      )}
+
       {/* Rasgos y Tags Activos */}
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/60">
@@ -137,11 +151,7 @@ export default function CompanyStatusCard({
               return (
                 <div
                   key={tag}
-                  title={
-                    hasMod
-                      ? `Modificador por turno: ${mods.capital ? `Cap: ${mods.capital} ` : ''}${mods.bienestar ? `Bien: ${mods.bienestar} ` : ''}${mods.reputacion ? `Rep: ${mods.reputacion} ` : ''}`
-                      : 'Rasgo de identidad empresarial'
-                  }
+                  title={tagConfig.description}
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border ${
                     isHarmful
                       ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-300'
