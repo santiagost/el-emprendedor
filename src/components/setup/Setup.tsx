@@ -5,6 +5,8 @@ import { ArrowLeft, ArrowRight, Check, DollarSign, Award, Heart } from 'lucide-r
 import ImpactBadges from '../game/ImpactBadges';
 import ThemeToggle from '../common/ThemeToggle';
 import EffectsToggle from '../common/EffectsToggle';
+import SoundToggle from '../common/SoundToggle';
+import { useSoundToggle } from '../../lib/sound';
 import { useTheme } from '../../hooks/useTheme';
 import { useEffectsToggle } from '../../lib/motion';
 import { MAX_PLAYER_NAME_LENGTH, sanitizePlayerName } from '../../lib/personalize';
@@ -19,6 +21,7 @@ interface SetupProps {
 export default function Setup({ onComplete, initialName }: SetupProps) {
     const { theme, toggleTheme } = useTheme();
     const { fxEnabled, toggleFx } = useEffectsToggle();
+    const { soundEnabled, toggleSound } = useSoundToggle();
     const [arquetipo, setArquetipo] = useState<Archetype | null>(null);
     const [financiamiento, setFinanciamiento] = useState<Financing | null>(null);
     const [step, setStep] = useState<1 | 2>(1);
@@ -62,6 +65,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                     </div>
 
                     <div className="flex items-center gap-2">
+                        <SoundToggle soundEnabled={soundEnabled} onToggle={toggleSound} />
                         <EffectsToggle fxEnabled={fxEnabled} onToggle={toggleFx} />
                         <ThemeToggle theme={theme} onToggle={toggleTheme} />
                     </div>

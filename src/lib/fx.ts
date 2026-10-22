@@ -1,5 +1,6 @@
 import canvasConfetti from 'canvas-confetti';
 import { prefersReducedMotion } from './motion';
+import { playSound } from './sound';
 
 export type ConfettiKind = 'gold' | 'victory' | 'default';
 
@@ -23,6 +24,8 @@ export const vibrate = (ms: number | number[] = 50): void => {
  * Respeta reduced-motion omitiendo el efecto.
  */
 export const confetti = (kind: ConfettiKind = 'default'): void => {
+  // El sonido de hito es independiente del movimiento: suena aunque no haya confeti
+  playSound(kind === 'default' ? 'phase' : 'milestone');
   if (prefersReducedMotion()) return;
 
   try {

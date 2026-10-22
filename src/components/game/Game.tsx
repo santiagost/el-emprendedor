@@ -11,14 +11,17 @@ import PhaseRecap from './PhaseRecap';
 import MetricCard from './MetricCard';
 import TimelineBar from './TimelineBar';
 import CompanyStatusCard from './CompanyStatusCard';
-import IncomingAlertModal from './IncomingAlertModal';
+import InterruptionStage from './InterruptionStage';
 import ThemeToggle from '../common/ThemeToggle';
 import EffectsToggle from '../common/EffectsToggle';
+import SoundToggle from '../common/SoundToggle';
 import { useEffectsToggle, useReducedMotion } from '../../lib/motion';
 import { PHASES, type PhaseId } from '../../game/phases';
 import { buildPhaseRecap } from '../../game/recap';
+import { stageFor } from '../../game/stage';
 import { computeMetricDeltas, getRevealingDuration, netDecisionEffect, stressLevel } from '../../game/ui';
 import { confetti } from '../../lib/fx';
+import { playSound, useSoundToggle } from '../../lib/sound';
 import { localizeEvent, personalize } from '../../lib/personalize';
 import type { SequenceStep } from '../../hooks/useSequence';
 
@@ -57,8 +60,8 @@ const renderDeltaBadge = (value: number | undefined, label: string, color: strin
 export default function Game({ arquetipo, financiamiento, playerName, onResetToSetup }: GameProps) {
   const { theme, toggleTheme } = useTheme();
   const { fxEnabled, toggleFx } = useEffectsToggle();
+  const { soundEnabled, toggleSound } = useSoundToggle();
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [seenAlertForEventId, setSeenAlertForEventId] = useState<string | null>(null);
   // A7: panel lateral "Mi empresa" (colapsable en escritorio, drawer en pantallas chicas)
   const [companyCollapsed, setCompanyCollapsed] = useStoredFlag('el_emprendedor_company_panel_collapsed', false);
   const [showCompanyDrawer, setShowCompanyDrawer] = useState(false);
@@ -72,6 +75,13 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
     continueFromRecap,
     restartGame,
   } = useGameEngine(arquetipo, financiamiento, playerName);
+
+  // Coreografía de interrupciones (Sprint 2 · A1). Recargar en medio de ella no la repite: la carta queda revelada.
+  const [seenAlertForEventId, setSeenAlertForEventId] = useState<string | null>(() =>
+    step === 'decision' && currentEvent && stageFor(currentEvent) ? currentEvent.id : null
+  );
+  // Carta que acaba de revelarse tras la coreografía: anima su entrada una sola vez
+  const [revealedEventId, setRevealedEventId] = useState<string | null>(null);
 
   const {
     metrics,
@@ -126,6 +136,11 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
       }));
       prevMetricsRef.current = metrics;
 
+      // A3: un tick por métrica que se movió, escalonado como los deltas flotantes
+      METRIC_KEYS.filter((k) => deltas[k]).forEach((k, i) => {
+        setTimeout(() => playSound((deltas[k] as number) > 0 ? 'tickUp' : 'tickDown'), i * 150);
+      });
+
       // A6: confeti dorado cuando una métrica llega a 100 por primera vez en la partida
       const reachedMax = METRIC_KEYS.filter(
         (k) => metrics[k] >= 100 && prev[k] < 100 && !celebratedMetricsRef.current.has(k)
@@ -140,6 +155,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
   const handleDecide = useCallback(
     (optionIndex: number, turn: number) => {
       if (isRevealing || step !== 'decision') return;
+      playSound('select');
 
       const duration = getRevealingDuration(currentEvent?.kind, isReducedMotion);
       if (duration > 0) {
@@ -170,6 +186,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
     setIsRevealing(false);
     setHeldMetrics(null);
     setSeenAlertForEventId(null);
+    setRevealedEventId(null);
     setMetricDeltas({ key: 0 });
     celebratedMetricsRef.current = new Set();
     restartGame();
@@ -250,12 +267,14 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
 
   // Chequeo de alerta animada para interrupciones (Crisis o Imprevistos)
   const isInterruption = currentEvent?.kind === 'crisis' || currentEvent?.kind === 'unforeseen';
+  const interruptionStage = stageFor(currentEvent);
   const showIncomingAlert = Boolean(
-    isInterruption &&
+    interruptionStage &&
     currentEvent &&
     step === 'decision' &&
     seenAlertForEventId !== currentEvent.id
   );
+  const justRevealed = step === 'decision' && Boolean(currentEvent) && revealedEventId === currentEvent?.id;
 
   useEffect(() => {
     if (!showCompanyDrawer) return;
@@ -330,16 +349,21 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
       <div aria-hidden="true" className="stress-layer stress-vignette" />
       <div aria-hidden="true" className={`stress-layer calm-glow ${isCalm ? 'is-on' : ''}`} />
 
-      {/* Alerta de animación entrante previa a la decisión (Punto Crisis / Imprevisto) */}
-      {showIncomingAlert && currentEvent && displayEvent && (
-        <IncomingAlertModal
+      {/* Coreografía de la interrupción (crisis, imprevisto u oportunidad) antes de mostrar la carta */}
+      {showIncomingAlert && currentEvent && displayEvent && interruptionStage && (
+        <InterruptionStage
+          key={currentEvent.id}
           event={displayEvent}
-          onDismiss={() => setSeenAlertForEventId(currentEvent.id)}
+          stage={interruptionStage}
+          onDone={() => {
+            setSeenAlertForEventId(currentEvent.id);
+            setRevealedEventId(currentEvent.id);
+          }}
         />
       )}
 
       {/* Header Fijo con Blur (Sticky Top si hay scroll) */}
-      <header className="sticky top-0 z-30 bg-[#F4F7FB]/90 dark:bg-[#071322]/90 backdrop-blur-md pt-2 sm:pt-3 pb-2 sm:pb-3 border-b border-slate-200 dark:border-slate-800/80 -mx-4 sm:-mx-6 px-4 sm:px-6 transition-colors shadow-sm space-y-2 sm:space-y-3">
+      <header className={`stage-hud ${showIncomingAlert && interruptionStage ? `is-${interruptionStage.tone}` : ''} sticky top-0 z-30 bg-[#F4F7FB]/90 dark:bg-[#071322]/90 backdrop-blur-md pt-2 sm:pt-3 pb-2 sm:pb-3 border-b border-slate-200 dark:border-slate-800/80 -mx-4 sm:-mx-6 px-4 sm:px-6 transition-colors shadow-sm space-y-2 sm:space-y-3`}>
         <div className="flex justify-between items-center text-xs font-semibold text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <span className="text-slate-800 dark:text-slate-200 font-bold tracking-wide">
@@ -367,6 +391,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
               <Building2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
               <span className="hidden min-[420px]:inline">Mi empresa</span>
             </button>
+            <SoundToggle soundEnabled={soundEnabled} onToggle={toggleSound} />
             <EffectsToggle fxEnabled={fxEnabled} onToggle={toggleFx} />
             <ThemeToggle theme={theme} onToggle={toggleTheme} />
             <button
@@ -438,7 +463,11 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
         {/* Columna central: carta del dilema + opciones juntas */}
         <div className="min-w-0 w-full max-w-[640px] mx-auto space-y-5">
           {currentEvent && displayEvent && (
-            <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 p-5 sm:p-7 rounded-2xl shadow-sm dark:shadow-xl flex flex-col justify-between transition-colors">
+            <div
+              className={`bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 p-5 sm:p-7 rounded-2xl shadow-sm dark:shadow-xl flex flex-col justify-between transition-colors ${
+                showIncomingAlert ? 'invisible' : justRevealed ? 'stage-reveal' : ''
+              }`}
+            >
               <div>
                 {/* Header del tipo de evento */}
                 <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider mb-2">
@@ -534,7 +563,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
           <div className="space-y-4">
           {/* Opciones de Decisión (Paso: decision) */}
           {status === 'playing' && displayEvent && step === 'decision' && (
-            <div className="space-y-3">
+            <div className={`space-y-3 ${showIncomingAlert ? 'invisible' : ''}`}>
               <div className="flex items-center justify-between px-1">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Alternativas Disponibles:
@@ -550,10 +579,11 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                   type="button"
                   disabled={isRevealing}
                   onClick={() => handleDecide(idx, currentTurn)}
-                  className="w-full text-left p-4 bg-white hover:bg-slate-50 active:bg-slate-100 dark:bg-[#0E243A] dark:hover:bg-[#14304D] dark:active:bg-[#18395B] border border-slate-200 dark:border-slate-700/70 hover:border-[#0052CC]/50 dark:hover:border-indigo-500/60 rounded-xl transition-all text-xs sm:text-sm text-slate-800 dark:text-slate-200 space-y-2.5 group shadow-sm hover:shadow-[#0052CC]/10 focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={justRevealed ? { animationDelay: `${250 + idx * 80}ms` } : undefined}
+                  className={`${justRevealed ? 'stage-option-in ' : ''}option-card w-full text-left p-4 bg-white hover:bg-slate-50 active:bg-slate-100 dark:bg-[#0E243A] dark:hover:bg-[#14304D] dark:active:bg-[#18395B] border border-slate-200 dark:border-slate-700/70 hover:border-[#0052CC]/50 dark:hover:border-indigo-500/60 rounded-xl text-xs sm:text-sm text-slate-800 dark:text-slate-200 space-y-2.5 group shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50 disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   <div className="flex items-start gap-2.5">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-600 dark:text-slate-400 group-hover:bg-[#0052CC] dark:group-hover:bg-indigo-600 group-hover:text-white group-hover:border-[#0052CC] dark:group-hover:border-indigo-500 transition-colors">
+                    <span className="option-key flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-600 dark:text-slate-400 group-hover:bg-[#0052CC] dark:group-hover:bg-indigo-600 group-hover:text-white group-hover:border-[#0052CC] dark:group-hover:border-indigo-500">
                       {idx + 1}
                     </span>
                     <div className="leading-snug text-slate-800 dark:text-slate-200 group-hover:text-[#0A2540] dark:group-hover:text-white flex-1 font-medium">

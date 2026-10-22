@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import ThemeToggle from '../common/ThemeToggle';
 import EffectsToggle from '../common/EffectsToggle';
+import SoundToggle from '../common/SoundToggle';
+import { useSoundToggle } from '../../lib/sound';
 
 interface EndGameReportProps {
   gameState: GameState;
@@ -55,6 +57,7 @@ export default function EndGameReport({
     () => new Map(retrospective.analyses.map((a) => [a.logIndex, a.verdict])),
     [retrospective]
   );
+  const { soundEnabled, toggleSound } = useSoundToggle();
   const [showLog, setShowLog] = useState(false);
   const [showCtaModal, setShowCtaModal] = useState(false);
 
@@ -152,6 +155,7 @@ export default function EndGameReport({
       {/* Barra superior con ThemeToggle y EffectsToggle si están provistos */}
       {(theme || fxEnabled !== undefined) && (
         <div className="flex justify-end items-center gap-2">
+          <SoundToggle soundEnabled={soundEnabled} onToggle={toggleSound} />
           {fxEnabled !== undefined && onToggleFx && (
             <EffectsToggle fxEnabled={fxEnabled} onToggle={onToggleFx} />
           )}

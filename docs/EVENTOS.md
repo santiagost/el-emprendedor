@@ -82,7 +82,22 @@ El jugador puede cargar su nombre (opcional) en el Setup. Los textos de contenid
 
 ---
 
-## 6. Flujo de Trabajo
+## 6. Puesta en escena de crisis e imprevistos
+
+Los eventos con `kind: 'crisis'` o `kind: 'unforeseen'` no se muestran de golpe: entran con una coreografía (corte, cintilla de noticias, sello y suspenso) definida en `src/game/stage.ts`. Es solo capa visual; el motor no la usa.
+
+- **Sin hacer nada**, un evento nuevo usa el estilo de su tipo: sello "CRISIS" en rojo o "IMPREVISTO" en ámbar.
+- **Para darle identidad propia**, agregá su id en `STAGE_BY_EVENT` con el sello (una palabra corta, en mayúsculas) y las frases del ticker:
+  ```ts
+  imp_corte_de_luz: { stamp: 'APAGÓN', ticker: ['Sin servicio en la zona', 'Último momento'] },
+  ```
+- **Oportunidades** (un imprevisto bueno, como la viralización): sumá `tone: 'opportunity'` y `ribbon: 'Tendencia'`. Usan verde, más saturación y confeti en lugar de grises.
+- **El ticker no adelanta el contenido:** frases de clima ("Mercados en alerta"), nunca la consecuencia.
+- `stage.spec.ts` falla si una entrada de `STAGE_BY_EVENT` apunta a un id que no existe o que no es una interrupción, y si un sello pasa de 14 caracteres.
+
+---
+
+## 7. Flujo de Trabajo
 
 1. Para agregar eventos a la fase N, editá `src/data/events/faseN.ts`.
 2. Si inventás un tag nuevo, agregalo primero en `src/data/tags.ts` con su label y modifier pasivo.
