@@ -4,7 +4,9 @@ import { useTheme } from '../../hooks/useTheme';
 import { useSequence } from '../../hooks/useSequence';
 import { useStoredFlag } from '../../hooks/useStoredFlag';
 import type { Archetype, DecisionLogEntry, Financing, Metrics } from '../../types/game';
-import { DollarSign, Award, Heart, ArrowRight, RotateCcw, AlertTriangle, Zap, CheckCircle2, Building2, X } from 'lucide-react';
+import { DollarSign, Award, Heart, ArrowRight, RotateCcw, AlertTriangle, Zap, CheckCircle2, Building2, Lightbulb, X } from 'lucide-react';
+import { EventKindIcon } from '../common/EventKindIcon';
+import { INLINE_ICON_CLASS } from '../common/iconStyles';
 import ImpactBadges from './ImpactBadges';
 import EndGameReport from './EndGameReport';
 import PhaseRecap from './PhaseRecap';
@@ -511,6 +513,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                 </div>
 
                 <h2 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2.5 leading-snug">
+                  <EventKindIcon kind={displayEvent.kind} />
                   {displayEvent.title}
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -567,7 +570,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                   {outcomeSequence.currentStep >= 2 && lastPill && (
                     <div className="p-3.5 bg-indigo-50/80 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/70 rounded-xl animate-slide-up-fade shadow-sm">
                       <p className="text-xs text-indigo-900 dark:text-indigo-200 leading-normal">
-                        💡 <span className="font-semibold text-indigo-700 dark:text-indigo-300">Concepto clave:</span> {personalize(lastPill, displayName)}
+                        <Lightbulb className={INLINE_ICON_CLASS} aria-hidden="true" /> <span className="font-semibold text-indigo-700 dark:text-indigo-300">Concepto clave:</span> {personalize(lastPill, displayName)}
                       </p>
                     </div>
                   )}

@@ -5,6 +5,7 @@ import { actAt, stageTimeline, type EventStage, type StageTone } from '../../gam
 import { useReducedMotion } from '../../lib/motion';
 import { confetti, vibrate } from '../../lib/fx';
 import { playSound } from '../../lib/sound';
+import { EventKindIcon } from '../common/EventKindIcon';
 
 interface InterruptionStageProps {
   /** Evento ya personalizado (título y descripción con el nombre resuelto). */
@@ -164,7 +165,10 @@ export default function InterruptionStage({ event, stage, onDone }: Interruption
           {/* Acto 3: suspenso, con el título a la vista y el resto difuminado. Acto 4: lectura, sin apuro. */}
           {act >= 3 && (
             <div className="w-full space-y-3 stage-fade-in">
-              <h2 className="text-xl sm:text-2xl font-black text-white leading-snug">{event.title}</h2>
+              <h2 className="text-xl sm:text-2xl font-black text-white leading-snug">
+                <EventKindIcon kind={event.kind} />
+                {event.title}
+              </h2>
               {act < 4 ? (
                 <>
                   <p aria-hidden="true" className="text-sm sm:text-base text-slate-200 leading-relaxed blur-[6px] line-clamp-3">

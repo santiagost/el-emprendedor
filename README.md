@@ -1,4 +1,4 @@
-# El Emprendedor 🚀
+# El Emprendedor
 
 Juego de estrategia y toma de decisiones para fundadores de startups y negocios. El jugador asume el rol de un emprendedor a lo largo de 15 turnos divididos en 4 fases de maduración empresarial:
 1. **Génesis & Validación** (Turnos 1 a 3)
@@ -8,12 +8,12 @@ Juego de estrategia y toma de decisiones para fundadores de startups y negocios.
 
 ---
 
-## 🎮 Mecánica de Juego
+## Mecánica de Juego
 
 - **Métricas Vitales (0-100)**:
-  - 💵 **Capital**: Liquidez y supervivencia financiera. Llegar a 0 provoca quiebra inmediata.
-  - 🏆 **Reputación**: Confianza del mercado, inversores y clientes. Llegar a 0 destruye la viabilidad comercial.
-  - ❤️ **Bienestar**: Salud mental, energía personal y clima de equipo. Llegar a 0 causa colapso por burnout.
+  - **Capital**: Liquidez y supervivencia financiera. Llegar a 0 provoca quiebra inmediata.
+  - **Reputación**: Confianza del mercado, inversores y clientes. Llegar a 0 destruye la viabilidad comercial.
+  - **Bienestar**: Salud mental, energía personal y clima de equipo. Llegar a 0 causa colapso por burnout.
 - **Micro-Píldoras Didácticas**: Cada alternativa enseña un principio de negocio real (Lean Startup, CAC, LTV, Vesting, Pricing Power, etc.).
 - **Tags y Modificadores Pasivos**: Decisiones clave fijan tags en la cultura de la empresa (ej. `deuda_riesgosa`, `cultura_lean`, `socio_conflictivo`), que disparan consecuencias diferidas (`scheduledEvent`) o cobran costos pasivos cada turno.
 - **Epílogos Múltiples (GDD §9)**: Desenlaces narrativos según las decisiones y tags acumulados (*El Unicornio Adquirido*, *Lifestyle Business*, *La Expansión Global*, *El Fundador Desplazado*, etc.).
@@ -21,7 +21,7 @@ Juego de estrategia y toma de decisiones para fundadores de startups y negocios.
 
 ---
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
 - **Frontend**: React 19 + TypeScript (Strict Mode) + Vite 8
 - **Estilos**: Tailwind CSS v4 (`@tailwindcss/vite`) + Lucide Icons
@@ -30,7 +30,7 @@ Juego de estrategia y toma de decisiones para fundadores de startups y negocios.
 
 ---
 
-## 🚀 Comandos
+## Comandos
 
 ```bash
 pnpm dev          # Iniciar servidor de desarrollo local
@@ -48,8 +48,8 @@ http://localhost:5173/?seed=123456
 
 ---
 
-## ✍️ Autoría de Nuevos Eventos
+## Autoría de Nuevos Eventos
 
 Para agregar o modificar eventos, consultar el manual detallado en:
-📖 [Manual de Autoría de Eventos](docs/EVENTOS.md)
+[Manual de Autoría de Eventos](docs/EVENTOS.md)
 y la plantilla en `src/data/events/_template.ts`.
