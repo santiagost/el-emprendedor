@@ -1,27 +1,16 @@
 import { useMemo, useState } from 'react';
+import { ExternalLink, Pin, Sparkles } from 'lucide-react';
+import { INLINE_ICON_CLASS } from '../common/iconStyles';
 import type { GameState, Archetype, Financing } from '../../types/game';
-import { TAGS } from '../../data/tags';
-import { personalize } from '../../lib/personalize';
 import { buildJourney } from '../../game/recap';
 import { buildRetrospective } from '../../game/retrospective';
 import { buildCompanyStory } from '../../game/companyStory';
+import { buildEpilogue, buildMetricCurves, buildOutlook, buildTimeline, buildWhyLine } from '../../game/endReport';
 import CompanyStory from './CompanyStory';
-import RetrospectiveCard, { VerdictBadge } from './RetrospectiveCard';
-import { PHASES } from '../../game/phases';
-import {
-  DollarSign,
-  Award,
-  Heart,
-  RefreshCw,
-  RotateCcw,
-  Sparkles,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
-} from 'lucide-react';
+import EndResultCard from './end/EndResultCard';
+import EndMetricsPanel from './end/EndMetricsPanel';
+import KeyMomentCard from './end/KeyMomentCard';
+import PhaseTimeline from './end/PhaseTimeline';
 import ThemeToggle from '../common/ThemeToggle';
 import EffectsToggle from '../common/EffectsToggle';
 import SoundToggle from '../common/SoundToggle';
@@ -39,6 +28,8 @@ interface EndGameReportProps {
   onToggleFx?: () => void;
 }
 
+const CARD = 'bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm';
+
 export default function EndGameReport({
   gameState,
   arquetipo,
@@ -50,331 +41,96 @@ export default function EndGameReport({
   fxEnabled,
   onToggleFx,
 }: EndGameReportProps) {
-  const { status, metrics, activeTags, decisionLog, playerName } = gameState;
+  const { status, metrics, activeTags, playerName } = gameState;
   const journey = useMemo(() => buildJourney(gameState, playerName), [gameState, playerName]);
   const retrospective = useMemo(() => buildRetrospective(gameState, playerName), [gameState, playerName]);
-  const verdictByLogIndex = useMemo(
-    () => new Map(retrospective.analyses.map((a) => [a.logIndex, a.verdict])),
-    [retrospective]
+  const verdictByLogIndex = useMemo(() => new Map(retrospective.analyses.map((a) => [a.logIndex, a.verdict])), [retrospective]);
+  const timeline = useMemo(
+    () => buildTimeline(gameState, journey, verdictByLogIndex, playerName),
+    [gameState, journey, verdictByLogIndex, playerName]
   );
+  const curves = useMemo(() => buildMetricCurves(gameState), [gameState]);
+  const epilogue = useMemo(() => buildEpilogue(status, activeTags), [status, activeTags]);
+  const why = useMemo(() => buildWhyLine(gameState), [gameState]);
+  const outlook = useMemo(() => buildOutlook(gameState, retrospective), [gameState, retrospective]);
+
   const { soundEnabled, toggleSound } = useSoundToggle();
-  const [showLog, setShowLog] = useState(false);
   const [showCtaModal, setShowCtaModal] = useState(false);
 
-  const getEpilogue = () => {
-    if (status === 'victory') {
-      if (activeTags.includes('salida_exitosa_venta')) {
-        return {
-          title: '🦄 El Unicornio Adquirido',
-          subtitle: 'Venta exitosa a un gigante corporativo',
-          description:
-            'Vendiste tu empresa por millones a un conglomerado internacional. Monetizaste con creces el valor creado, aunque tu creación ahora responderá a nuevos dueños.',
-          color: 'text-emerald-600 dark:text-emerald-400',
-        };
-      }
-      if (activeTags.includes('lifestyle_business')) {
-        return {
-          title: '🌿 El Negocio Sostenible (Lifestyle Business)',
-          subtitle: 'Rentabilidad, autonomía y calidad de vida',
-          description:
-            'No construiste una corporación titánica, pero tenés un negocio sólido, predecible y altamente rentable que opera sin depender de tus horas de sueño.',
-          color: 'text-[#0052CC] dark:text-indigo-400',
-        };
-      }
-      if (activeTags.includes('expansion_global')) {
-        return {
-          title: '🌍 La Expansión Global',
-          subtitle: 'Presencia internacional consolidada',
-          description:
-            'Llevaste la bandera de tu empresa a nuevos mercados en el mundo. Superaste la barrera local y jugás de igual a igual en las grandes ligas.',
-          color: 'text-[#0052CC] dark:text-blue-400',
-        };
-      }
-      if (activeTags.includes('equity_diluido') && !activeTags.includes('autonomia_estrategica')) {
-        return {
-          title: '👔 El Fundador Desplazado',
-          subtitle: 'Empresa millonaria, control ajeno',
-          description:
-            'Tu empresa vale una fortuna, pero el directorio y los inversores externos se quedaron con el control y te desplazaron de tu rol de CEO. Una lección de dilución.',
-          color: 'text-amber-600 dark:text-amber-400',
-        };
-      }
-      return {
-        title: '🏆 Empresa Consolidada',
-        subtitle: 'Maduración completa de negocio',
-        description:
-          'Superaste con temple todas las fases de maduración con caja, reputación y bienestar intactos. Construiste una verdadera compañía.',
-        color: 'text-emerald-600 dark:text-emerald-400',
-      };
-    }
-
-    if (status === 'game_over_capital') {
-      return {
-        title: '📉 Quiebra de Liquidez (Lección Forzosa)',
-        subtitle: 'Caja agotada antes de consolidar el modelo',
-        description:
-          'Te quedaste sin liquidez y la empresa cayó en insolvencia. "El 80% de los emprendedores exitosos fracasó en su primer intento. Volvé a intentarlo con lo aprendido."',
-        color: 'text-rose-600 dark:text-rose-400',
-      };
-    }
-
-    if (status === 'game_over_bienestar') {
-      return {
-        title: '🔥 Colapso por Burnout',
-        subtitle: 'El equipo y tu salud no dieron más',
-        description:
-          'Las horas extras infinitas y la deuda operativa pasaron factura. La salud del fundador y el clima del equipo colapsaron. Sin personas no hay negocio.',
-        color: 'text-rose-600 dark:text-rose-400',
-      };
-    }
-
-    if (status === 'game_over_reputacion') {
-      return {
-        title: '⚡ Crisis Terminal de Reputación',
-        subtitle: 'Pérdida absoluta de credibilidad',
-        description:
-          'Perdiste toda confianza de tus clientes, proveedores e inversores. En el mundo de los negocios, la reputación tarda años en construirse y segundos en destruirse.',
-        color: 'text-rose-600 dark:text-rose-400',
-      };
-    }
-
-    return {
-      title: '🏁 Trayectoria Completada',
-      subtitle: 'Fin del recorrido disponible',
-      description:
-        'Has completado todos los acontecimientos posibles para las condiciones y el perfil seleccionado en esta partida.',
-      color: 'text-slate-700 dark:text-slate-300',
-    };
-  };
-
-  const epilogue = getEpilogue();
-  const isVictory = status === 'victory';
-
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 pb-8 animate-in fade-in">
-      {/* Barra superior con ThemeToggle y EffectsToggle si están provistos */}
+    <div className="w-full max-w-5xl mx-auto space-y-7 pb-8 animate-in fade-in">
       {(theme || fxEnabled !== undefined) && (
         <div className="flex justify-end items-center gap-2">
           <SoundToggle soundEnabled={soundEnabled} onToggle={toggleSound} />
-          {fxEnabled !== undefined && onToggleFx && (
-            <EffectsToggle fxEnabled={fxEnabled} onToggle={onToggleFx} />
-          )}
-          {theme && onToggleTheme && (
-            <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-          )}
+          {fxEnabled !== undefined && onToggleFx && <EffectsToggle fxEnabled={fxEnabled} onToggle={onToggleFx} />}
+          {theme && onToggleTheme && <ThemeToggle theme={theme} onToggle={onToggleTheme} />}
         </div>
       )}
 
-      {/* Header del resultado */}
-      <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 p-6 sm:p-8 rounded-2xl text-center space-y-3 shadow-md dark:shadow-xl transition-colors">
-        <div className="inline-flex p-3 rounded-full bg-slate-100 dark:bg-slate-800/80 mb-1">
-          {isVictory ? (
-            <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12 text-emerald-500 dark:text-emerald-400" />
-          ) : status === 'ended_early' ? (
-            <AlertTriangle className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 dark:text-amber-400" />
-          ) : (
-            <XCircle className="w-10 h-10 sm:w-12 sm:h-12 text-rose-500 dark:text-rose-400" />
-          )}
-        </div>
+      <EndResultCard
+        epilogue={epilogue}
+        why={why}
+        arquetipo={arquetipo}
+        financiamiento={financiamiento}
+        onRestart={onRestart}
+        onResetToSetup={onResetToSetup}
+      />
 
-        <div className="space-y-1">
-          <h2 className={`text-xl sm:text-2xl font-black tracking-tight ${epilogue.color}`}>
-            {epilogue.title}
-          </h2>
-          <p className="text-xs sm:text-sm uppercase tracking-widest text-slate-500 dark:text-slate-400 font-semibold">
-            {epilogue.subtitle}
-          </p>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-5 items-stretch">
+        <EndMetricsPanel metrics={metrics} curves={curves} />
 
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl mx-auto">
-          {epilogue.description}
+        <section aria-label="Cómo queda tu empresa" className={`${CARD} p-4 sm:p-6 flex flex-col gap-4 min-w-0`}>
+          <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">Cómo queda tu empresa</h3>
+          <CompanyStory segments={buildCompanyStory(activeTags, 5, 'past')} className="text-base lg:text-lg leading-8 lg:leading-9 my-auto" highlight />
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-600 dark:text-slate-400">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-3.5 h-3.5 rounded bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-600 dark:border-emerald-400" aria-hidden="true" /> Lo que sumó
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-3.5 h-3.5 rounded bg-rose-50 dark:bg-rose-950/60 border border-dashed border-rose-600 dark:border-rose-400" aria-hidden="true" /> Lo que restó
+            </span>
+          </div>
+        </section>
+      </div>
+
+      <KeyMomentCard retrospective={retrospective} outlook={outlook} lost={status.startsWith('game_over')} />
+
+      <PhaseTimeline phases={timeline} />
+
+      {/* CTA al Simulador Comercial (GDD §10) */}
+      <div className="p-5 sm:p-6 bg-gradient-to-br from-indigo-50/80 via-white to-blue-50/80 dark:from-indigo-950/80 dark:via-slate-900 dark:to-indigo-900/40 border border-indigo-200 dark:border-indigo-700/50 rounded-2xl space-y-3.5 shadow-sm dark:shadow-lg">
+        <div className="flex items-center gap-2 text-indigo-900 dark:text-indigo-300 font-bold text-sm">
+          <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" aria-hidden="true" />
+          <span>Siguiente nivel: el mercado real</span>
+        </div>
+        <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
+          Dominaste el camino del fundador. Ahora es momento de entrar a la arena comercial: competí definiendo precio, calidad, distribución y posicionamiento de producto en vivo.
         </p>
-
-        {/* Perfil Inicial Jugado */}
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
-          <span>Perfil: <strong className="text-slate-800 dark:text-slate-200">{arquetipo.titulo}</strong></span>
-          <span>•</span>
-          <span>Financiamiento: <strong className="text-slate-800 dark:text-slate-200">{financiamiento.titulo}</strong></span>
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowCtaModal(true)}
+          className="w-full sm:w-auto py-3 px-5 bg-[#0A2540] hover:bg-[#0052CC] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-md"
+        >
+          <span>Conocer el Simulador Comercial</span>
+          <ExternalLink className="w-4 h-4" aria-hidden="true" />
+        </button>
       </div>
 
-      {/* Grid Responsive de 2 columnas en Desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Columna Izquierda: Métricas, Tags y Botones */}
-        <div className="lg:col-span-6 space-y-5">
-          {/* Métricas Finales */}
-          <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-2xl space-y-3 shadow-sm dark:shadow-md transition-colors">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Métricas Finales de la Trayectoria
-            </h3>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              <div className="flex flex-col items-center p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200/80 dark:border-slate-800/60">
-                <span className="flex items-center text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 font-black mb-1">
-                  <DollarSign className="w-3.5 h-3.5 mr-0.5" /> {metrics.capital}%
-                </span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Capital</span>
-              </div>
-
-              <div className="flex flex-col items-center p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200/80 dark:border-slate-800/60">
-                <span className="flex items-center text-xs sm:text-sm text-[#0052CC] dark:text-blue-400 font-black mb-1">
-                  <Award className="w-3.5 h-3.5 mr-0.5" /> {metrics.reputacion}%
-                </span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Reputación</span>
-              </div>
-
-              <div className="flex flex-col items-center p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200/80 dark:border-slate-800/60">
-                <span className="flex items-center text-xs sm:text-sm text-[#FF9800] dark:text-amber-400 font-black mb-1">
-                  <Heart className="w-3.5 h-3.5 mr-0.5" /> {metrics.bienestar}%
-                </span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Bienestar</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Tags adquiridos */}
-          {activeTags.length > 0 && (
-            <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-2xl space-y-2.5 shadow-sm dark:shadow-md transition-colors">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Cómo queda tu empresa
-              </h3>
-              <CompanyStory segments={buildCompanyStory(activeTags, 5, 'past')} className="text-sm" />
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {activeTags.map((tag) => (
-                  <span
-                    key={tag}
-                    title={TAGS[tag]?.description}
-                    className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-950 border border-indigo-200 dark:border-indigo-900/40 text-[#0052CC] dark:text-indigo-300"
-                  >
-                    {TAGS[tag]?.label ?? tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Botones de Acción */}
-          <div className="grid grid-cols-2 gap-3 pt-1">
-            <button
-              onClick={onRestart}
-              className="inline-flex items-center justify-center px-4 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-bold rounded-xl border border-slate-200 dark:border-slate-700 transition-colors gap-2 shadow-sm"
-            >
-              <RefreshCw className="w-4 h-4" /> Reintentar
-            </button>
-            <button
-              onClick={onResetToSetup}
-              className="inline-flex items-center justify-center px-4 py-3.5 bg-[#0A2540] hover:bg-[#0052CC] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white text-xs sm:text-sm font-bold rounded-xl transition-colors gap-2 shadow-md"
-            >
-              <RotateCcw className="w-4 h-4" /> Cambiar Perfil
-            </button>
-          </div>
-        </div>
-
-        {/* Columna Derecha: Acordeón de Decisiones y CTA Simulador */}
-        <div className="lg:col-span-6 space-y-5">
-          {/* Tu recorrido: una línea por fase (la fase 4 se resume acá y no en una pantalla aparte) */}
-          {journey.length > 0 && (
-            <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-2xl space-y-3 shadow-sm dark:shadow-md transition-colors">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Tu recorrido</h3>
-              <ol className="space-y-2.5">
-                {journey.map((recap) => {
-                  const phase = PHASES.find((p) => p.id === recap.phaseId);
-                  return (
-                    <li key={recap.phaseId} className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200/80 dark:border-slate-800/60 space-y-1">
-                      <div className="flex items-center justify-between gap-2 text-[11px] font-semibold">
-                        <span className="text-[#0052CC] dark:text-indigo-400 font-bold truncate">
-                          Fase {recap.phaseId}: {phase?.label}
-                          {recap.partial ? ' (incompleta)' : ''}
-                        </span>
-                        <span className="shrink-0 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/70 text-indigo-700 dark:text-indigo-300 font-bold">
-                          {recap.trend.label}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-700 dark:text-slate-300 leading-snug">{recap.headline}</p>
-                    </li>
-                  );
-                })}
-              </ol>
-            </div>
-          )}
-
-          {/* Retrospectiva "¿y si…?" */}
-          <RetrospectiveCard retrospective={retrospective} />
-
-          {/* Registro de Decisiones (Acordeón) */}
-          {decisionLog && decisionLog.length > 0 && (
-            <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-md transition-colors">
-              <button
-                onClick={() => setShowLog(!showLog)}
-                className="w-full flex items-center justify-between p-4 sm:p-5 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-              >
-                <span>Historial de Decisiones ({decisionLog.length})</span>
-                {showLog ? <ChevronUp className="w-4 h-4 text-[#0052CC] dark:text-indigo-400" /> : <ChevronDown className="w-4 h-4 text-[#0052CC] dark:text-indigo-400" />}
-              </button>
-
-              {showLog && (
-                <div className="p-4 pt-0 space-y-2.5 border-t border-slate-100 dark:border-slate-800/60 max-h-80 overflow-y-auto">
-                  {decisionLog.map((log, index) => (
-                    <div key={index} className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200/80 dark:border-slate-800/60 space-y-1">
-                      <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
-                        <span className="text-[#0052CC] dark:text-indigo-400 font-bold">Turno {log.turn}</span>
-                        <span className="truncate max-w-[220px] text-slate-700 dark:text-slate-300">{personalize(log.eventTitle, playerName)}</span>
-                      </div>
-                      {verdictByLogIndex.get(index) && <VerdictBadge verdict={verdictByLogIndex.get(index)!} />}
-                      <p className="text-xs text-slate-800 dark:text-slate-200">"{personalize(log.optionText, playerName)}"</p>
-                      {log.outcomeText && (
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 pt-0.5 leading-snug">
-                          {personalize(log.outcomeText, playerName)}
-                        </p>
-                      )}
-                      {log.learningPill && (
-                        <p className="text-[10px] text-indigo-700 dark:text-indigo-300/80 italic pt-1">
-                          💡 {personalize(log.learningPill, playerName)}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* CTA al Simulador Comercial (GDD §10) */}
-          <div className="p-5 sm:p-6 bg-gradient-to-br from-indigo-50/80 via-white to-blue-50/80 dark:from-indigo-950/80 dark:via-slate-900 dark:to-indigo-900/40 border border-indigo-200 dark:border-indigo-700/50 rounded-2xl space-y-3.5 relative overflow-hidden shadow-sm dark:shadow-lg transition-colors">
-            <div className="flex items-center gap-2 text-indigo-900 dark:text-indigo-300 font-bold text-sm">
-              <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-              <span>Siguiente Nivel: El Mercado Real</span>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              Dominaste el camino del fundador. Ahora es momento de entrar a la arena comercial: competí definiendo precio, calidad, distribución y posicionamiento de producto en vivo.
-            </p>
-            <button
-              onClick={() => setShowCtaModal(true)}
-              className="w-full py-3 px-4 bg-[#0A2540] hover:bg-[#0052CC] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-md"
-            >
-              <span>Conocer el Simulador Comercial</span>
-              <ExternalLink className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal informativo CTA */}
       {showCtaModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 text-center shadow-2xl">
-            <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-700/60 rounded-full flex items-center justify-center mx-auto text-indigo-600 dark:text-indigo-300">
+            <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-700/60 rounded-full flex items-center justify-center mx-auto">
               <Sparkles className="w-6 h-6 text-[#0052CC] dark:text-indigo-400" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-              Simulador de Estrategia Comercial
-            </h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Simulador de Estrategia Comercial</h3>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed text-left">
               En este segundo juego por equipos, gestionarás variables reales de mercado: estructura de costos fijos y variables, estrategia de precios elásticos y conquista de segmentos de mercado.
             </p>
             <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 text-left">
-              📌 <strong>Disponible en la plataforma TID:</strong> consultá con tu facilitador o docente para participar de la próxima simulación en vivo.
+              <Pin className={INLINE_ICON_CLASS} aria-hidden="true" /> <strong>Disponible en la plataforma TID:</strong> consultá con tu facilitador o docente para participar de la próxima simulación en vivo.
             </div>
             <button
+              type="button"
               onClick={() => setShowCtaModal(false)}
               className="w-full py-2.5 bg-[#0A2540] hover:bg-[#0052CC] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white text-xs font-bold rounded-lg transition-colors"
             >

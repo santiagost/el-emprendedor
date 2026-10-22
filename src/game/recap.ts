@@ -26,6 +26,10 @@ export interface PhaseRecap {
   series: Metrics[] | null;
   /** Variación neta de cada métrica en la fase. null si faltan datos. */
   deltas: Metrics | null;
+  /** Decisión de la fase que más movió las métricas (texto completo, con el nombre resuelto). */
+  keyDecision: { turn: number; text: string; metric: keyof Metrics; value: number } | null;
+  /** Crisis e imprevistos que enfrentó el jugador en la fase. */
+  interruptions: { crises: number; unforeseen: number };
   /** Métricas al cerrar la fase. */
   endMetrics: Metrics;
   /** La fase terminó antes de completarse (fin de partida). */
@@ -232,6 +236,8 @@ export function buildPhaseRecap(state: GameState, phaseId: PhaseId, playerName?:
       paragraphs: [p('{nombre}, en esta fase todavía no tomaste decisiones.')],
       series: null,
       deltas: null,
+      keyDecision: null,
+      interruptions: { crises: 0, unforeseen: 0 },
       endMetrics,
       partial: true,
     };
@@ -277,6 +283,10 @@ export function buildPhaseRecap(state: GameState, phaseId: PhaseId, playerName?:
     paragraphs: [...lead, ...(story.length > 0 ? [story.join(' ')] : []), p(OUTLOOKS[trend.id][variant])],
     series,
     deltas,
+    keyDecision: pivotal
+      ? { turn: pivotal.entry.turn, text: personalize(pivotal.entry.optionText, playerName), metric: pivotal.metric, value: pivotal.value }
+      : null,
+    interruptions: { crises, unforeseen },
     endMetrics,
     partial,
   };
