@@ -20,7 +20,7 @@ import { PHASES, type PhaseId } from '../../game/phases';
 import { buildPhaseRecap } from '../../game/recap';
 import { stageFor } from '../../game/stage';
 import { computeMetricDeltas, getRevealingDuration, netDecisionEffect, stressLevel } from '../../game/ui';
-import { confetti } from '../../lib/fx';
+import { confetti, vibrate } from '../../lib/fx';
 import { playSound, useSoundToggle } from '../../lib/sound';
 import { localizeEvent, personalize } from '../../lib/personalize';
 import type { SequenceStep } from '../../hooks/useSequence';
@@ -33,6 +33,8 @@ const OUTCOME_STEPS: SequenceStep[] = [
 ];
 
 const METRIC_KEYS: (keyof Metrics)[] = ['capital', 'reputacion', 'bienestar'];
+/** Caída (en puntos) a partir de la cual la métrica vibra al cambiar. */
+const BIG_DROP = -15;
 
 const decisionIdOf = (entry: DecisionLogEntry) => `${entry.turn}-${entry.eventId}-${entry.optionIndex}`;
 
@@ -138,7 +140,12 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
 
       // A3: un tick por métrica que se movió, escalonado como los deltas flotantes
       METRIC_KEYS.filter((k) => deltas[k]).forEach((k, i) => {
-        setTimeout(() => playSound((deltas[k] as number) > 0 ? 'tickUp' : 'tickDown'), i * 150);
+        setTimeout(() => {
+          const delta = deltas[k] as number;
+          playSound(delta > 0 ? 'tickUp' : 'tickDown');
+          // A4: una caída fuerte se siente en el dispositivo, además de oírse
+          if (delta <= BIG_DROP) vibrate(60);
+        }, i * 150);
       });
 
       // A6: confeti dorado cuando una métrica llega a 100 por primera vez en la partida
@@ -314,10 +321,6 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [step, currentEvent, status, currentTurn, showExitConfirm, showCompanyDrawer, showIncomingAlert, advance, outcomeSequence, isRevealing, handleDecide]);
 
-  if (step === 'phase_recap' && phaseRecap) {
-    return <PhaseRecap recap={phaseRecap} initialCompleted={initialWasRecap} onContinue={continueFromRecap} />;
-  }
-
   // Si la partida terminó y estamos en el paso final
   if (step === 'ended') {
     return (
@@ -338,6 +341,8 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
   }
 
   const isGameOverOrVictory = status !== 'playing';
+  // B1: el resumen de fase es un hito dentro de la pantalla de juego (el encabezado queda fijo)
+  const recapOnScreen = step === 'phase_recap' ? phaseRecap : null;
 
   return (
     <main
@@ -366,13 +371,21 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
       <header className={`stage-hud ${showIncomingAlert && interruptionStage ? `is-${interruptionStage.tone}` : ''} sticky top-0 z-30 bg-[#F4F7FB]/90 dark:bg-[#071322]/90 backdrop-blur-md pt-2 sm:pt-3 pb-2 sm:pb-3 border-b border-slate-200 dark:border-slate-800/80 -mx-4 sm:-mx-6 px-4 sm:px-6 transition-colors shadow-sm space-y-2 sm:space-y-3`}>
         <div className="flex justify-between items-center text-xs font-semibold text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            <span className="text-slate-800 dark:text-slate-200 font-bold tracking-wide">
-              TURNO {currentTurn} / {maxTurns}
-            </span>
-            <span className="text-slate-300 dark:text-slate-700">•</span>
-            <span className="uppercase tracking-widest text-[#0052CC] dark:text-indigo-400 font-bold text-[11px] sm:text-xs">
-              Fase {phaseId}<span className="hidden sm:inline">: {currentPhase.label}</span>
-            </span>
+            {recapOnScreen ? (
+              <span className="uppercase tracking-widest text-amber-600 dark:text-amber-300 font-bold text-[11px] sm:text-xs">
+                Fase {recapOnScreen.phaseId} completada
+              </span>
+            ) : (
+              <>
+                <span className="text-slate-800 dark:text-slate-200 font-bold tracking-wide">
+                  TURNO {currentTurn} / {maxTurns}
+                </span>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="uppercase tracking-widest text-[#0052CC] dark:text-indigo-400 font-bold text-[11px] sm:text-xs">
+                  Fase {phaseId}<span className="hidden sm:inline">: {currentPhase.label}</span>
+                </span>
+              </>
+            )}
             <span className="hidden md:inline-block text-slate-300 dark:text-slate-700">•</span>
             <span className="hidden md:inline-block text-slate-600 dark:text-slate-400 font-normal">
               {arquetipo.titulo} • {financiamiento.titulo}
@@ -407,7 +420,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
         </div>
 
         {/* Línea de tiempo visual de 15 turnos */}
-        <TimelineBar currentTurn={currentTurn} maxTurns={maxTurns} />
+        <TimelineBar currentTurn={currentTurn} maxTurns={maxTurns} milestonePhaseId={recapOnScreen?.phaseId} />
 
         {/* Panel de Métricas Vitales (con dorado al 100%, pulso y deltas flotantes) */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3 sm:pt-1">
@@ -444,7 +457,12 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
         </div>
       </header>
 
-      {/* Contenido Principal (A7): en lg: panel "Mi empresa" | carta + opciones | columna reservada (xl:) */}
+      {/* Hito de fase (B1): el resumen ocupa el lugar del dilema y de "Mi empresa" */}
+      {recapOnScreen ? (
+        <div className="w-full my-auto py-6 stress-content">
+          <PhaseRecap recap={recapOnScreen} initialCompleted={initialWasRecap} onContinue={continueFromRecap} />
+        </div>
+      ) : (
       <div
         style={{ '--side-w': companyCollapsed ? '56px' : '260px' } as React.CSSProperties}
         className={`w-full my-auto py-6 lg:grid lg:grid-cols-[var(--side-w)_minmax(0,1fr)] xl:grid-cols-[var(--side-w)_minmax(0,1fr)_var(--side-w)] lg:gap-6 items-start lg:transition-[grid-template-columns] lg:duration-300 stress-content ${isLowWellbeing ? 'is-desaturated' : ''}`}
@@ -650,6 +668,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
         {/* Columna derecha reservada (futuro: avatar / log); mantiene centrada la carta */}
         <div className="hidden xl:block" aria-hidden="true" />
       </div>
+      )}
 
       {/* Drawer "Mi empresa" para pantallas menores a lg */}
       {showCompanyDrawer && (

@@ -60,12 +60,11 @@ describe('buildPhaseRecap', () => {
     entry(3, { kind: 'crisis', effects: { bienestar: -5 }, metricsAfter: m(75, 52, 30) }),
   ];
 
-  it('classifies the phase by its closing metrics and builds a headline + 2-3 paragraphs', () => {
+  it('classifies the phase by its closing metrics and builds a headline + 2 short paragraphs', () => {
     const recap = buildPhaseRecap(baseState(log, m(75, 52, 30)), 1, 'Santi');
     expect(recap.trend.id).toBe('quema_naves');
     expect(recap.headline.length).toBeGreaterThan(0);
-    expect(recap.paragraphs.length).toBeGreaterThanOrEqual(2);
-    expect(recap.paragraphs.length).toBeLessThanOrEqual(3);
+    expect(recap.paragraphs).toHaveLength(2);
     expect(recap.partial).toBe(false);
   });
 
@@ -75,11 +74,9 @@ describe('buildPhaseRecap', () => {
     expect(recap.deltas).toEqual(m(25, 2, -20));
   });
 
-  it('mentions numbers only for big moves and the most impactful decision, shortened', () => {
+  it('talks about the key decision and the interruptions, not about what the curves already show', () => {
     const text = buildPhaseRecap(baseState(log, m(75, 52, 30)), 1).paragraphs.join(' ');
-    expect(text).toContain('el capital subió 25 puntos');
-    expect(text).toContain('la reputación casi no se movió');
-    expect(text).toContain('el bienestar bajó 20 puntos');
+    expect(text).not.toMatch(/puntos|subió|bajó|Hoy el capital/);
     expect(text).toMatch(/«Aceptar el contrato grande[^»]*…»/);
     expect(text).toContain('(turno 2)');
     expect(text).toContain('1 crisis');

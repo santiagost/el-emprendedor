@@ -20,7 +20,7 @@ export interface PhaseRecap {
   trend: Trend;
   /** Frase corta del perfil de la fase (con el nombre resuelto). */
   headline: string;
-  /** 2-3 párrafos tras el titular: movimiento y nivel de las métricas, decisión clave e interrupciones, y mirada hacia adelante. */
+  /** 1-3 párrafos tras el titular: decisión clave e interrupciones, y mirada hacia adelante (nivel de las métricas solo si no hay recorrido). */
   paragraphs: string[];
   /** Recorrido de las métricas dentro de la fase: [inicio, tras cada decisión]. null si faltan datos. */
   series: Metrics[] | null;
@@ -34,8 +34,6 @@ export interface PhaseRecap {
 
 const HIGH = 60;
 const LOW = 40;
-const BIG_MOVE = 10;
-const SMALL_MOVE = 4;
 const MAX_OPTION_CHARS = 80;
 
 const TRENDS: Record<TrendId, Trend> = {
@@ -156,13 +154,6 @@ const pickVariantIndex = (log: DecisionLogEntry[], phaseId: PhaseId, size: numbe
   return (base + phaseId) % size;
 };
 
-const describeMove = (label: string, delta: number): string => {
-  const abs = Math.abs(delta);
-  if (abs >= BIG_MOVE) return `${label} ${delta > 0 ? 'subió' : 'bajó'} ${abs} puntos`;
-  if (abs >= SMALL_MOVE) return `${label} ${delta > 0 ? 'mejoró un poco' : 'cedió un poco'}`;
-  return `${label} casi no se movió`;
-};
-
 const levelWord = (value: number, feminine: boolean): string => {
   const base = value >= HIGH ? 'alt' : value < LOW ? 'baj' : 'medi';
   return `${base}${feminine ? 'a' : 'o'}`;
@@ -255,17 +246,13 @@ export function buildPhaseRecap(state: GameState, phaseId: PhaseId, playerName?:
       }
     : null;
 
-  // Párrafo 1: movimiento de la fase (números solo en los cambios grandes) + nivel actual
+  // Con curvas a la vista no se repiten los números en palabras. Solo un guardado viejo, sin
+  // recorrido, abre con el nivel actual de las métricas.
   const levelOf = (k: keyof Metrics) => `${METRIC_LABEL[k].name} ${levelWord(endMetrics[k], METRIC_LABEL[k].feminine)}`;
   const levels = `Hoy ${METRIC_LABEL.capital.name} está ${levelWord(endMetrics.capital, false)}, ${levelOf('reputacion')} y ${levelOf('bienestar')}.`;
-  const sentences: string[] = [];
-  if (deltas) {
-    const moves = METRIC_KEYS.map((k) => describeMove(METRIC_LABEL[k].name, deltas[k]));
-    sentences.push(`En esta fase ${joinList(moves)}.`);
-  }
-  sentences.push(levels);
+  const lead = series ? [] : [levels];
 
-  // Párrafo 2: decisión clave + interrupciones de la fase
+  // Decisión clave + interrupciones de la fase
   const story: string[] = [];
   const pivotal = mostImpactful(entries);
   if (pivotal) {
@@ -287,7 +274,7 @@ export function buildPhaseRecap(state: GameState, phaseId: PhaseId, playerName?:
     phaseId,
     trend,
     headline,
-    paragraphs: [sentences.join(' '), ...(story.length > 0 ? [story.join(' ')] : []), p(OUTLOOKS[trend.id][variant])],
+    paragraphs: [...lead, ...(story.length > 0 ? [story.join(' ')] : []), p(OUTLOOKS[trend.id][variant])],
     series,
     deltas,
     endMetrics,

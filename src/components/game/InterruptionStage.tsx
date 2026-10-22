@@ -3,7 +3,7 @@ import { Activity, ArrowRight } from 'lucide-react';
 import type { GameEvent } from '../../types/game';
 import { actAt, stageTimeline, type EventStage, type StageTone } from '../../game/stage';
 import { useReducedMotion } from '../../lib/motion';
-import { confetti } from '../../lib/fx';
+import { confetti, vibrate } from '../../lib/fx';
 import { playSound } from '../../lib/sound';
 
 interface InterruptionStageProps {
@@ -99,6 +99,12 @@ export default function InterruptionStage({ event, stage, onDone }: Interruption
   // La oportunidad celebra en el sello (confetti() ya respeta reduced motion y suena el hito)
   useEffect(() => {
     if (act === 2 && stage.tone === 'opportunity') confetti('gold');
+  }, [act, stage.tone]);
+
+  // A4: háptica del sello. Crisis, golpe fuerte; imprevisto, uno suave. Sin vibración en la oportunidad.
+  useEffect(() => {
+    if (act !== 2 || stage.tone === 'opportunity') return;
+    vibrate(stage.tone === 'crisis' ? [120, 60, 120] : 60);
   }, [act, stage.tone]);
 
   // Sonido por acto (A3): golpe al cortar, sello, latido en el suspenso y acorde al leer.

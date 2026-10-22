@@ -300,6 +300,25 @@ html.reduced-motion :is(.stage-ticker, .stage-stamp, .stage-shake, .stage-shake-
   animation: none !important;
 }
 
+/* Sprint 2 · B1: segmentos de la fase cerrada en la barra de turnos */
+@keyframes phaseMilestone {
+  0% { transform: scaleY(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+  45% { transform: scaleY(2.4); box-shadow: 0 0 14px 3px rgba(251, 191, 36, 0.8); }
+  100% { transform: scaleY(1); box-shadow: 0 0 8px 1px rgba(251, 191, 36, 0.5); }
+}
+
+.phase-milestone {
+  box-shadow: 0 0 8px 1px rgba(251, 191, 36, 0.5);
+  animation: phaseMilestone 900ms ease-out both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phase-milestone { animation: none !important; }
+}
+
+html.reduced-motion .phase-milestone { animation: none !important; }
+
 /* Sprint 2 · A2: opciones con hover y press físico */
 .option-card {
   position: relative;

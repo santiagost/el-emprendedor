@@ -26,6 +26,8 @@ export const vibrate = (ms: number | number[] = 50): void => {
 export const confetti = (kind: ConfettiKind = 'default'): void => {
   // El sonido de hito es independiente del movimiento: suena aunque no haya confeti
   playSound(kind === 'default' ? 'phase' : 'milestone');
+  // A4: el hito también vibra (vibrate ya respeta reduced motion)
+  vibrate(kind === 'victory' ? [120, 60, 120, 60, 240] : kind === 'gold' ? [60, 40, 60] : 40);
   if (prefersReducedMotion()) return;
 
   try {
