@@ -4,6 +4,8 @@ import { TAGS } from '../../data/tags';
 import { personalize } from '../../lib/personalize';
 import { buildJourney } from '../../game/recap';
 import { buildRetrospective } from '../../game/retrospective';
+import { buildCompanyStory } from '../../game/companyStory';
+import CompanyStory from './CompanyStory';
 import RetrospectiveCard, { VerdictBadge } from './RetrospectiveCard';
 import { PHASES } from '../../game/phases';
 import {
@@ -229,12 +231,14 @@ export default function EndGameReport({
           {activeTags.length > 0 && (
             <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-2xl space-y-2.5 shadow-sm dark:shadow-md transition-colors">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Cultura & Rasgos Incorporados ({activeTags.length})
+                Cómo queda tu empresa
               </h3>
+              <CompanyStory segments={buildCompanyStory(activeTags, 5)} className="text-sm" />
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {activeTags.map((tag) => (
                   <span
                     key={tag}
+                    title={TAGS[tag]?.description}
                     className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-950 border border-indigo-200 dark:border-indigo-900/40 text-[#0052CC] dark:text-indigo-300"
                   >
                     {TAGS[tag]?.label ?? tag}
