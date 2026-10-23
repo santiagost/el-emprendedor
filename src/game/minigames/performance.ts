@@ -1,7 +1,7 @@
 import type { MinigameKind, MinigameSpec, Performance } from '../../types/game';
 
 /** Minijuegos con implementación. Una opción con un tipo que no esté acá se juega como una opción común. */
-const AVAILABLE_KINDS: readonly MinigameKind[] = ['timing', 'tapping', 'balance'];
+const AVAILABLE_KINDS: readonly MinigameKind[] = ['timing', 'tapping', 'balance', 'roulette'];
 
 export const hasPlayableMinigame = (spec: MinigameSpec | undefined): spec is MinigameSpec =>
   Boolean(spec && AVAILABLE_KINDS.includes(spec.kind));

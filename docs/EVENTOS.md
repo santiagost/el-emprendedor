@@ -97,7 +97,34 @@ Los eventos con `kind: 'crisis'` o `kind: 'unforeseen'` no se muestran de golpe:
 
 ---
 
-## 7. Flujo de Trabajo
+## 7. Minijuegos en las opciones
+
+Una opción puede llevar un minijuego que modula la **ejecución**: la opción define el efecto base (es el resultado "sólido") y el minijuego lo mejora o lo empeora. El motor no cambia: el minijuego solo produce un tier (`perfect`, `good`, `poor`).
+
+```ts
+defineOption('Texto', { capital: +35 }, {
+    minigame: {
+        kind: 'timing',            // 'timing' | 'tapping' | 'balance' | 'roulette'
+        title: 'Título opcional',  // si el contexto de la opción lo pide
+        rule: 'Regla en una línea.',
+        // Todo lo siguiente es opcional:
+        effectsByPerformance: { perfect: { reputacion: +15 }, poor: { capital: -10 } }, // reemplaza el escalado de ese tier
+        tagsByPerformance: { perfect: { removeTags: ['equity_diluido'] } },
+        outcomeTextByPerformance: { perfect: '...', poor: '...' },                      // la consecuencia cambia con la ejecución
+        riskBias: 0.12,            // solo 'roulette': positivo = opción más riesgosa
+    },
+    learningPill: '...',
+});
+```
+
+- **Si un evento tiene minijuego en una opción, lo tiene en todas** (un test lo exige): si solo una lo tuviera, el jugador la elegiría por curiosidad y no por la decisión.
+- Sin `effectsByPerformance`, los efectos escalan solos: los positivos x1,25 / x1 / x0,6 y los negativos x0,6 / x1 / x1,25 (perfecto / sólido / flojo).
+- Un `poor` nunca causa un game over que un `good` no hubiera causado: si lo provocara, se aplica `good`.
+- Los tipos: `timing` (frenar una aguja, 3 rondas), `tapping` (llenar una barra con fatiga y bichos), `balance` (mantener un cursor en un rango móvil; el margen crece con la Reputación) y `roulette` (segmentos según los tags activos; la probabilidad se ve en pantalla).
+- El jugador elige cuándo empezar y siempre puede saltar (resultado sólido) o activar el modo asistido.
+- Si querés dar más peso a un tag en la ruleta, listalo en `LAUNCH_TAILWINDS` o `LAUNCH_HEADWINDS` (`game/minigames/roulette.ts`).
+
+## 8. Flujo de Trabajo
 
 1. Para agregar eventos a la fase N, editá `src/data/events/faseN.ts`.
 2. Si inventás un tag nuevo, agregalo primero en `src/data/tags.ts` con su label y modifier pasivo.

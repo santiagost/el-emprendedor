@@ -25,6 +25,8 @@ export type Performance = 'perfect' | 'good' | 'poor';
 export interface MinigameSpec {
     kind: MinigameKind;
     difficulty?: 1 | 2 | 3;
+    /** Solo ruleta: desplaza probabilidad de éxito a fallo crítico (positivo = opción más riesgosa, negativo = más segura). */
+    riskBias?: number;
     /** Textos del encabezado cuando el minijuego necesita otro contexto que el de su tipo. */
     title?: string;
     rule?: string;

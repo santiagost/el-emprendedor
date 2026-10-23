@@ -634,6 +634,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                 spec={displayEvent.options[pendingMinigame.optionIndex].minigame!}
                 seed={seedFromText(`${displayEvent.id}:${pendingMinigame.turn}`)}
                 reputation={metrics.reputacion}
+                activeTags={gameState.activeTags}
                 onResolve={resolveMinigame}
                 onSkip={() => resolveMinigame('good')}
               />
