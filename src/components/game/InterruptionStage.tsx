@@ -114,7 +114,7 @@ export default function InterruptionStage({ event, stage, onDone }: Interruption
     const opportunity = stage.tone === 'opportunity';
     if (act === 0 && !opportunity) playSound('thud');
     if (act === 2 && !opportunity) playSound('stamp');
-    if (act === 3) playSound('heartbeat');
+    if (act === 3 && stage.tone === 'crisis') playSound('heartbeat');
     if (act === 4) playSound('reveal');
   }, [act, stage.tone]);
 

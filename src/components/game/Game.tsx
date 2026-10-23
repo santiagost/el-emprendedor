@@ -145,10 +145,11 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
       }));
       prevMetricsRef.current = metrics;
 
-      // A3: un tick por métrica que se movió, escalonado como los deltas flotantes
-      METRIC_KEYS.filter((k) => deltas[k]).forEach((k, i) => {
+      // A3: un tick por métrica que se movió, escalonado como los deltas flotantes (0ms, 150ms, 300ms)
+      METRIC_KEYS.forEach((k, i) => {
+        const delta = deltas[k];
+        if (delta === undefined || delta === 0) return;
         setTimeout(() => {
-          const delta = deltas[k] as number;
           playSound(delta > 0 ? 'tickUp' : 'tickDown');
           // A4: una caída fuerte se siente en el dispositivo, además de oírse
           if (delta <= BIG_DROP) vibrate(60);
@@ -252,7 +253,9 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
   );
 
   // B2: resumen de la fase que acaba de cerrarse (el estado ya avanzó a la siguiente)
-  const [initialWasRecap] = useState(() => step === 'phase_recap');
+  const [initialRecapPhaseId] = useState<number | null>(() =>
+    step === 'phase_recap' ? ((phaseId - 1) as PhaseId) : null
+  );
   const phaseRecap = useMemo(
     () => (step === 'phase_recap' ? buildPhaseRecap(gameState, (phaseId - 1) as PhaseId, displayName) : null),
     [step, gameState, phaseId, displayName]
@@ -497,7 +500,12 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
       {/* Hito de fase (B1): el resumen ocupa el lugar del dilema y de "Mi empresa" */}
       {recapOnScreen ? (
         <div className="w-full my-auto py-6 stress-content">
-          <PhaseRecap recap={recapOnScreen} initialCompleted={initialWasRecap} onContinue={continueFromRecap} />
+          <PhaseRecap
+            recap={recapOnScreen}
+            initialCompleted={initialRecapPhaseId === recapOnScreen.phaseId}
+            onContinue={continueFromRecap}
+            disabled={showExitConfirm || showCompanyDrawer}
+          />
         </div>
       ) : (
       <div

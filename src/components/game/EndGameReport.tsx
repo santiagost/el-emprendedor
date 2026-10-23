@@ -53,6 +53,7 @@ export default function EndGameReport({
   const epilogue = useMemo(() => buildEpilogue(status, activeTags), [status, activeTags]);
   const why = useMemo(() => buildWhyLine(gameState), [gameState]);
   const outlook = useMemo(() => buildOutlook(gameState, retrospective), [gameState, retrospective]);
+  const storySegments = useMemo(() => buildCompanyStory(activeTags, 5, 'past'), [activeTags]);
 
   const { soundEnabled, toggleSound } = useSoundToggle();
   const [showCtaModal, setShowCtaModal] = useState(false);
@@ -81,15 +82,23 @@ export default function EndGameReport({
 
         <section aria-label="Cómo queda tu empresa" className={`${CARD} p-4 sm:p-6 flex flex-col gap-4 min-w-0`}>
           <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">Cómo queda tu empresa</h3>
-          <CompanyStory segments={buildCompanyStory(activeTags, 5, 'past')} className="text-base lg:text-lg leading-8 lg:leading-9 my-auto" highlight />
-          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-600 dark:text-slate-400">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 rounded bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-600 dark:border-emerald-400" aria-hidden="true" /> Lo que sumó
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 rounded bg-rose-50 dark:bg-rose-950/60 border border-dashed border-rose-600 dark:border-rose-400" aria-hidden="true" /> Lo que restó
-            </span>
-          </div>
+          {storySegments.length > 0 ? (
+            <>
+              <CompanyStory segments={storySegments} className="text-base lg:text-lg leading-8 lg:leading-9 my-auto" highlight />
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-600 dark:text-slate-400">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3.5 h-3.5 rounded bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-600 dark:border-emerald-400" aria-hidden="true" /> Lo que sumó
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3.5 h-3.5 rounded bg-rose-50 dark:bg-rose-950/60 border border-dashed border-rose-600 dark:border-rose-400" aria-hidden="true" /> Lo que restó
+                </span>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-slate-500 dark:text-slate-400 italic my-auto">
+              Cerraste el recorrido sin acumular rasgos pasivos permanentes en tu empresa.
+            </p>
+          )}
         </section>
       </div>
 

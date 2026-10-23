@@ -11,6 +11,7 @@ interface PhaseRecapProps {
   /** Recarga en pleno resumen: se muestra todo de una vez, sin animar. */
   initialCompleted?: boolean;
   onContinue: () => void;
+  disabled?: boolean;
 }
 
 const METRICS_UI: { key: keyof Metrics; label: string; icon: LucideIcon; stroke: string; text: string }[] = [
@@ -57,7 +58,7 @@ function Sparkline({ values, stroke, label }: { values: number[]; stroke: string
   );
 }
 
-export default function PhaseRecap({ recap, initialCompleted = false, onContinue }: PhaseRecapProps) {
+export default function PhaseRecap({ recap, initialCompleted = false, onContinue, disabled = false }: PhaseRecapProps) {
   const phase = PHASES.find((p) => p.id === recap.phaseId) ?? PHASES[0];
   const nextPhase = PHASES.find((p) => p.id === recap.phaseId + 1);
 
@@ -74,6 +75,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
   }, []);
 
   useEffect(() => {
+    if (disabled) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== ' ' && e.key !== 'Enter') return;
       e.preventDefault();
@@ -82,7 +84,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [sequence, onContinue]);
+  }, [sequence, onContinue, disabled]);
 
   return (
     <section aria-label={`Resumen de la fase ${phase.id}`} className="w-full max-w-5xl mx-auto space-y-5">
@@ -167,8 +169,9 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
           <div className="space-y-2 animate-slide-up-fade">
             <button
               type="button"
+              disabled={disabled}
               onClick={onContinue}
-              className="w-full py-4 px-4 bg-[#0A2540] hover:bg-[#0052CC] active:bg-[#081c30] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white font-bold text-sm sm:text-base rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#0052CC]/25 group"
+              className="w-full py-4 px-4 bg-[#0A2540] hover:bg-[#0052CC] active:bg-[#081c30] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white font-bold text-sm sm:text-base rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#0052CC]/25 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span>{nextPhase ? `Empezar Fase ${nextPhase.id}: ${nextPhase.label}` : 'Continuar'}</span>
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
@@ -182,8 +185,9 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
         ) : (
           <button
             type="button"
+            disabled={disabled}
             onClick={sequence.skipToEnd}
-            className="w-full py-3.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+            className="w-full py-3.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span>Saltar animación</span>
             <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">(Espacio)</span>
