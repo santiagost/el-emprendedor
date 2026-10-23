@@ -82,8 +82,8 @@ export function outcomeAt(wheelAngle: number, segments: RouletteSegments): Roule
 }
 
 /** Velocidad de giro en grados por segundo (una vuelta cada ~2,4 s) y su versión asistida. */
-export const SPIN_SPEED_DEG_S = 150;
-export const SPIN_SPEED_ASSISTED_DEG_S = 90;
+export const SPIN_SPEED_DEG_S = 500;
+export const SPIN_SPEED_ASSISTED_DEG_S = 250;
 /** Si el jugador no frena, la ruleta se detiene sola pasado este tiempo. */
 export const SPIN_AUTO_STOP_MS = 7000;
 
