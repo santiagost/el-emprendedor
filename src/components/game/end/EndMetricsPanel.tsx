@@ -7,7 +7,7 @@ import { METRIC_LABELS, METRIC_ORDER } from './metricLabels';
 
 const UI: Record<keyof Metrics, { icon: LucideIcon; stroke: string; text: string }> = {
   capital: { icon: DollarSign, stroke: '#0F9D58', text: 'text-emerald-700 dark:text-emerald-400' },
-  reputacion: { icon: Award, stroke: '#1B68D2', text: 'text-[#1B68D2] dark:text-blue-400' },
+  reputacion: { icon: Award, stroke: '#1B68D2', text: 'text-metric-reputacion dark:text-blue-400' },
   bienestar: { icon: Heart, stroke: '#FF9800', text: 'text-amber-700 dark:text-amber-400' },
 };
 
@@ -26,7 +26,7 @@ export default function EndMetricsPanel({ metrics, curves }: EndMetricsPanelProp
   return (
     <section
       aria-label="Cómo se movieron tus métricas"
-      className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col gap-4 h-full"
+      className="bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col gap-4 h-full"
     >
       <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">Cómo se movieron tus métricas</h3>
       <div className="flex-1 flex flex-col justify-around gap-5">
@@ -61,7 +61,7 @@ export default function EndMetricsPanel({ metrics, curves }: EndMetricsPanelProp
       </div>
 
       {curves && (
-        <div className="relative h-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400" aria-hidden="true">
+        <div className="relative h-4 text-2xs font-semibold text-slate-500 dark:text-slate-400" aria-hidden="true">
           {labels.map((l) => (
             <span key={l.phaseId} className="absolute -translate-x-1/2" style={{ left: `${l.left}%` }}>
               F{l.phaseId}

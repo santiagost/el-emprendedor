@@ -46,7 +46,7 @@ function DecisionsModal({ phase, onClose }: { phase: TimelinePhase; onClose: () 
         aria-modal="true"
         aria-labelledby={`decisiones-fase-${phase.phaseId}`}
         onClick={(e) => e.stopPropagation()}
-        className="flex flex-col w-full sm:max-w-xl max-h-[88dvh] bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl"
+        className="flex flex-col w-full sm:max-w-xl max-h-[88dvh] bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl"
       >
         <div className="p-4 border-b border-slate-100 dark:border-slate-800">
           <PanelHeader phase={phase} onClose={onClose} closeRef={closeRef} />
@@ -83,9 +83,9 @@ export default function PhaseTimeline({ phases }: { phases: TimelinePhase[] }) {
           const cut = p.status === 'cut';
           const last = i === phases.length - 1;
           const selected = open?.phaseId === p.phaseId;
-          const dot = cut ? 'bg-rose-600 border-rose-600 dark:bg-rose-400 dark:border-rose-400' : reached ? 'bg-[#0052CC] border-[#0052CC] dark:bg-blue-500 dark:border-blue-500' : 'border-dashed border-slate-400 dark:border-slate-500';
+          const dot = cut ? 'bg-rose-600 border-rose-600 dark:bg-rose-400 dark:border-rose-400' : reached ? 'bg-brand-cobalt border-brand-cobalt dark:bg-blue-500 dark:border-blue-500' : 'border-dashed border-slate-400 dark:border-slate-500';
           const line = reached && !cut
-            ? 'bg-[#0052CC] dark:bg-blue-500'
+            ? 'bg-brand-cobalt dark:bg-blue-500'
             : 'border-slate-300 dark:border-slate-600 border-dashed border-l-2 lg:border-l-0 lg:border-t-2 bg-transparent';
           return (
             <li key={p.phaseId} className="flex-1 min-w-0 grid grid-cols-[20px_minmax(0,1fr)] gap-x-3 lg:grid-cols-1 lg:grid-rows-[auto_1fr] lg:gap-y-3">
@@ -106,12 +106,12 @@ export default function PhaseTimeline({ phases }: { phases: TimelinePhase[] }) {
                   aria-expanded={selected}
                   disabled={p.decisions.length === 0}
                   onClick={() => setOpenId(selected ? null : p.phaseId)}
-                  className={`mb-4 lg:mb-0 text-left flex flex-col gap-2.5 p-4 rounded-2xl border-2 bg-white dark:bg-[#0B1E33] shadow-sm transition-colors ${
-                    selected ? 'border-[#0052CC] dark:border-blue-400' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600'
+                  className={`mb-4 lg:mb-0 text-left flex flex-col gap-2.5 p-4 rounded-2xl border-2 bg-white dark:bg-night-surface shadow-sm transition-colors ${
+                    selected ? 'border-brand-cobalt dark:border-blue-400' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600'
                   }`}
                 >
                   <span className="space-y-0.5">
-                    <span className="block text-xs font-extrabold uppercase tracking-wider text-[#0047B3] dark:text-blue-300">
+                    <span className="block text-xs font-extrabold uppercase tracking-wider text-brand-cobalt-hover dark:text-blue-300">
                       Fase {p.phaseId} · Turnos {p.fromTurn} a {p.toTurn}
                     </span>
                     <span className="block text-base font-extrabold leading-tight text-slate-900 dark:text-slate-100">{p.label}</span>
@@ -139,7 +139,7 @@ export default function PhaseTimeline({ phases }: { phases: TimelinePhase[] }) {
                   )}
                   {p.recap && <span className="text-xs text-slate-600 dark:text-slate-400">{interruptionsText(p.recap.interruptions)}</span>}
                   {p.decisions.length > 0 && (
-                    <span className="mt-auto inline-flex items-center gap-1.5 pt-2.5 border-t border-slate-200 dark:border-slate-800 text-sm font-extrabold text-[#0047B3] dark:text-blue-300">
+                    <span className="mt-auto inline-flex items-center gap-1.5 pt-2.5 border-t border-slate-200 dark:border-slate-800 text-sm font-extrabold text-brand-cobalt-hover dark:text-blue-300">
                       <span>{selected ? 'Ocultar decisiones' : `Ver ${p.decisions.length} ${p.decisions.length === 1 ? 'decisión' : 'decisiones'}`}</span>
                       <ChevronDown className={`w-4 h-4 transition-transform ${selected && isWide ? 'rotate-180' : ''}`} aria-hidden="true" />
                     </span>
@@ -160,7 +160,7 @@ export default function PhaseTimeline({ phases }: { phases: TimelinePhase[] }) {
       </ol>
 
       {open && isWide && (
-        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1E33] shadow-sm space-y-3 animate-slide-up-fade">
+        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-night-surface shadow-sm space-y-3 animate-slide-up-fade">
           <PanelHeader phase={open} onClose={close} />
           <DecisionList decisions={open.decisions} />
         </div>

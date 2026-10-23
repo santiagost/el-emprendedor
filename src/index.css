@@ -5,10 +5,32 @@
 
 @theme {
   --font-sans: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Marca */
   --color-brand-navy: #0A2540;
+  --color-brand-navy-press: #081C30;
   --color-brand-cobalt: #0052CC;
+  --color-brand-cobalt-hover: #0047B3;
   --color-brand-cyan: #00A3E0;
   --color-brand-canvas: #F4F7FB;
+
+  /* Superficies del modo oscuro (en claro, el fondo es brand-canvas y las tarjetas son blancas). */
+  --color-night-canvas: #071322;
+  --color-night-sunken: #0A1B2E;
+  --color-night-surface: #0B1E33;
+  --color-night-raised: #0E243A;
+  --color-night-raised-hover: #14304D;
+  --color-night-raised-press: #18395B;
+  --color-night-selected: #0E2C52;
+
+  /* Color propio de cada métrica (en oscuro cada componente usa el tono emerald, blue o amber de Tailwind). */
+  --color-metric-capital: #0F9D58;
+  --color-metric-reputacion: #1B68D2;
+  --color-metric-bienestar: #FF9800;
+
+  /* Textos chicos: etiquetas, chips y ayudas. Por encima de 11 px se usa la escala de Tailwind (text-xs = 12 px). */
+  --text-2xs: 11px;
+  --text-3xs: 10px;
 }
 
 :root {
@@ -25,7 +47,7 @@
 
 body {
   font-family: var(--font-sans);
-  @apply bg-[#F4F7FB] text-slate-800 dark:bg-[#071322] dark:text-slate-100 antialiased min-h-screen selection:bg-blue-600 selection:text-white transition-colors duration-300;
+  @apply bg-brand-canvas text-slate-800 dark:bg-night-canvas dark:text-slate-100 antialiased min-h-screen selection:bg-blue-600 selection:text-white transition-colors duration-300;
 }
 
 @keyframes goldShimmer {
@@ -337,7 +359,7 @@ html.reduced-motion .phase-milestone { animation: none !important; }
 
 .option-card:not(:disabled):hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px -8px rgba(0, 82, 204, 0.35);
+  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--color-brand-cobalt) 35%, transparent);
 }
 
 .option-card:not(:disabled):hover::after {

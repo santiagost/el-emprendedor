@@ -196,9 +196,9 @@ function NegotiationBoard({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400" aria-hidden="true">
+      <div className="flex items-center justify-between text-2xs font-semibold text-slate-500 dark:text-slate-400" aria-hidden="true">
         <span>Presión de la otra parte</span>
-        <span className="inline-flex items-center gap-0.5 text-[#0A2540] dark:text-slate-200">
+        <span className="inline-flex items-center gap-0.5 text-brand-navy dark:text-slate-200">
           <span ref={leftPushRef} className="inline-block"><ChevronLeft className="w-4 h-4" /></span>
           <span ref={rightPushRef} className="inline-block"><ChevronRight className="w-4 h-4" /></span>
         </span>
@@ -231,13 +231,13 @@ function NegotiationBoard({
         <div
           ref={cursorRef}
           data-inside="true"
-          className="absolute inset-y-1 w-3 -ml-1.5 rounded-full bg-[#0A2540] dark:bg-white shadow-[0_0_8px_rgba(0,82,204,0.6)] data-[inside=false]:bg-rose-600 dark:data-[inside=false]:bg-rose-400"
+          className="absolute inset-y-1 w-3 -ml-1.5 rounded-full bg-brand-navy dark:bg-white shadow-[0_0_8px_rgba(0,82,204,0.6)] data-[inside=false]:bg-rose-600 dark:data-[inside=false]:bg-rose-400"
           style={{ left: '50%' }}
         />
       </div>
 
       <div className="space-y-1">
-        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between text-2xs font-semibold text-slate-500 dark:text-slate-400">
           <span ref={statusRef} aria-live="off">Dentro del rango</span>
           <span>Tiempo en el rango</span>
         </div>
@@ -248,7 +248,7 @@ function NegotiationBoard({
 
       <p className="min-h-5 text-center text-sm font-bold" aria-live="polite">
         {performance ? (
-          <span className="text-[#0A2540] dark:text-white">
+          <span className="text-brand-navy dark:text-white">
             {PERFORMANCE_LABEL[performance]} · <span className="font-medium">{RESULT_TEXT[performance]}</span>
           </span>
         ) : (
@@ -265,11 +265,11 @@ function NegotiationBoard({
             type="button"
             disabled={disabled}
             {...holdProps(side)}
-            className="py-4 px-4 bg-[#0A2540] hover:bg-[#0052CC] active:bg-[#081c30] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-colors touch-none select-none inline-flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50"
+            className="py-4 px-4 bg-brand-navy hover:bg-brand-cobalt active:bg-brand-navy-press dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-colors touch-none select-none inline-flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50"
           >
             {side === 'left' ? <ChevronLeft className="w-4 h-4" aria-hidden="true" /> : null}
             {side === 'left' ? 'Izquierda' : 'Derecha'}
-            <kbd className="hidden sm:inline-flex items-center gap-1 rounded bg-white/15 px-1.5 py-0.5 text-[11px] font-semibold" aria-hidden="true">
+            <kbd className="hidden sm:inline-flex items-center gap-1 rounded bg-white/15 px-1.5 py-0.5 text-2xs font-semibold" aria-hidden="true">
               {side === 'left' ? 'A / ←' : 'D / →'}
             </kbd>
             {side === 'right' ? <ChevronRight className="w-4 h-4" aria-hidden="true" /> : null}

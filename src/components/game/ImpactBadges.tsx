@@ -20,7 +20,7 @@ const getColorClass = (direction: ImpactDirection, activeColor: string) => {
 
 export default function ImpactBadges({ impactPreview, size = 'sm' }: ImpactBadgesProps) {
   const isSm = size === 'sm';
-  const textClass = isSm ? 'text-[10px]' : 'text-xs';
+  const textClass = isSm ? 'text-3xs' : 'text-xs';
   const iconClass = isSm ? 'w-3 h-3' : 'w-3.5 h-3.5';
 
   return (
@@ -40,7 +40,7 @@ export default function ImpactBadges({ impactPreview, size = 'sm' }: ImpactBadge
         title={`Reputación: ${impactPreview.reputacion}`}
         className={`inline-flex items-center gap-0.5 ${getColorClass(
           impactPreview.reputacion,
-          'text-[#1B68D2] dark:text-blue-400'
+          'text-metric-reputacion dark:text-blue-400'
         )}`}
       >
         <Award className={iconClass} />

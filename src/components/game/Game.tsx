@@ -57,7 +57,7 @@ const renderDeltaBadge = (value: number | undefined, label: string, color: strin
   const textColor = isPositive ? color : 'text-rose-600 dark:text-rose-400';
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 dark:bg-slate-800/80 ${textColor} border border-slate-200 dark:border-slate-700/60`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded text-2xs font-bold bg-slate-100 dark:bg-slate-800/80 ${textColor} border border-slate-200 dark:border-slate-700/60`}>
       {sign}{value} {label}
     </span>
   );
@@ -408,11 +408,11 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
       )}
 
       {/* Header Fijo con Blur (Sticky Top si hay scroll) */}
-      <header className={`stage-hud ${showIncomingAlert && interruptionStage ? `is-${interruptionStage.tone}` : ''} sticky top-0 z-30 bg-[#F4F7FB]/90 dark:bg-[#071322]/90 backdrop-blur-md pt-2 sm:pt-3 pb-2 sm:pb-3 border-b border-slate-200 dark:border-slate-800/80 -mx-4 sm:-mx-6 px-4 sm:px-6 transition-colors shadow-sm space-y-2 sm:space-y-3`}>
+      <header className={`stage-hud ${showIncomingAlert && interruptionStage ? `is-${interruptionStage.tone}` : ''} sticky top-0 z-30 bg-brand-canvas/90 dark:bg-night-canvas/90 backdrop-blur-md pt-2 sm:pt-3 pb-2 sm:pb-3 border-b border-slate-200 dark:border-slate-800/80 -mx-4 sm:-mx-6 px-4 sm:px-6 transition-colors shadow-sm space-y-2 sm:space-y-3`}>
         <div className="flex justify-between items-center text-xs font-semibold text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             {recapOnScreen ? (
-              <span className="uppercase tracking-widest text-amber-600 dark:text-amber-300 font-bold text-[11px] sm:text-xs">
+              <span className="uppercase tracking-widest text-amber-600 dark:text-amber-300 font-bold text-2xs sm:text-xs">
                 Fase {recapOnScreen.phaseId} completada
               </span>
             ) : (
@@ -421,7 +421,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                   TURNO {currentTurn} / {maxTurns}
                 </span>
                 <span className="text-slate-300 dark:text-slate-700">•</span>
-                <span className="uppercase tracking-widest text-[#0052CC] dark:text-indigo-400 font-bold text-[11px] sm:text-xs">
+                <span className="uppercase tracking-widest text-brand-cobalt dark:text-indigo-400 font-bold text-2xs sm:text-xs">
                   Fase {phaseId}<span className="hidden sm:inline">: {currentPhase.label}</span>
                 </span>
               </>
@@ -439,7 +439,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
               onClick={() => setShowCompanyDrawer(true)}
               title="Mi empresa"
               aria-label="Abrir panel Mi empresa"
-              className="lg:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors text-[11px] font-medium shadow-sm"
+              className="lg:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors text-2xs font-medium shadow-sm"
             >
               <Building2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
               <span className="hidden min-[420px]:inline">Mi empresa</span>
@@ -451,7 +451,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
               type="button"
               onClick={() => setShowExitConfirm(true)}
               title="Cambiar estrategia / Volver al inicio"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 transition-colors text-[11px] font-medium shadow-sm"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 transition-colors text-2xs font-medium shadow-sm"
             >
               <RotateCcw className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
               <span className="hidden sm:inline">Reiniciar</span>
@@ -527,13 +527,13 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
         <div className="min-w-0 w-full max-w-[640px] mx-auto space-y-5">
           {currentEvent && displayEvent && (
             <div
-              className={`bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 p-5 sm:p-7 rounded-2xl shadow-sm dark:shadow-xl flex flex-col justify-between transition-colors ${
+              className={`bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 p-5 sm:p-7 rounded-2xl shadow-sm dark:shadow-xl flex flex-col justify-between transition-colors ${
                 showIncomingAlert ? 'invisible' : justRevealed ? 'stage-reveal' : ''
               }`}
             >
               <div>
                 {/* Header del tipo de evento */}
-                <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider mb-2">
+                <div className="flex items-center justify-between text-2xs font-bold uppercase tracking-wider mb-2">
                   {currentEvent.kind === 'crisis' ? (
                     <span className="text-rose-600 dark:text-rose-400 font-extrabold flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-500/70 animate-pulse">
                       <AlertTriangle className="w-3.5 h-3.5" /> Crisis Operativa • Turno {currentTurn}
@@ -543,13 +543,13 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                       <Zap className="w-3.5 h-3.5" /> Suceso Imprevisto • Turno {currentTurn}
                     </span>
                   ) : (
-                    <span className="text-[#0052CC] dark:text-indigo-400 font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-indigo-950/50 border border-blue-200 dark:border-indigo-800/50">
+                    <span className="text-brand-cobalt dark:text-indigo-400 font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-indigo-950/50 border border-blue-200 dark:border-indigo-800/50">
                       Dilema del Turno {currentTurn}
                     </span>
                   )}
 
                   {step === 'outcome' && !isRevealing && (
-                    <span className="text-amber-600 dark:text-amber-400 font-extrabold flex items-center gap-1 text-[11px]">
+                    <span className="text-amber-600 dark:text-amber-400 font-extrabold flex items-center gap-1 text-2xs">
                       <CheckCircle2 className="w-3.5 h-3.5" /> Decisión Registrada
                     </span>
                   )}
@@ -572,7 +572,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                     <p className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                       {isInterruption ? 'Analizando impacto de la crisis…' : 'Calculando consecuencias…'}
                     </p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    <p className="text-2xs text-slate-500 dark:text-slate-400">
                       Simulando reacción de mercado y métricas vitales
                     </p>
                   </div>
@@ -585,7 +585,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                   {/* Paso ① (currentStep >= 0): Opción seleccionada y deltas */}
                   {outcomeSequence.currentStep >= 0 && lastDecision && (
                     <div className="p-3.5 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-slate-200 dark:border-slate-800/80 space-y-2 animate-in fade-in duration-200">
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
+                      <p className="text-2xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
                         Elegiste:{' '}
                         <span className="text-slate-900 dark:text-slate-100 normal-case font-medium">
                           "{personalize(lastDecision.optionText, displayName)}"
@@ -593,7 +593,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                       </p>
 
                       {lastDecision.performance && (
-                        <p className="text-[11px] font-semibold text-[#0A2540] dark:text-slate-100">
+                        <p className="text-2xs font-semibold text-brand-navy dark:text-slate-100">
                           {PERFORMANCE_LABEL[lastDecision.performance]}
                           <span className="font-normal text-slate-500 dark:text-slate-400"> · {PERFORMANCE_HINT[lastDecision.performance]}</span>
                         </p>
@@ -602,7 +602,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                       {/* Deltas de la decisión */}
                       <div className="flex flex-wrap gap-1.5">
                         {renderDeltaBadge(decisionDeltas.capital, 'Capital', 'text-emerald-600 dark:text-emerald-400')}
-                        {renderDeltaBadge(decisionDeltas.reputacion, 'Reputación', 'text-[#0052CC] dark:text-blue-400')}
+                        {renderDeltaBadge(decisionDeltas.reputacion, 'Reputación', 'text-brand-cobalt dark:text-blue-400')}
                         {renderDeltaBadge(decisionDeltas.bienestar, 'Bienestar', 'text-amber-600 dark:text-amber-400')}
                       </div>
                     </div>
@@ -635,7 +635,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
           {/* Opciones de Decisión (Paso: decision) */}
           {status === 'playing' && displayEvent && step === 'decision' && pendingMinigame && (
             <div className="space-y-2">
-              <p className="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <p className="px-1 text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Elegiste: <span className="normal-case font-medium text-slate-800 dark:text-slate-200">"{displayEvent.options[pendingMinigame.optionIndex].text}"</span>
               </p>
               <MinigameStage
@@ -651,10 +651,10 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
           {status === 'playing' && displayEvent && step === 'decision' && !pendingMinigame && (
             <div className={`space-y-3 ${showIncomingAlert ? 'invisible' : ''}`}>
               <div className="flex items-center justify-between px-1">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <p className="text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Alternativas Disponibles:
                 </p>
-                <span className="hidden sm:inline-block text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                <span className="hidden sm:inline-block text-3xs text-slate-400 dark:text-slate-500 font-mono">
                   Atajos: [1], [2], [3]
                 </span>
               </div>
@@ -666,25 +666,25 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                   disabled={isRevealing}
                   onClick={() => handleDecide(idx, currentTurn)}
                   style={justRevealed ? { animationDelay: `${250 + idx * 80}ms` } : undefined}
-                  className={`${justRevealed ? 'stage-option-in ' : ''}option-card w-full text-left p-4 bg-white hover:bg-slate-50 active:bg-slate-100 dark:bg-[#0E243A] dark:hover:bg-[#14304D] dark:active:bg-[#18395B] border border-slate-200 dark:border-slate-700/70 hover:border-[#0052CC]/50 dark:hover:border-indigo-500/60 rounded-xl text-xs sm:text-sm text-slate-800 dark:text-slate-200 space-y-2.5 group shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`${justRevealed ? 'stage-option-in ' : ''}option-card w-full text-left p-4 bg-white hover:bg-slate-50 active:bg-slate-100 dark:bg-night-raised dark:hover:bg-night-raised-hover dark:active:bg-night-raised-press border border-slate-200 dark:border-slate-700/70 hover:border-brand-cobalt/50 dark:hover:border-indigo-500/60 rounded-xl text-xs sm:text-sm text-slate-800 dark:text-slate-200 space-y-2.5 group shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50 disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   <div className="flex items-start gap-2.5">
-                    <span className="option-key flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-600 dark:text-slate-400 group-hover:bg-[#0052CC] dark:group-hover:bg-indigo-600 group-hover:text-white group-hover:border-[#0052CC] dark:group-hover:border-indigo-500">
+                    <span className="option-key flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-3xs font-mono text-slate-600 dark:text-slate-400 group-hover:bg-brand-cobalt dark:group-hover:bg-indigo-600 group-hover:text-white group-hover:border-brand-cobalt dark:group-hover:border-indigo-500">
                       {idx + 1}
                     </span>
-                    <div className="leading-snug text-slate-800 dark:text-slate-200 group-hover:text-[#0A2540] dark:group-hover:text-white flex-1 font-medium">
+                    <div className="leading-snug text-slate-800 dark:text-slate-200 group-hover:text-brand-navy dark:group-hover:text-white flex-1 font-medium">
                       {option.text}
                     </div>
                   </div>
 
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold">
+                    <span className="text-3xs text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold">
                       Tendencia esperada:
                     </span>
                     <ImpactBadges impactPreview={option.impactPreview} />
                   </div>
                   {hasPlayableMinigame(option.minigame) && (
-                    <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#0052CC] dark:text-indigo-300">
+                    <p className="flex items-center gap-1.5 text-3xs font-semibold uppercase tracking-wider text-brand-cobalt dark:text-indigo-300">
                       <Gamepad2 className="w-3.5 h-3.5" aria-hidden="true" />
                       Minijuego: tu ejecución mejora o empeora el resultado
                     </p>
@@ -708,7 +708,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                   <button
                     type="button"
                     onClick={advance}
-                    className="w-full py-4 px-4 bg-[#0A2540] hover:bg-[#0052CC] active:bg-[#081c30] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white font-bold text-sm sm:text-base rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#0052CC]/25 group"
+                    className="w-full py-4 px-4 bg-brand-navy hover:bg-brand-cobalt active:bg-brand-navy-press dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover text-white font-bold text-sm sm:text-base rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-cobalt/25 group"
                   >
                     <span>
                       {isGameOverOrVictory
@@ -720,7 +720,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
 
-                  <p className="text-center text-[11px] text-slate-400 dark:text-slate-500 hidden sm:block">
+                  <p className="text-center text-2xs text-slate-400 dark:text-slate-500 hidden sm:block">
                     Presioná <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Espacio</kbd> o <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Enter</kbd> para avanzar
                   </p>
                 </div>
@@ -731,7 +731,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                   className="w-full py-3.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
                 >
                   <span>Saltar animación</span>
-                  <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">(Espacio)</span>
+                  <span className="text-3xs text-slate-400 font-mono hidden sm:inline">(Espacio)</span>
                 </button>
               )}
             </div>
@@ -751,12 +751,12 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
             className="absolute inset-0 bg-black/60 animate-in fade-in duration-200"
             onClick={() => setShowCompanyDrawer(false)}
           />
-          <div className="relative w-[88vw] max-w-sm h-full overflow-y-auto bg-[#F4F7FB] dark:bg-[#071322] p-4 space-y-3 shadow-2xl animate-in slide-in-from-left duration-200">
+          <div className="relative w-[88vw] max-w-sm h-full overflow-y-auto bg-brand-canvas dark:bg-night-canvas p-4 space-y-3 shadow-2xl animate-in slide-in-from-left duration-200">
             <button
               type="button"
               onClick={() => setShowCompanyDrawer(false)}
               aria-label="Cerrar panel Mi empresa"
-              className="ml-auto flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+              className="ml-auto flex items-center gap-1 text-2xs font-semibold text-slate-600 dark:text-slate-300 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
             >
               <X className="w-3.5 h-3.5" /> Cerrar
             </button>

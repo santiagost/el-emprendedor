@@ -71,16 +71,16 @@ export default function MinigameLab() {
   };
 
   return (
-    <main className="w-full max-w-3xl mx-auto p-4 sm:p-6 space-y-5 text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-[#0A1B2E] min-h-screen">
+    <main className="w-full max-w-3xl mx-auto p-4 sm:p-6 space-y-5 text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-night-sunken min-h-screen">
       <header className="space-y-1">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Solo desarrollo</p>
+        <p className="text-2xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Solo desarrollo</p>
         <h1 className="text-xl font-bold text-slate-900 dark:text-white">Laboratorio de minijuegos</h1>
         <p className="text-xs text-slate-500 dark:text-slate-400">
           Juega las opciones con minijuego del contenido real. No toca la partida guardada.
         </p>
       </header>
 
-      <section className="space-y-3 p-4 rounded-xl bg-white dark:bg-[#0E243A] border border-slate-200 dark:border-slate-700">
+      <section className="space-y-3 p-4 rounded-xl bg-white dark:bg-night-raised border border-slate-200 dark:border-slate-700">
         <label className="block space-y-1">
           <span className="text-xs font-semibold">Opción</span>
           <select
@@ -125,7 +125,7 @@ export default function MinigameLab() {
           <button
             type="button"
             onClick={restart}
-            className="px-3 py-2 rounded-lg text-xs font-semibold bg-[#0052CC] hover:bg-[#0047b3] text-white"
+            className="px-3 py-2 rounded-lg text-xs font-semibold bg-brand-cobalt hover:bg-brand-cobalt-hover text-white"
           >
             Reiniciar ronda
           </button>
@@ -143,7 +143,7 @@ export default function MinigameLab() {
                 max={100}
                 value={metrics[key]}
                 onChange={(e) => setMetrics((m) => ({ ...m, [key]: Number(e.target.value) }))}
-                className="w-full accent-[#0052CC]"
+                className="w-full accent-brand-cobalt"
               />
             </label>
           ))}
@@ -159,9 +159,9 @@ export default function MinigameLab() {
                   key={tag}
                   type="button"
                   onClick={() => toggleTag(tag)}
-                  className={`px-2 py-1 rounded-md text-[11px] font-medium border ${
+                  className={`px-2 py-1 rounded-md text-2xs font-medium border ${
                     on
-                      ? 'bg-[#0052CC] text-white border-[#0052CC]'
+                      ? 'bg-brand-cobalt text-white border-brand-cobalt'
                       : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300'
                   }`}
                 >
@@ -175,7 +175,7 @@ export default function MinigameLab() {
 
       <section className="space-y-2">
         <h2 className="text-sm font-bold">Qué hace cada rendimiento</h2>
-        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0E243A]">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-night-raised">
           <table className="w-full text-xs">
             <thead>
               <tr className="text-left text-slate-500 dark:text-slate-400">
@@ -233,7 +233,7 @@ export default function MinigameLab() {
         />
 
         {result && (
-          <div className="p-4 rounded-xl bg-white dark:bg-[#0E243A] border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-3">
+          <div className="p-4 rounded-xl bg-white dark:bg-night-raised border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm font-bold text-slate-900 dark:text-white">
               {PERFORMANCE_LABEL[result.performance]}
               {result.skipped && <span className="font-normal text-slate-500 dark:text-slate-400"> (saltado)</span>}
@@ -241,7 +241,7 @@ export default function MinigameLab() {
             <button
               type="button"
               onClick={restart}
-              className="px-4 py-2 rounded-lg text-sm font-semibold bg-[#0A2540] hover:bg-[#0052CC] text-white"
+              className="px-4 py-2 rounded-lg text-sm font-semibold bg-brand-navy hover:bg-brand-cobalt text-white"
             >
               Jugar de nuevo
             </button>

@@ -151,9 +151,9 @@ function PitchBoard({
           return (
             <li
               key={r.label}
-              className={`flex-1 flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold ${
+              className={`flex-1 flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded-lg border text-2xs font-semibold ${
                 active
-                  ? 'border-[#0052CC] bg-[#0052CC]/5 text-[#0A2540] dark:border-indigo-400 dark:bg-indigo-500/10 dark:text-white'
+                  ? 'border-brand-cobalt bg-brand-cobalt/5 text-brand-navy dark:border-indigo-400 dark:bg-indigo-500/10 dark:text-white'
                   : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
               }`}
             >
@@ -187,7 +187,7 @@ function PitchBoard({
         </div>
         <div
           ref={needleRef}
-          className="absolute inset-y-0 w-1 -ml-0.5 rounded bg-[#0A2540] dark:bg-white shadow-[0_0_8px_rgba(0,82,204,0.6)]"
+          className="absolute inset-y-0 w-1 -ml-0.5 rounded bg-brand-navy dark:bg-white shadow-[0_0_8px_rgba(0,82,204,0.6)]"
           style={{ left: '0%' }}
         />
       </div>
@@ -195,7 +195,7 @@ function PitchBoard({
       {/* Lectura del resultado de la ronda */}
       <p className="min-h-5 text-center text-sm font-bold" aria-live="polite">
         {phase === 'done' && performance ? (
-          <span className="text-[#0A2540] dark:text-white">{PERFORMANCE_LABEL[performance]}</span>
+          <span className="text-brand-navy dark:text-white">{PERFORMANCE_LABEL[performance]}</span>
         ) : phase === 'frozen' && lastHit ? (
           <span className={HIT_STYLE[lastHit]}>
             {lastHit === 'core' ? '¡Perfecto!' : lastHit === 'zone' ? 'Casi…' : 'Se te fue.'}
@@ -214,7 +214,7 @@ function PitchBoard({
           e.preventDefault();
           stop();
         }}
-        className="w-full py-4 px-4 bg-[#0A2540] hover:bg-[#0052CC] active:bg-[#081c30] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] disabled:opacity-50 text-white font-bold text-sm sm:text-base rounded-xl transition-colors touch-manipulation select-none focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50"
+        className="w-full py-4 px-4 bg-brand-navy hover:bg-brand-cobalt active:bg-brand-navy-press dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover disabled:opacity-50 text-white font-bold text-sm sm:text-base rounded-xl transition-colors touch-manipulation select-none focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50"
       >
         {reduced ? 'Frenar (Espacio)' : 'Cerrar el trato (Espacio)'}
       </button>

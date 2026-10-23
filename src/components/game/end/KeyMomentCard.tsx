@@ -43,27 +43,27 @@ export default function KeyMomentCard({ retrospective, outlook, lost }: KeyMomen
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-5">
+      <div className="bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-5">
         <div className="flex flex-col lg:flex-row gap-5 lg:gap-6 lg:items-start">
           {main && (
             <div className="flex-1 min-w-0 grid grid-cols-[24px_minmax(0,1fr)] gap-x-2.5">
               {/* Turno y título */}
               <div className="flex flex-col items-center">
-                <span className="shrink-0 w-[22px] h-[22px] rounded-full bg-[#0052CC] dark:bg-blue-500 border-[5px] border-blue-100 dark:border-blue-950" aria-hidden="true" />
-                <span className="flex-1 w-0.5 bg-[#0052CC] dark:bg-blue-500" aria-hidden="true" />
+                <span className="shrink-0 w-[22px] h-[22px] rounded-full bg-brand-cobalt dark:bg-blue-500 border-[5px] border-blue-100 dark:border-blue-950" aria-hidden="true" />
+                <span className="flex-1 w-0.5 bg-brand-cobalt dark:bg-blue-500" aria-hidden="true" />
               </div>
               <div className="pb-3.5 min-w-0">
-                <p className={`${LABEL} text-[#0047B3] dark:text-blue-300`}>Turno {main.turn}</p>
+                <p className={`${LABEL} text-brand-cobalt-hover dark:text-blue-300`}>Turno {main.turn}</p>
                 <p className="text-base font-extrabold leading-snug text-slate-900 dark:text-slate-100">{main.eventTitle}</p>
               </div>
 
               {/* Lo que elegiste */}
-              <div className="ml-[11px] border-l-2 border-[#0052CC] dark:border-blue-500 relative" aria-hidden="true">
-                <span className="absolute left-0 top-7 w-3 border-t-2 border-[#0052CC] dark:border-blue-500" />
+              <div className="ml-[11px] border-l-2 border-brand-cobalt dark:border-blue-500 relative" aria-hidden="true">
+                <span className="absolute left-0 top-7 w-3 border-t-2 border-brand-cobalt dark:border-blue-500" />
               </div>
               <div className="pb-3.5 min-w-0">
-                <div className="p-3 rounded-xl border-2 border-[#0052CC] dark:border-blue-500 bg-blue-50 dark:bg-blue-500/10 space-y-1">
-                  <p className={`${LABEL} text-[#0047B3] dark:text-blue-300`}>Lo que elegiste</p>
+                <div className="p-3 rounded-xl border-2 border-brand-cobalt dark:border-blue-500 bg-blue-50 dark:bg-blue-500/10 space-y-1">
+                  <p className={`${LABEL} text-brand-cobalt-hover dark:text-blue-300`}>Lo que elegiste</p>
                   <p className="text-sm font-semibold leading-snug text-slate-900 dark:text-slate-100">{main.chosenText}</p>
                 </div>
               </div>
@@ -88,7 +88,7 @@ export default function KeyMomentCard({ retrospective, outlook, lost }: KeyMomen
             <p className={`${LABEL} text-slate-600 dark:text-slate-400`}>Tu final probable</p>
             {outlook ? (
               <>
-                <p className="text-3xl font-black leading-tight tracking-tight text-[#0047B3] dark:text-blue-300">{outlook.big}</p>
+                <p className="text-3xl font-black leading-tight tracking-tight text-brand-cobalt-hover dark:text-blue-300">{outlook.big}</p>
                 <p className="text-sm leading-snug text-slate-800 dark:text-slate-200">{outlook.small}</p>
               </>
             ) : (
@@ -123,7 +123,7 @@ export default function KeyMomentCard({ retrospective, outlook, lost }: KeyMomen
               <ul className="space-y-2.5">
                 {others.map((p) => (
                   <li key={p.analysis.logIndex} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 space-y-1.5">
-                    <p className={`${LABEL} text-[#0047B3] dark:text-blue-300`}>
+                    <p className={`${LABEL} text-brand-cobalt-hover dark:text-blue-300`}>
                       Turno {p.turn} · {p.eventTitle}
                     </p>
                     <p className="text-sm leading-snug text-slate-900 dark:text-slate-100">

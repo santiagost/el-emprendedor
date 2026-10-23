@@ -15,7 +15,7 @@ const TONES: Record<EpilogueTone, { icon: LucideIcon; pill: string; label: strin
     icon: CheckCircle2,
     label: 'Victoria',
     pill: 'bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800/70 text-blue-800 dark:text-blue-300',
-    title: 'text-[#0052CC] dark:text-blue-400',
+    title: 'text-brand-cobalt dark:text-blue-400',
     why: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100',
   },
   warn: {
@@ -57,7 +57,7 @@ export default function EndResultCard({ epilogue, why, arquetipo, financiamiento
   return (
     <section
       aria-label="Resultado de la partida"
-      className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-8 shadow-md dark:shadow-xl animate-slide-up-fade"
+      className="bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-8 shadow-md dark:shadow-xl animate-slide-up-fade"
     >
       <div className="flex flex-col lg:flex-row lg:items-end gap-6 lg:gap-10">
         <div className="flex-1 min-w-0 space-y-3">
@@ -82,7 +82,7 @@ export default function EndResultCard({ epilogue, why, arquetipo, financiamiento
           <button
             type="button"
             onClick={onRestart}
-            className="inline-flex items-center justify-center gap-2 px-3 py-3.5 bg-[#0A2540] hover:bg-[#0052CC] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white text-sm font-bold rounded-xl transition-colors shadow-md"
+            className="inline-flex items-center justify-center gap-2 px-3 py-3.5 bg-brand-navy hover:bg-brand-cobalt dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover text-white text-sm font-bold rounded-xl transition-colors shadow-md"
           >
             <RefreshCw className="w-4 h-4" aria-hidden="true" /> Reintentar
           </button>

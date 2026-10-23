@@ -25,7 +25,7 @@ export default function TimelineBar({ currentTurn, maxTurns, milestonePhaseId }:
           if (inMilestone) {
             barStyle = 'phase-milestone bg-amber-400 border-amber-300 dark:bg-amber-400 dark:border-amber-300';
           } else if (isCompleted) {
-            barStyle = 'bg-[#0052CC] border-[#0052CC] dark:bg-blue-600 dark:border-blue-500';
+            barStyle = 'bg-brand-cobalt border-brand-cobalt dark:bg-blue-600 dark:border-blue-500';
           } else if (isCurrent && !milestone) {
             barStyle = 'bg-amber-400 border-amber-400 ring-2 ring-amber-400/50 animate-pulse';
           }
@@ -51,7 +51,7 @@ export default function TimelineBar({ currentTurn, maxTurns, milestonePhaseId }:
           if (phase.id === milestone?.id) {
             phaseTextColor = 'text-amber-600 dark:text-amber-300 font-bold';
           } else if (isPhaseActive) {
-            phaseTextColor = 'text-[#0052CC] dark:text-blue-400 font-bold';
+            phaseTextColor = 'text-brand-cobalt dark:text-blue-400 font-bold';
           } else if (isPhaseCompleted) {
             phaseTextColor = 'text-slate-600 dark:text-slate-400';
           }

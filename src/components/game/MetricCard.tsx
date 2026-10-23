@@ -80,18 +80,18 @@ export default function MetricCard({
   const variantStyles = {
     capital: {
       text: 'text-emerald-600 dark:text-emerald-400',
-      bar: 'bg-[#0F9D58] dark:bg-emerald-500',
-      iconText: 'text-[#0F9D58] dark:text-emerald-400',
+      bar: 'bg-metric-capital dark:bg-emerald-500',
+      iconText: 'text-metric-capital dark:text-emerald-400',
     },
     reputacion: {
-      text: 'text-[#1B68D2] dark:text-blue-400',
-      bar: 'bg-[#1B68D2] dark:bg-blue-500',
-      iconText: 'text-[#1B68D2] dark:text-blue-400',
+      text: 'text-metric-reputacion dark:text-blue-400',
+      bar: 'bg-metric-reputacion dark:bg-blue-500',
+      iconText: 'text-metric-reputacion dark:text-blue-400',
     },
     bienestar: {
       text: 'text-amber-600 dark:text-amber-400',
-      bar: 'bg-[#FF9800] dark:bg-amber-400',
-      iconText: 'text-[#FF9800] dark:text-amber-400',
+      bar: 'bg-metric-bienestar dark:bg-amber-400',
+      iconText: 'text-metric-bienestar dark:text-amber-400',
     },
   }[variant];
 
@@ -121,7 +121,7 @@ export default function MetricCard({
     barClasses += ' bg-gradient-to-r from-rose-600 to-red-500 shadow-[0_0_12px_rgba(244,63,94,0.9)]';
   } else {
     // Normal
-    cardClasses += ' bg-white dark:bg-[#0B1E33] border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-300 dark:hover:border-slate-700';
+    cardClasses += ' bg-white dark:bg-night-surface border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-300 dark:hover:border-slate-700';
     valueClasses += ` ${variantStyles.text}`;
     barClasses += ` ${variantStyles.bar}`;
   }
@@ -136,7 +136,7 @@ export default function MetricCard({
       <FloatingDelta key={deltaKey} delta={delta} delayMs={delayMs} />
 
       {/* Badge de estado superior */}
-      <div className="w-full flex items-center justify-between text-[10px] font-semibold mb-1">
+      <div className="w-full flex items-center justify-between text-3xs font-semibold mb-1">
         <span className="flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[9px] sm:text-[10px] font-bold">
           <Icon
             className={`w-3.5 h-3.5 mr-1 shrink-0 ${

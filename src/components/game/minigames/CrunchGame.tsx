@@ -136,7 +136,7 @@ function CrunchBoard({
   return (
     <div className="space-y-3">
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between text-2xs font-semibold text-slate-500 dark:text-slate-400">
           <span>
             Bugs eliminados · <span className="tabular-nums">{counts.squashed} de {counts.appeared} aparecidos</span>
           </span>
@@ -171,7 +171,7 @@ function CrunchBoard({
           </button>
         ))}
         {bugs.length === 0 && !performance && (
-          <p className="absolute inset-0 flex items-center justify-center text-[11px] text-slate-400 dark:text-slate-500">
+          <p className="absolute inset-0 flex items-center justify-center text-2xs text-slate-400 dark:text-slate-500">
             {running ? 'Esperá… ya aparece el primero' : ' '}
           </p>
         )}
@@ -179,7 +179,7 @@ function CrunchBoard({
 
       <p className="min-h-5 text-center text-sm font-bold" aria-live="polite">
         {performance ? (
-          <span className="text-[#0A2540] dark:text-white">
+          <span className="text-brand-navy dark:text-white">
             {PERFORMANCE_LABEL[performance]} · <span className="font-medium">{RESULT_TEXT[performance]}</span>
           </span>
         ) : (

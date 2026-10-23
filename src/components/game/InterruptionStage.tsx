@@ -174,7 +174,7 @@ export default function InterruptionStage({ event, stage, onDone }: Interruption
                   <p aria-hidden="true" className="text-sm sm:text-base text-slate-200 leading-relaxed blur-[6px] line-clamp-3">
                     {event.description}
                   </p>
-                  <div className="flex items-center justify-center gap-2 pt-2 text-[11px] font-bold uppercase tracking-widest text-slate-300">
+                  <div className="flex items-center justify-center gap-2 pt-2 text-2xs font-bold uppercase tracking-widest text-slate-300">
                     <Activity className="w-4 h-4 stage-heartbeat" />
                     <span>Analizando impacto…</span>
                   </div>
@@ -199,13 +199,13 @@ export default function InterruptionStage({ event, stage, onDone }: Interruption
                     <span>Ver alternativas</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
-                  <p className="text-[11px] text-slate-400 hidden sm:block">
+                  <p className="text-2xs text-slate-400 hidden sm:block">
                     o presioná <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-slate-200 font-mono">Espacio</kbd>
                   </p>
                 </>
               )}
               {act === 3 && canSkip && (
-                <p className="text-[11px] text-slate-400 pt-1 hidden sm:block">
+                <p className="text-2xs text-slate-400 pt-1 hidden sm:block">
                   <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-slate-200 font-mono">Espacio</kbd> para saltar
                 </p>
               )}

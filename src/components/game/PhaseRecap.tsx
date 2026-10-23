@@ -16,7 +16,7 @@ interface PhaseRecapProps {
 
 const METRICS_UI: { key: keyof Metrics; label: string; icon: LucideIcon; stroke: string; text: string }[] = [
   { key: 'capital', label: 'Capital', icon: DollarSign, stroke: '#0F9D58', text: 'text-emerald-600 dark:text-emerald-400' },
-  { key: 'reputacion', label: 'Reputación', icon: Award, stroke: '#1B68D2', text: 'text-[#1B68D2] dark:text-blue-400' },
+  { key: 'reputacion', label: 'Reputación', icon: Award, stroke: '#1B68D2', text: 'text-metric-reputacion dark:text-blue-400' },
   { key: 'bienestar', label: 'Bienestar', icon: Heart, stroke: '#FF9800', text: 'text-amber-600 dark:text-amber-400' },
 ];
 
@@ -89,7 +89,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
   return (
     <section aria-label={`Resumen de la fase ${phase.id}`} className="w-full max-w-5xl mx-auto space-y-5">
       <div className="space-y-1.5 animate-slide-up-fade">
-        <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#0052CC] dark:text-indigo-400">
+        <p className="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-widest text-brand-cobalt dark:text-indigo-400">
           <Flag className="w-3.5 h-3.5" /> Fin de la Fase {phase.id}
         </p>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight">{phase.label}</h2>
@@ -99,7 +99,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
         {/* ① Recorrido de las métricas durante la fase */}
         <section
           aria-label="Recorrido de las métricas en la fase"
-          className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm animate-slide-up-fade"
+          className="bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm animate-slide-up-fade"
         >
           <div className="grid grid-cols-3 lg:grid-cols-1 gap-3 sm:gap-5 lg:gap-6">
             {METRICS_UI.map(({ key, label, icon: Icon, stroke, text }) => {
@@ -108,7 +108,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
               return (
                 <div key={key} className="space-y-1.5 min-w-0">
                   <div className="flex items-center justify-between gap-1">
-                    <span className={`flex items-center gap-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider ${text}`}>
+                    <span className={`flex items-center gap-1 text-3xs sm:text-2xs font-bold uppercase tracking-wider ${text}`}>
                       <Icon className="w-3.5 h-3.5 shrink-0" />
                       <span className="truncate">{label}</span>
                     </span>
@@ -124,7 +124,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
                     </span>
                     {showDelta && (
                       <span
-                        className={`text-[11px] font-bold tabular-nums ${
+                        className={`text-2xs font-bold tabular-nums ${
                           (delta as number) > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                         }`}
                       >
@@ -143,7 +143,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
           {/* ② Perfil de la fase y titular */}
           {sequence.currentStep >= 1 && (
             <div className="space-y-2 animate-slide-up-fade">
-              <span className="inline-flex px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/70 text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+              <span className="inline-flex px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/70 text-2xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
                 {recap.trend.label}
               </span>
               <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 leading-snug">{recap.headline}</p>
@@ -171,12 +171,12 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
               type="button"
               disabled={disabled}
               onClick={onContinue}
-              className="w-full py-4 px-4 bg-[#0A2540] hover:bg-[#0052CC] active:bg-[#081c30] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white font-bold text-sm sm:text-base rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#0052CC]/25 group disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 px-4 bg-brand-navy hover:bg-brand-cobalt active:bg-brand-navy-press dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover text-white font-bold text-sm sm:text-base rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-cobalt/25 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span>{nextPhase ? `Empezar Fase ${nextPhase.id}: ${nextPhase.label}` : 'Continuar'}</span>
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
             </button>
-            <p className="text-center text-[11px] text-slate-400 dark:text-slate-500 hidden sm:block">
+            <p className="text-center text-2xs text-slate-400 dark:text-slate-500 hidden sm:block">
               Presioná{' '}
               <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Espacio</kbd> o{' '}
               <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Enter</kbd> para continuar
@@ -190,7 +190,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
             className="w-full py-3.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span>Saltar animación</span>
-            <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">(Espacio)</span>
+            <span className="text-3xs text-slate-400 font-mono hidden sm:inline">(Espacio)</span>
           </button>
         )}
       </div>

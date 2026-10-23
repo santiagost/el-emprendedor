@@ -28,7 +28,7 @@ interface EndGameReportProps {
   onToggleFx?: () => void;
 }
 
-const CARD = 'bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm';
+const CARD = 'bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm';
 
 export default function EndGameReport({
   gameState,
@@ -118,7 +118,7 @@ export default function EndGameReport({
         <button
           type="button"
           onClick={() => setShowCtaModal(true)}
-          className="w-full sm:w-auto py-3 px-5 bg-[#0A2540] hover:bg-[#0052CC] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-md"
+          className="w-full sm:w-auto py-3 px-5 bg-brand-navy hover:bg-brand-cobalt dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-md"
         >
           <span>Conocer el Simulador Comercial</span>
           <ExternalLink className="w-4 h-4" aria-hidden="true" />
@@ -129,19 +129,19 @@ export default function EndGameReport({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 text-center shadow-2xl">
             <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-700/60 rounded-full flex items-center justify-center mx-auto">
-              <Sparkles className="w-6 h-6 text-[#0052CC] dark:text-indigo-400" />
+              <Sparkles className="w-6 h-6 text-brand-cobalt dark:text-indigo-400" />
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Simulador de Estrategia Comercial</h3>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed text-left">
               En este segundo juego por equipos, gestionarás variables reales de mercado: estructura de costos fijos y variables, estrategia de precios elásticos y conquista de segmentos de mercado.
             </p>
-            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 text-left">
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-400 text-left">
               <Pin className={INLINE_ICON_CLASS} aria-hidden="true" /> <strong>Disponible en la plataforma TID:</strong> consultá con tu facilitador o docente para participar de la próxima simulación en vivo.
             </div>
             <button
               type="button"
               onClick={() => setShowCtaModal(false)}
-              className="w-full py-2.5 bg-[#0A2540] hover:bg-[#0052CC] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white text-xs font-bold rounded-lg transition-colors"
+              className="w-full py-2.5 bg-brand-navy hover:bg-brand-cobalt dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover text-white text-xs font-bold rounded-lg transition-colors"
             >
               Entendido
             </button>

@@ -193,7 +193,7 @@ function LaunchBoard({
                   key={key}
                   className={`flex items-center justify-between gap-2 px-3 py-2 rounded-lg border text-xs font-semibold ${
                     active
-                      ? 'border-[#0052CC] bg-[#0052CC]/5 text-[#0A2540] dark:border-indigo-400 dark:bg-indigo-500/10 dark:text-white'
+                      ? 'border-brand-cobalt bg-brand-cobalt/5 text-brand-navy dark:border-indigo-400 dark:bg-indigo-500/10 dark:text-white'
                       : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
                   }`}
                 >
@@ -207,7 +207,7 @@ function LaunchBoard({
             })}
           </ul>
           {reasons.length > 0 && (
-            <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+            <p className="text-2xs leading-snug text-slate-500 dark:text-slate-400">
               Tus decisiones pesan:{' '}
               {reasons.map((r, i) => (
                 <span key={r.label}>
@@ -224,7 +224,7 @@ function LaunchBoard({
 
       <p className="min-h-5 text-center text-sm font-bold" aria-live="polite">
         {outcome ? (
-          <span className="text-[#0A2540] dark:text-white">
+          <span className="text-brand-navy dark:text-white">
             {OUTCOME_META[outcome].label} · <span className="font-medium">{OUTCOME_META[outcome].text}</span>
             <span className="sr-only"> {PERFORMANCE_LABEL[performanceFromOutcome(outcome)]}</span>
           </span>
@@ -242,7 +242,7 @@ function LaunchBoard({
           e.preventDefault();
           brake();
         }}
-        className="w-full py-4 px-4 bg-[#0A2540] hover:bg-[#0052CC] active:bg-[#081c30] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] disabled:opacity-50 text-white font-bold text-sm sm:text-base rounded-xl transition-colors touch-manipulation select-none focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50"
+        className="w-full py-4 px-4 bg-brand-navy hover:bg-brand-cobalt active:bg-brand-navy-press dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover disabled:opacity-50 text-white font-bold text-sm sm:text-base rounded-xl transition-colors touch-manipulation select-none focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50"
       >
         Frenar (Espacio)
       </button>

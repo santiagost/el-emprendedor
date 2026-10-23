@@ -60,11 +60,11 @@ export default function MinigameShell({ title, rule, icon, onSkip, children }: M
   return (
     <section
       aria-label={`Minijuego: ${title}`}
-      className="stage-reveal p-4 sm:p-5 bg-white dark:bg-[#0E243A] border border-slate-200 dark:border-slate-700/70 rounded-xl shadow-sm space-y-4"
+      className="stage-reveal p-4 sm:p-5 bg-white dark:bg-night-raised border border-slate-200 dark:border-slate-700/70 rounded-xl shadow-sm space-y-4"
     >
       <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="flex items-start gap-2.5 min-w-0">
-          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0052CC]/10 text-[#0052CC] dark:bg-indigo-500/15 dark:text-indigo-300">
+          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-cobalt/10 text-brand-cobalt dark:bg-indigo-500/15 dark:text-indigo-300">
             {icon}
           </span>
           <div className="min-w-0">
@@ -75,7 +75,7 @@ export default function MinigameShell({ title, rule, icon, onSkip, children }: M
         <button
           type="button"
           onClick={onSkip}
-          className="shrink-0 self-start inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50"
+          className="shrink-0 self-start inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-2xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50"
         >
           <FastForward className="w-3.5 h-3.5" aria-hidden="true" />
           Saltar (resultado normal)
@@ -85,7 +85,7 @@ export default function MinigameShell({ title, rule, icon, onSkip, children }: M
       <div className="relative">
         {children(running, assisted)}
         {count === null && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-lg bg-white/75 dark:bg-[#0E243A]/75">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-lg bg-white/75 dark:bg-night-raised/75">
             <button
               type="button"
               autoFocus
@@ -93,24 +93,24 @@ export default function MinigameShell({ title, rule, icon, onSkip, children }: M
                 playSound('select');
                 setCount(COUNTDOWN_FROM);
               }}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#0A2540] hover:bg-[#0052CC] dark:bg-[#0052CC] dark:hover:bg-[#0047b3] text-white font-bold text-sm shadow-lg shadow-[#0052CC]/25 transition-colors focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-navy hover:bg-brand-cobalt dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover text-white font-bold text-sm shadow-lg shadow-brand-cobalt/25 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50"
             >
               <Play className="w-4 h-4" aria-hidden="true" />
               Empezar
             </button>
-            <p className="text-[11px] text-slate-600 dark:text-slate-300">Mirá el tablero y empezá cuando estés listo.</p>
-            <label className="mt-1 flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-300 cursor-pointer select-none">
-              <input type="checkbox" checked={assisted} onChange={(e) => setAssisted(e.target.checked)} className="accent-[#0052CC]" />
+            <p className="text-2xs text-slate-600 dark:text-slate-300">Mirá el tablero y empezá cuando estés listo.</p>
+            <label className="mt-1 flex items-center gap-2 text-2xs text-slate-600 dark:text-slate-300 cursor-pointer select-none">
+              <input type="checkbox" checked={assisted} onChange={(e) => setAssisted(e.target.checked)} className="accent-brand-cobalt" />
               Modo asistido (más margen)
             </label>
           </div>
         )}
         {count !== null && count > 0 && (
           <div
-            className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/80 dark:bg-[#0E243A]/80 backdrop-blur-[1px]"
+            className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/80 dark:bg-night-raised/80 backdrop-blur-[1px]"
             aria-live="assertive"
           >
-            <span key={count} className="stage-stamp text-5xl font-black tabular-nums text-[#0A2540] dark:text-white">
+            <span key={count} className="stage-stamp text-5xl font-black tabular-nums text-brand-navy dark:text-white">
               {count}
             </span>
           </div>

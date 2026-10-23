@@ -53,7 +53,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
             <header className="mb-6 space-y-5">
                 <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1.5">
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0052CC] dark:text-blue-400">
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-cobalt dark:text-blue-400">
                             El Emprendedor • Simulador de Decisiones
                         </p>
                         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
@@ -72,33 +72,33 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                 </div>
 
                 {/* Explicación de Métricas Vitales (Stitch: Capital Esmeralda, Reputación Cobalto, Bienestar Ámbar) */}
-                <div className="bg-white dark:bg-[#0B1E33] border border-slate-200 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl space-y-2.5 shadow-sm">
-                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                <div className="bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl space-y-2.5 shadow-sm">
+                    <div className="flex items-center justify-between text-2xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                         <span>Métricas Vitales de Supervivencia</span>
-                        <span className="text-[10px] text-rose-600 dark:text-rose-400 font-extrabold uppercase">Tocar 0% = Derrota Inmediata</span>
+                        <span className="text-3xs text-rose-600 dark:text-rose-400 font-extrabold uppercase">Tocar 0% = Derrota Inmediata</span>
                     </div>
                     <div className="grid grid-cols-3 gap-2 sm:gap-3 text-left">
                         <div className="p-2.5 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-slate-200/80 dark:border-slate-800/80 space-y-1">
-                            <span className="flex items-center text-xs font-black text-[#0F9D58] dark:text-emerald-400">
+                            <span className="flex items-center text-xs font-black text-metric-capital dark:text-emerald-400">
                                 <DollarSign className="w-3.5 h-3.5 mr-0.5 shrink-0" /> Capital
                             </span>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                            <p className="text-3xs text-slate-500 dark:text-slate-400 leading-tight">
                                 Caja y liquidez. Si llega a 0%, quiebra inmediata.
                             </p>
                         </div>
                         <div className="p-2.5 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-slate-200/80 dark:border-slate-800/80 space-y-1">
-                            <span className="flex items-center text-xs font-black text-[#1B68D2] dark:text-blue-400">
+                            <span className="flex items-center text-xs font-black text-metric-reputacion dark:text-blue-400">
                                 <Award className="w-3.5 h-3.5 mr-0.5 shrink-0" /> Reputación
                             </span>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                            <p className="text-3xs text-slate-500 dark:text-slate-400 leading-tight">
                                 Confianza del mercado. Si llega a 0%, rescisión total.
                             </p>
                         </div>
                         <div className="p-2.5 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-slate-200/80 dark:border-slate-800/80 space-y-1">
-                            <span className="flex items-center text-xs font-black text-[#FF9800] dark:text-amber-400">
+                            <span className="flex items-center text-xs font-black text-metric-bienestar dark:text-amber-400">
                                 <Heart className="w-3.5 h-3.5 mr-0.5 shrink-0" /> Bienestar
                             </span>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                            <p className="text-3xs text-slate-500 dark:text-slate-400 leading-tight">
                                 Moral y salud del equipo. Si llega a 0%, colapso por burnout.
                             </p>
                         </div>
@@ -116,16 +116,16 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                     aria-current={isCurrent ? 'step' : undefined}
                                     className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold transition-colors ${
                                         isComplete
-                                            ? 'border-[#0052CC] bg-[#0052CC] text-white'
+                                            ? 'border-brand-cobalt bg-brand-cobalt text-white'
                                             : isCurrent
-                                                ? 'border-[#0052CC] bg-blue-50 text-[#0052CC] dark:border-blue-400 dark:bg-blue-950 dark:text-blue-300'
+                                                ? 'border-brand-cobalt bg-blue-50 text-brand-cobalt dark:border-blue-400 dark:bg-blue-950 dark:text-blue-300'
                                                 : 'border-slate-300 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-500'
                                     }`}
                                 >
                                     {isComplete ? <Check className="h-3.5 w-3.5" /> : item}
                                 </span>
                                 <div className="min-w-0">
-                                    <p className={`text-[10px] font-bold uppercase tracking-wider ${isCurrent ? 'text-[#0052CC] dark:text-blue-300' : 'text-slate-400 dark:text-slate-500'}`}>
+                                    <p className={`text-3xs font-bold uppercase tracking-wider ${isCurrent ? 'text-brand-cobalt dark:text-blue-300' : 'text-slate-400 dark:text-slate-500'}`}>
                                         Paso {item}
                                     </p>
                                     <p className="truncate text-xs font-medium text-slate-700 dark:text-slate-300">
@@ -133,7 +133,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                     </p>
                                 </div>
                                 {item === 1 && (
-                                    <div className={`ml-auto h-px flex-1 ${step === 2 ? 'bg-[#0052CC]' : 'bg-slate-200 dark:bg-slate-800'}`} />
+                                    <div className={`ml-auto h-px flex-1 ${step === 2 ? 'bg-brand-cobalt' : 'bg-slate-200 dark:bg-slate-800'}`} />
                                 )}
                             </div>
                         );
@@ -164,8 +164,8 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                     onClick={() => setArquetipo(item)}
                                     className={`w-full rounded-2xl border p-4 sm:p-5 text-left transition-all ${
                                         isSelected
-                                            ? 'border-[#0052CC] bg-blue-50/70 dark:bg-[#0E2C52] ring-2 ring-[#0052CC]/50 shadow-md'
-                                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1E33] hover:border-slate-300 dark:hover:border-slate-700 shadow-sm'
+                                            ? 'border-brand-cobalt bg-blue-50/70 dark:bg-night-selected ring-2 ring-brand-cobalt/50 shadow-md'
+                                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-night-surface hover:border-slate-300 dark:hover:border-slate-700 shadow-sm'
                                     }`}
                                 >
                                     <div className="flex items-start justify-between gap-3">
@@ -174,7 +174,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                         </h3>
                                         <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
                                             isSelected
-                                                ? 'border-[#0052CC] bg-[#0052CC] text-white'
+                                                ? 'border-brand-cobalt bg-brand-cobalt text-white'
                                                 : 'border-slate-300 dark:border-slate-700 text-transparent'
                                         }`}>
                                             <Check className="h-3 w-3" />
@@ -184,7 +184,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                         {item.descripcion}
                                     </p>
                                     <div className="mt-3.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
-                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Impacto inicial:</span>
+                                        <span className="text-3xs text-slate-400 uppercase tracking-wider font-bold">Impacto inicial:</span>
                                         <ImpactBadges impactPreview={item.impactPreview} />
                                     </div>
                                 </button>
@@ -196,7 +196,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                         type="button"
                         onClick={handleArquetipoContinue}
                         disabled={!arquetipo}
-                        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0A2540] hover:bg-[#0052CC] dark:bg-[#0052CC] dark:hover:bg-[#0453cd] px-4 py-3.5 text-sm font-bold text-white transition-all shadow-md disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
+                        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-navy hover:bg-brand-cobalt dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover px-4 py-3.5 text-sm font-bold text-white transition-all shadow-md disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
                     >
                         Continuar a Financiamiento <ArrowRight className="h-4 w-4" />
                     </button>
@@ -226,8 +226,8 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                     onClick={() => setFinanciamiento(item)}
                                     className={`w-full rounded-2xl border p-4 sm:p-5 text-left transition-all ${
                                         isSelected
-                                            ? 'border-[#0052CC] bg-blue-50/70 dark:bg-[#0E2C52] ring-2 ring-[#0052CC]/50 shadow-md'
-                                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1E33] hover:border-slate-300 dark:hover:border-slate-700 shadow-sm'
+                                            ? 'border-brand-cobalt bg-blue-50/70 dark:bg-night-selected ring-2 ring-brand-cobalt/50 shadow-md'
+                                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-night-surface hover:border-slate-300 dark:hover:border-slate-700 shadow-sm'
                                     }`}
                                 >
                                     <div className="flex items-start justify-between gap-3">
@@ -236,7 +236,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                         </h3>
                                         <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
                                             isSelected
-                                                ? 'border-[#0052CC] bg-[#0052CC] text-white'
+                                                ? 'border-brand-cobalt bg-brand-cobalt text-white'
                                                 : 'border-slate-300 dark:border-slate-700 text-transparent'
                                         }`}>
                                             <Check className="h-3 w-3" />
@@ -246,7 +246,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                         {item.descripcion}
                                     </p>
                                     <div className="mt-3.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
-                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Impacto inicial:</span>
+                                        <span className="text-3xs text-slate-400 uppercase tracking-wider font-bold">Impacto inicial:</span>
                                         <ImpactBadges impactPreview={item.impactPreview} />
                                     </div>
                                 </button>
@@ -254,7 +254,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                         })}
                     </div>
 
-                    <div className="mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1E33] p-4 sm:p-5 shadow-sm">
+                    <div className="mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-night-surface p-4 sm:p-5 shadow-sm">
                         <label htmlFor="player-name" className="block text-sm font-bold text-slate-900 dark:text-slate-100">
                             ¿Cómo te llamás? <span className="font-normal text-slate-400 dark:text-slate-500">(opcional)</span>
                         </label>
@@ -269,7 +269,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                             autoComplete="given-name"
                             onChange={(e) => setNombre(e.target.value.replace(/[{}]/g, ''))}
                             placeholder="Tu nombre"
-                            className="mt-3 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50 focus:border-[#0052CC]"
+                            className="mt-3 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50 focus:border-brand-cobalt"
                         />
                         {sanitizePlayerName(nombre) && (
                             <label className="mt-3 flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer select-none animate-in fade-in duration-200">
@@ -277,7 +277,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                     type="checkbox"
                                     checked={recordar}
                                     onChange={(e) => setRecordar(e.target.checked)}
-                                    className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 accent-[#0052CC]"
+                                    className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 accent-brand-cobalt"
                                 />
                                 Recordar nombre para futuras partidas
                             </label>
@@ -296,7 +296,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                             type="button"
                             onClick={handleStart}
                             disabled={!financiamiento}
-                            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#0A2540] hover:bg-[#0052CC] dark:bg-[#0052CC] dark:hover:bg-[#0453cd] px-4 py-3.5 text-sm font-bold text-white transition-all shadow-md disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
+                            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-navy hover:bg-brand-cobalt dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover px-4 py-3.5 text-sm font-bold text-white transition-all shadow-md disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
                         >
                             Comenzar Simulación <ArrowRight className="h-4 w-4" />
                         </button>
