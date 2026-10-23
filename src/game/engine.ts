@@ -326,18 +326,19 @@ export function resolveOption(
   state: GameState,
   option: GameOption,
   performance?: Performance
-): { effects: Partial<Metrics>; addTags?: Tag[]; removeTags?: Tag[]; performance?: Performance } {
+): { effects: Partial<Metrics>; addTags?: Tag[]; removeTags?: Tag[]; performance?: Performance; outcomeText?: string } {
   const spec = option.minigame;
   if (!spec || !performance) return { effects: option.effects, addTags: option.addTags, removeTags: option.removeTags };
 
   const build = (tier: Performance) => {
     const extra = spec.tagsByPerformance?.[tier];
     return {
-      effects: scaleEffects(option.effects, tier),
+      effects: spec.effectsByPerformance?.[tier] ?? scaleEffects(option.effects, tier),
       // Lo que el rendimiento quita gana sobre lo que la opción suma (ej. 'perfect' evita Equity Diluido)
       addTags: [...(option.addTags ?? []), ...(extra?.addTags ?? [])].filter((t) => !extra?.removeTags?.includes(t)),
       removeTags: [...(option.removeTags ?? []), ...(extra?.removeTags ?? [])],
       performance: tier,
+      outcomeText: spec.outcomeTextByPerformance?.[tier],
     };
   };
   const statusOf = (r: ReturnType<typeof build>) => {
@@ -386,7 +387,7 @@ export function applyDecision(
     kind: resolvedKind,
     optionIndex: optionIndex ?? 0,
     optionText: option.text,
-    outcomeText: option.outcomeText,
+    outcomeText: resolved.outcomeText ?? option.outcomeText,
     effects: resolved.effects,
     appliedModifiers,
     learningPill: option.learningPill,

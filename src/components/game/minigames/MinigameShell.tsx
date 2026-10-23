@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { FastForward, Play } from 'lucide-react';
 import { playSound } from '../../../lib/sound';
+import { useStoredFlag } from '../../../hooks/useStoredFlag';
 import { vibrate } from '../../../lib/fx';
+
+export const ASSIST_STORAGE_KEY = 'el_emprendedor_minigame_assist';
 
 interface MinigameShellProps {
   title: string;
@@ -9,8 +12,11 @@ interface MinigameShellProps {
   rule: string;
   icon: ReactNode;
   onSkip: () => void;
-  /** Se llama con `running` en false durante la cuenta atrás y en true cuando el juego puede arrancar. */
-  children: (running: boolean) => ReactNode;
+  /**
+   * Se llama con `running` en false hasta que termina la cuenta atrás, y con `assisted` (modo asistido: más margen).
+   * El modo asistido se elige antes de empezar y después queda fijo.
+   */
+  children: (running: boolean, assisted: boolean) => ReactNode;
 }
 
 const COUNTDOWN_FROM = 3;
@@ -24,6 +30,7 @@ const COUNTDOWN_STEP_MS = 650;
 export default function MinigameShell({ title, rule, icon, onSkip, children }: MinigameShellProps) {
   // null = esperando que el jugador toque "Empezar"
   const [count, setCount] = useState<number | null>(null);
+  const [assisted, setAssisted] = useStoredFlag(ASSIST_STORAGE_KEY, false);
   const skipRef = useRef(onSkip);
   useEffect(() => {
     skipRef.current = onSkip;
@@ -76,7 +83,7 @@ export default function MinigameShell({ title, rule, icon, onSkip, children }: M
       </header>
 
       <div className="relative">
-        {children(running)}
+        {children(running, assisted)}
         {count === null && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-lg bg-white/75 dark:bg-[#0E243A]/75">
             <button
@@ -92,6 +99,10 @@ export default function MinigameShell({ title, rule, icon, onSkip, children }: M
               Empezar
             </button>
             <p className="text-[11px] text-slate-600 dark:text-slate-300">Mirá el tablero y empezá cuando estés listo.</p>
+            <label className="mt-1 flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-300 cursor-pointer select-none">
+              <input type="checkbox" checked={assisted} onChange={(e) => setAssisted(e.target.checked)} className="accent-[#0052CC]" />
+              Modo asistido (más margen)
+            </label>
           </div>
         )}
         {count !== null && count > 0 && (

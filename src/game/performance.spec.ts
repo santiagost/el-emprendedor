@@ -88,3 +88,39 @@ describe('applyDecision con minijuego', () => {
     expect(poor.status).toBe('game_over_bienestar');
   });
 });
+
+describe('effectsByPerformance', () => {
+  const crunch = defineOption(
+    'Hacerte cargo vos.',
+    { reputacion: 10, bienestar: -35 },
+    {
+      learningPill: 'Burnout.',
+      minigame: {
+        kind: 'tapping',
+        effectsByPerformance: { perfect: { reputacion: 15, bienestar: -38 }, poor: { reputacion: -10, bienestar: -15 } },
+      },
+    }
+  );
+
+  it('reemplaza el escalado en los tiers que define y deja el resto igual', () => {
+    const state = baseState();
+    expect(applyDecision(state, crunch, 'f3_c', undefined, 0, undefined, 'perfect').lastDecision?.effects).toEqual({ reputacion: 15, bienestar: -38 });
+    expect(applyDecision(state, crunch, 'f3_c', undefined, 0, undefined, 'poor').lastDecision?.effects).toEqual({ reputacion: -10, bienestar: -15 });
+    expect(applyDecision(state, crunch, 'f3_c', undefined, 0, undefined, 'good').lastDecision?.effects).toEqual({ reputacion: 10, bienestar: -35 });
+  });
+});
+
+describe('outcomeTextByPerformance', () => {
+  const option = defineOption('Algo.', { capital: 10 }, {
+    learningPill: 'x',
+    outcomeText: 'Normal.',
+    minigame: { kind: 'timing', outcomeTextByPerformance: { perfect: 'Genial.', poor: 'Flojo.' } },
+  });
+
+  it('usa el texto del tier y cae en el de la opción si el tier no tiene', () => {
+    const state = baseState();
+    expect(applyDecision(state, option, 'f3_t', undefined, 0, undefined, 'perfect').lastDecision?.outcomeText).toBe('Genial.');
+    expect(applyDecision(state, option, 'f3_t', undefined, 0, undefined, 'poor').lastDecision?.outcomeText).toBe('Flojo.');
+    expect(applyDecision(state, option, 'f3_t', undefined, 0, undefined, 'good').lastDecision?.outcomeText).toBe('Normal.');
+  });
+});

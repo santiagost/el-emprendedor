@@ -28,6 +28,10 @@ export interface MinigameSpec {
     /** Textos del encabezado cuando el minijuego necesita otro contexto que el de su tipo. */
     title?: string;
     rule?: string;
+    /** Efectos explícitos para un rendimiento: reemplazan el escalado automático de ese tier (ej. el crunch cuesta Bienestar aun si sale perfecto). */
+    effectsByPerformance?: Partial<Record<Performance, Partial<Metrics>>>;
+    /** Consecuencia narrativa según el rendimiento; si falta el tier, se usa la de la opción. */
+    outcomeTextByPerformance?: Partial<Record<Performance, string>>;
     /** Etiquetas extra según el rendimiento (se suman a las de la opción). */
     tagsByPerformance?: Partial<Record<Performance, { addTags?: Tag[]; removeTags?: Tag[] }>>;
 }

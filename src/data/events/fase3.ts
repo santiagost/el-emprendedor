@@ -41,6 +41,10 @@ export const fase3Events = [
                     minigame: {
                         kind: 'timing',
                         tagsByPerformance: { perfect: { removeTags: ['equity_diluido'] } },
+                        outcomeTextByPerformance: {
+                            perfect: 'Tu pitch dejó al fondo convencido. Cerraste la ronda con mejores condiciones de las que esperabas y sin entregar una dilución dolorosa: capital fresco y los inversores a tu favor.',
+                            poor: 'El pitch se te enredó y el fondo notó la duda. Cerraste igual, pero con peores condiciones: más dilución, menos margen de decisión y una relación que arranca desde atrás.',
+                        },
                     },
                     addTags: ['inversion_externa', 'equity_diluido'],
                     learningPill: 'Venture Capital: Inyecta velocidad extrema a cambio de perder autonomía sobre el rumbo de tu propia empresa.',
@@ -54,6 +58,10 @@ export const fase3Events = [
                     minigame: {
                         kind: 'timing',
                         title: 'Defender tu decisión',
+                        outcomeTextByPerformance: {
+                            perfect: 'Explicaste tu visión con tanta claridad que el fondo te respetó el no. Seguís autofinanciado y, encima, ganaste credibilidad en el ecosistema.',
+                            poor: 'Tu explicación no convenció y el rechazo sonó a falta de ambición. Seguís autofinanciado, pero perdiste algo de credibilidad frente al mercado.',
+                        },
                         rule: 'Frená la aguja dentro de la zona verde para explicarle al fondo por qué elegís crecer solo. Tres rondas, cada una más rápida.',
                     },
                     addTags: ['autonomia_estrategica'],
@@ -109,6 +117,19 @@ export const fase3Events = [
                 'Hacerte cargo personalmente de todo el trabajo operativo faltante.',
                 { reputacion: +10, bienestar: -35 },
                 {
+                    minigame: {
+                        kind: 'tapping',
+                        title: 'Crunch nocturno',
+                        rule: 'Tocá lo más rápido que puedas para tapar los huecos antes de que se acabe el tiempo. Pasado el 70 % cada toque rinde menos.',
+                        outcomeTextByPerformance: {
+                            perfect: 'Te pusiste la empresa al hombro y lo sacaste adelante: entregas impecables y un cliente que lo notó. Pero trabajaste de madrugada durante semanas y quedaste al borde del colapso físico y mental.',
+                            poor: 'Quisiste cubrir todo y no llegaste: las entregas se cayeron y perdiste a un cliente. A cambio, te rendiste a tiempo, dormiste y tu salud quedó casi intacta.',
+                        },
+                        effectsByPerformance: {
+                            perfect: { reputacion: +15, bienestar: -38 },
+                            poor: { capital: -10, reputacion: -10, bienestar: -15 },
+                        },
+                    },
                     learningPill: 'Liderazgo y Burnout: El fundador que actúa como bombero permanente termina siendo el cuello de botella de la empresa.',
                     outcomeText: 'Te pusiste la empresa al hombro trabajando 16 horas diarias para tapar los huecos. Cumpliste con las entregas, pero quedaste al borde del colapso físico y mental.',
                 }
@@ -117,6 +138,15 @@ export const fase3Events = [
                 'Asumir penalidades contractuales, frenar y dar un bono de retención.',
                 { capital: -25, reputacion: -10, bienestar: +15 },
                 {
+                    minigame: {
+                        kind: 'balance',
+                        title: 'Negociar las penalidades',
+                        outcomeTextByPerformance: {
+                            perfect: 'Negociaste con firmeza y los clientes aceptaron penalidades mucho más bajas. Frenaste la máquina, diste bonos de respiro al equipo y el margen dolió menos de lo previsto.',
+                            poor: 'La negociación se te fue de las manos: los clientes impusieron penalidades más duras. Salvaste a tu gente con el bono de retención, pero el trimestre quedó muy golpeado.',
+                        },
+                        rule: 'Mantené el cursor dentro del rango aceptable mientras los clientes empujan. Cuanta más reputación tengas, más margen.',
+                    },
                     removeTags: ['equipo_sobrecargado'],
                     learningPill: 'Retención de Talento: Cuesta hasta 3 veces más reemplazar a un colaborador clave que invertir en su bienestar.',
                     outcomeText: 'Pactaste penalidades con clientes, frenaste la máquina y diste bonos de respiro al equipo. El margen del trimestre dolió, pero salvaste la lealtad del núcleo de tu gente.',

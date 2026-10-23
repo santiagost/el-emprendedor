@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Presentation, Check, Minus, X } from 'lucide-react';
 import MinigameShell from './MinigameShell';
 import { useReducedMotion } from '../../../lib/motion';
-import { useStoredFlag } from '../../../hooks/useStoredFlag';
 import { playSound } from '../../../lib/sound';
 import { vibrate } from '../../../lib/fx';
 import { buildTimingRounds, classifyHit, needlePosition, performanceFromHits, type TimingHit } from '../../../game/minigames/timing';
@@ -17,8 +16,6 @@ interface PitchGameProps {
   onResolve: (performance: Performance) => void;
   onSkip: () => void;
 }
-
-export const ASSIST_STORAGE_KEY = 'el_emprendedor_minigame_assist';
 
 const HIT_STOP_MS = 80;
 const NEXT_ROUND_MS = 700;
@@ -46,27 +43,26 @@ export default function PitchGame({ seed, difficulty = 2, title, rule, onResolve
       icon={<Presentation className="w-4 h-4" aria-hidden="true" />}
       onSkip={onSkip}
     >
-      {(running) => <PitchBoard running={running} seed={seed} difficulty={difficulty} onResolve={onResolve} />}
+      {(running, assisted) => <PitchBoard running={running} assisted={assisted} seed={seed} difficulty={difficulty} onResolve={onResolve} />}
     </MinigameShell>
   );
 }
 
 function PitchBoard({
   running,
+  assisted,
   seed,
   difficulty,
   onResolve,
 }: {
   running: boolean;
+  assisted: boolean;
   seed: number;
   difficulty: 1 | 2 | 3;
   onResolve: (performance: Performance) => void;
 }) {
-  const [assisted, setAssisted] = useStoredFlag(ASSIST_STORAGE_KEY, false);
   const reduced = useReducedMotion();
-  // El modo asistido no cambia a mitad de partida: las rondas se arman una vez
-  const [assistedAtStart] = useState(assisted);
-  const rounds = useMemo(() => buildTimingRounds(seed, difficulty, assistedAtStart), [seed, difficulty, assistedAtStart]);
+  const rounds = useMemo(() => buildTimingRounds(seed, difficulty, assisted), [seed, difficulty, assisted]);
 
   const [roundIndex, setRoundIndex] = useState(0);
   const [hits, setHits] = useState<TimingHit[]>([]);
@@ -222,16 +218,6 @@ function PitchBoard({
       >
         {reduced ? 'Frenar (Espacio)' : 'Cerrar el trato (Espacio)'}
       </button>
-
-      <label className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 cursor-pointer select-none">
-        <input
-          type="checkbox"
-          checked={assisted}
-          onChange={(e) => setAssisted(e.target.checked)}
-          className="accent-[#0052CC]"
-        />
-        Modo asistido: zona verde más ancha (se aplica en el próximo minijuego)
-      </label>
     </div>
   );
 }
