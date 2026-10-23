@@ -3,6 +3,7 @@ import { FastForward, Play } from 'lucide-react';
 import { playSound } from '../../../lib/sound';
 import { useStoredFlag } from '../../../hooks/useStoredFlag';
 import { vibrate } from '../../../lib/fx';
+import Button from '../../common/Button';
 
 export const ASSIST_STORAGE_KEY = 'el_emprendedor_minigame_assist';
 
@@ -72,32 +73,31 @@ export default function MinigameShell({ title, rule, icon, onSkip, children }: M
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-snug">{rule}</p>
           </div>
         </div>
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           onClick={onSkip}
-          className="shrink-0 self-start inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-2xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50"
+          className="shrink-0 self-start px-2.5 py-1.5 rounded-lg text-2xs"
         >
           <FastForward className="w-3.5 h-3.5" aria-hidden="true" />
           Saltar (resultado normal)
-        </button>
+        </Button>
       </header>
 
       <div className="relative">
         {children(running, assisted)}
         {count === null && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-lg bg-white/75 dark:bg-night-raised/75">
-            <button
-              type="button"
+            <Button
               autoFocus
               onClick={() => {
                 playSound('select');
                 setCount(COUNTDOWN_FROM);
               }}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-navy hover:bg-brand-cobalt dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover text-white font-bold text-sm shadow-lg shadow-brand-cobalt/25 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50"
+              className="px-6 py-3 rounded-xl text-sm shadow-lg shadow-brand-cobalt/25"
             >
               <Play className="w-4 h-4" aria-hidden="true" />
               Empezar
-            </button>
+            </Button>
             <p className="text-2xs text-slate-600 dark:text-slate-300">Mirá el tablero y empezá cuando estés listo.</p>
             <label className="mt-1 flex items-center gap-2 text-2xs text-slate-600 dark:text-slate-300 cursor-pointer select-none">
               <input type="checkbox" checked={assisted} onChange={(e) => setAssisted(e.target.checked)} className="accent-brand-cobalt" />

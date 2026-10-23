@@ -6,6 +6,7 @@ import { startGame, applyDecision } from '../../game/engine';
 import MinigameStage from '../game/minigames/MinigameStage';
 import { PERFORMANCE_LABEL } from '../../game/minigames/performance';
 import type { GameEvent, GameOption, GameState, Metrics, Performance } from '../../types/game';
+import Button from '../common/Button';
 
 /**
  * Laboratorio de minijuegos (solo `pnpm dev`, en /dev/minijuegos): juega cada opción con minijuego
@@ -112,23 +113,22 @@ export default function MinigameLab() {
               className="w-28 p-2 rounded-lg text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700"
             />
           </label>
-          <button
-            type="button"
+          <Button
             onClick={() => {
               setSeed(randomSeed());
               restart();
             }}
-            className="px-3 py-2 rounded-lg text-xs font-semibold bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700"
+            variant="secondary"
+            className="px-3 py-2 rounded-lg text-xs"
           >
             Otra semilla
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             onClick={restart}
-            className="px-3 py-2 rounded-lg text-xs font-semibold bg-brand-cobalt hover:bg-brand-cobalt-hover text-white"
+            className="px-3 py-2 rounded-lg text-xs"
           >
             Reiniciar ronda
-          </button>
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -238,13 +238,12 @@ export default function MinigameLab() {
               {PERFORMANCE_LABEL[result.performance]}
               {result.skipped && <span className="font-normal text-slate-500 dark:text-slate-400"> (saltado)</span>}
             </p>
-            <button
-              type="button"
+            <Button
               onClick={restart}
-              className="px-4 py-2 rounded-lg text-sm font-semibold bg-brand-navy hover:bg-brand-cobalt text-white"
+              className="px-4 py-2 rounded-lg text-sm"
             >
               Jugar de nuevo
-            </button>
+            </Button>
           </div>
         )}
       </section>

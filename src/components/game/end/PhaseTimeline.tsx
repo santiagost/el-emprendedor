@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ChevronDown, X } from 'lucide-react';
 import type { PhaseStatus, TimelinePhase } from '../../../game/endReport';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { DecisionList, PanelHeader } from './DecisionsPanel';
+import Card from '../../common/Card';
+import Modal from '../../common/Modal';
 
 const STATUS_LABEL: Record<PhaseStatus, string> = {
   completed: 'Completada',
@@ -23,39 +25,22 @@ function interruptionsText({ crises, unforeseen }: { crises: number; unforeseen:
 function DecisionsModal({ phase, onClose }: { phase: TimelinePhase; onClose: () => void }) {
   const closeRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    closeRef.current?.focus();
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = overflow;
-      previous?.focus?.();
-    };
-  }, [onClose]);
-
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm sm:p-6" onClick={onClose}>
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={`decisiones-fase-${phase.phaseId}`}
-        onClick={(e) => e.stopPropagation()}
-        className="flex flex-col w-full sm:max-w-xl max-h-[88dvh] bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl"
-      >
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800">
-          <PanelHeader phase={phase} onClose={onClose} closeRef={closeRef} />
-        </div>
-        <div className="overflow-y-auto overscroll-contain p-4">
-          <DecisionList decisions={phase.decisions} />
-        </div>
+    <Modal
+      placement="sheet"
+      onClose={onClose}
+      labelledBy={`decisiones-fase-${phase.phaseId}`}
+      initialFocusRef={closeRef}
+      restoreFocus
+      panelClassName="flex flex-col w-full sm:max-w-xl max-h-[88dvh] bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl"
+    >
+      <div className="p-4 border-b border-slate-100 dark:border-slate-800">
+        <PanelHeader phase={phase} onClose={onClose} closeRef={closeRef} />
       </div>
-    </div>
+      <div className="overflow-y-auto overscroll-contain p-4">
+        <DecisionList decisions={phase.decisions} />
+      </div>
+    </Modal>
   );
 }
 
@@ -160,10 +145,10 @@ export default function PhaseTimeline({ phases }: { phases: TimelinePhase[] }) {
       </ol>
 
       {open && isWide && (
-        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-night-surface shadow-sm space-y-3 animate-slide-up-fade">
+        <Card className="p-5 space-y-3 animate-slide-up-fade">
           <PanelHeader phase={open} onClose={close} />
           <DecisionList decisions={open.decisions} />
-        </div>
+        </Card>
       )}
       {open && !isWide && <DecisionsModal phase={open} onClose={close} />}
     </section>

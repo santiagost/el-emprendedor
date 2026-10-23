@@ -17,6 +17,7 @@ import {
 import { PERFORMANCE_LABEL } from '../../../game/minigames/performance';
 import type { Tag } from '../../../data/tags';
 import type { Performance } from '../../../types/game';
+import Button from '../../common/Button';
 
 interface LaunchGameProps {
   seed: number;
@@ -235,17 +236,17 @@ function LaunchBoard({
         )}
       </p>
 
-      <button
-        type="button"
+      <Button
         disabled={!spinning}
         onPointerDown={(e) => {
           e.preventDefault();
           brake();
         }}
-        className="w-full py-4 px-4 bg-brand-navy hover:bg-brand-cobalt active:bg-brand-navy-press dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover disabled:opacity-50 text-white font-bold text-sm sm:text-base rounded-xl transition-colors touch-manipulation select-none focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50"
+        size="lg"
+        className="w-full disabled:opacity-50 touch-manipulation select-none"
       >
         Frenar (Espacio)
-      </button>
+      </Button>
     </div>
   );
 }

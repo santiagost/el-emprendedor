@@ -7,6 +7,7 @@ import { vibrate } from '../../../lib/fx';
 import { buildTimingRounds, classifyHit, needlePosition, performanceFromHits, type TimingHit } from '../../../game/minigames/timing';
 import { PERFORMANCE_LABEL } from '../../../game/minigames/performance';
 import type { Performance } from '../../../types/game';
+import Button from '../../common/Button';
 
 interface PitchGameProps {
   seed: number;
@@ -207,17 +208,17 @@ function PitchBoard({
         )}
       </p>
 
-      <button
-        type="button"
+      <Button
         disabled={!running || phase !== 'aiming'}
         onPointerDown={(e) => {
           e.preventDefault();
           stop();
         }}
-        className="w-full py-4 px-4 bg-brand-navy hover:bg-brand-cobalt active:bg-brand-navy-press dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover disabled:opacity-50 text-white font-bold text-sm sm:text-base rounded-xl transition-colors touch-manipulation select-none focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50"
+        size="lg"
+        className="w-full disabled:opacity-50 touch-manipulation select-none"
       >
         {reduced ? 'Frenar (Espacio)' : 'Cerrar el trato (Espacio)'}
-      </button>
+      </Button>
     </div>
   );
 }

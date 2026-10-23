@@ -2,6 +2,8 @@ import { AlertTriangle, CheckCircle2, Flag, Info, RefreshCw, RotateCcw, XCircle 
 import type { LucideIcon } from 'lucide-react';
 import type { Archetype, Financing } from '../../../types/game';
 import type { Epilogue, EpilogueTone, WhyLine } from '../../../game/endReport';
+import Button from '../../common/Button';
+import Card from '../../common/Card';
 
 const TONES: Record<EpilogueTone, { icon: LucideIcon; pill: string; label: string; title: string; why: string }> = {
   good: {
@@ -55,9 +57,11 @@ export default function EndResultCard({ epilogue, why, arquetipo, financiamiento
   const Icon = tone.icon;
 
   return (
-    <section
+    <Card
+      as="section"
+      shadow="hero"
       aria-label="Resultado de la partida"
-      className="bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-8 shadow-md dark:shadow-xl animate-slide-up-fade"
+      className="p-5 sm:p-8 animate-slide-up-fade"
     >
       <div className="flex flex-col lg:flex-row lg:items-end gap-6 lg:gap-10">
         <div className="flex-1 min-w-0 space-y-3">
@@ -79,20 +83,12 @@ export default function EndResultCard({ epilogue, why, arquetipo, financiamiento
 
         {/* Lado a lado en pantallas chicas y medias; apilados solo cuando hay una columna aparte */}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 lg:w-56 shrink-0">
-          <button
-            type="button"
-            onClick={onRestart}
-            className="inline-flex items-center justify-center gap-2 px-3 py-3.5 bg-brand-navy hover:bg-brand-cobalt dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover text-white text-sm font-bold rounded-xl transition-colors shadow-md"
-          >
+          <Button size="md" onClick={onRestart} className="shadow-md">
             <RefreshCw className="w-4 h-4" aria-hidden="true" /> Reintentar
-          </button>
-          <button
-            type="button"
-            onClick={onResetToSetup}
-            className="inline-flex items-center justify-center gap-2 px-3 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-sm font-bold rounded-xl border border-slate-200 dark:border-slate-700 transition-colors"
-          >
+          </Button>
+          <Button variant="secondary" size="md" onClick={onResetToSetup}>
             <RotateCcw className="w-4 h-4" aria-hidden="true" /> Cambiar perfil
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -100,6 +96,6 @@ export default function EndResultCard({ epilogue, why, arquetipo, financiamiento
         Perfil: <strong className="text-slate-800 dark:text-slate-200">{arquetipo.titulo}</strong> · Financiamiento:{' '}
         <strong className="text-slate-800 dark:text-slate-200">{financiamiento.titulo}</strong>
       </p>
-    </section>
+    </Card>
   );
 }

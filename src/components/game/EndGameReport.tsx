@@ -15,6 +15,9 @@ import ThemeToggle from '../common/ThemeToggle';
 import EffectsToggle from '../common/EffectsToggle';
 import SoundToggle from '../common/SoundToggle';
 import { useSoundToggle } from '../../lib/sound';
+import Button from '../common/Button';
+import Card from '../common/Card';
+import Modal from '../common/Modal';
 
 interface EndGameReportProps {
   gameState: GameState;
@@ -27,8 +30,6 @@ interface EndGameReportProps {
   fxEnabled?: boolean;
   onToggleFx?: () => void;
 }
-
-const CARD = 'bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm';
 
 export default function EndGameReport({
   gameState,
@@ -80,7 +81,7 @@ export default function EndGameReport({
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-5 items-stretch">
         <EndMetricsPanel metrics={metrics} curves={curves} />
 
-        <section aria-label="Cómo queda tu empresa" className={`${CARD} p-4 sm:p-6 flex flex-col gap-4 min-w-0`}>
+        <Card as="section" aria-label="Cómo queda tu empresa" className="p-4 sm:p-6 flex flex-col gap-4 min-w-0">
           <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">Cómo queda tu empresa</h3>
           {storySegments.length > 0 ? (
             <>
@@ -99,7 +100,7 @@ export default function EndGameReport({
               Cerraste el recorrido sin acumular rasgos pasivos permanentes en tu empresa.
             </p>
           )}
-        </section>
+        </Card>
       </div>
 
       <KeyMomentCard retrospective={retrospective} outlook={outlook} lost={status.startsWith('game_over')} />
@@ -115,38 +116,36 @@ export default function EndGameReport({
         <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
           Dominaste el camino del fundador. Ahora es momento de entrar a la arena comercial: competí definiendo precio, calidad, distribución y posicionamiento de producto en vivo.
         </p>
-        <button
-          type="button"
+        <Button
           onClick={() => setShowCtaModal(true)}
-          className="w-full sm:w-auto py-3 px-5 bg-brand-navy hover:bg-brand-cobalt dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-md"
+          className="w-full sm:w-auto py-3 px-5 text-sm rounded-xl shadow-md"
         >
           <span>Conocer el Simulador Comercial</span>
           <ExternalLink className="w-4 h-4" aria-hidden="true" />
-        </button>
+        </Button>
       </div>
 
       {showCtaModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 text-center shadow-2xl">
+        <Modal
+          onClose={() => setShowCtaModal(false)}
+          labelledBy="cta-simulador-titulo"
+          panelClassName="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 text-center shadow-2xl"
+        >
             <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-700/60 rounded-full flex items-center justify-center mx-auto">
               <Sparkles className="w-6 h-6 text-brand-cobalt dark:text-indigo-400" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Simulador de Estrategia Comercial</h3>
+            <h3 id="cta-simulador-titulo" className="text-base font-bold text-slate-900 dark:text-slate-100">Simulador de Estrategia Comercial</h3>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed text-left">
               En este segundo juego por equipos, gestionarás variables reales de mercado: estructura de costos fijos y variables, estrategia de precios elásticos y conquista de segmentos de mercado.
             </p>
             <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-400 text-left">
               <Pin className={INLINE_ICON_CLASS} aria-hidden="true" /> <strong>Disponible en la plataforma TID:</strong> consultá con tu facilitador o docente para participar de la próxima simulación en vivo.
             </div>
-            <button
-              type="button"
-              onClick={() => setShowCtaModal(false)}
-              className="w-full py-2.5 bg-brand-navy hover:bg-brand-cobalt dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover text-white text-xs font-bold rounded-lg transition-colors"
-            >
+            <Button size="sm" onClick={() => setShowCtaModal(false)} className="w-full">
               Entendido
-            </button>
-          </div>
-        </div>
+            </Button>
+          
+        </Modal>
       )}
     </div>
   );
