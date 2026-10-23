@@ -1,31 +1,76 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useGameEngine } from '../../hooks/useGameEngine';
-import type { Archetype, Financing } from '../../types/game';
-import { DollarSign, Award, Heart, ArrowRight, RotateCcw, AlertTriangle, Zap } from 'lucide-react';
+import { useTheme } from '../../hooks/useTheme';
+import { useSequence } from '../../hooks/useSequence';
+import { useStoredFlag } from '../../hooks/useStoredFlag';
+import type { Archetype, DecisionLogEntry, Financing, Metrics, Performance } from '../../types/game';
+import { DollarSign, Award, Heart, ArrowRight, RotateCcw, AlertTriangle, Zap, CheckCircle2, Building2, Lightbulb, X, Gamepad2 } from 'lucide-react';
+import { EventKindIcon } from '../common/EventKindIcon';
+import { INLINE_ICON_CLASS } from '../common/iconStyles';
 import ImpactBadges from './ImpactBadges';
 import EndGameReport from './EndGameReport';
+import PhaseRecap from './PhaseRecap';
+import MetricCard from './MetricCard';
+import TimelineBar from './TimelineBar';
+import CompanyStatusCard from './CompanyStatusCard';
+import InterruptionStage from './InterruptionStage';
+import MinigameStage from './minigames/MinigameStage';
+import ThemeToggle from '../common/ThemeToggle';
+import EffectsToggle from '../common/EffectsToggle';
+import SoundToggle from '../common/SoundToggle';
+import { useEffectsToggle, useReducedMotion } from '../../lib/motion';
+import { PHASES, type PhaseId } from '../../game/phases';
+import { buildPhaseRecap } from '../../game/recap';
+import { stageFor } from '../../game/stage';
+import { hasPlayableMinigame, PERFORMANCE_HINT, PERFORMANCE_LABEL, seedFromText } from '../../game/minigames/performance';
+import { computeMetricDeltas, getRevealingDuration, netDecisionEffect, stressLevel } from '../../game/ui';
+import { confetti, vibrate } from '../../lib/fx';
+import { playSound, useSoundToggle } from '../../lib/sound';
+import { localizeEvent, personalize } from '../../lib/personalize';
+import type { SequenceStep } from '../../hooks/useSequence';
+
+// Fuera del componente: una referencia estable evita reiniciar los timers de useSequence
+const OUTCOME_STEPS: SequenceStep[] = [
+  { at: 0 },    // Paso ①: Selección y deltas
+  { at: 700 },  // Paso ②: Consecuencia narrativa
+  { at: 1500 }, // Paso ③: Concepto clave
+];
+
+const METRIC_KEYS: (keyof Metrics)[] = ['capital', 'reputacion', 'bienestar'];
+/** Caída (en puntos) a partir de la cual la métrica vibra al cambiar. */
+const BIG_DROP = -15;
+
+const decisionIdOf = (entry: DecisionLogEntry) => `${entry.turn}-${entry.eventId}-${entry.optionIndex}`;
 
 interface GameProps {
   arquetipo: Archetype;
   financiamiento: Financing;
-  onResetToSetup?: () => void;
+  /** Nombre elegido en Setup; en una partida retomada se usa el guardado en la sesión. */
+  playerName?: string;
+  onResetToSetup?: (currentName?: string) => void;
 }
 
 const renderDeltaBadge = (value: number | undefined, label: string, color: string) => {
   if (value === undefined || value === 0) return null;
   const isPositive = value > 0;
   const sign = isPositive ? '+' : '';
-  const textColor = isPositive ? color : 'text-rose-400';
+  const textColor = isPositive ? color : 'text-rose-600 dark:text-rose-400';
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800/80 ${textColor} border border-slate-700/60`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded text-2xs font-bold bg-slate-100 dark:bg-slate-800/80 ${textColor} border border-slate-200 dark:border-slate-700/60`}>
       {sign}{value} {label}
     </span>
   );
 };
 
-export default function Game({ arquetipo, financiamiento, onResetToSetup }: GameProps) {
+export default function Game({ arquetipo, financiamiento, playerName, onResetToSetup }: GameProps) {
+  const { theme, toggleTheme } = useTheme();
+  const { fxEnabled, toggleFx } = useEffectsToggle();
+  const { soundEnabled, toggleSound } = useSoundToggle();
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  // A7: panel lateral "Mi empresa" (colapsable en escritorio, drawer en pantallas chicas)
+  const [companyCollapsed, setCompanyCollapsed] = useStoredFlag('el_emprendedor_company_panel_collapsed', false);
+  const [showCompanyDrawer, setShowCompanyDrawer] = useState(false);
 
   const {
     gameState,
@@ -33,8 +78,16 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
     step,
     decide,
     advance,
+    continueFromRecap,
     restartGame,
-  } = useGameEngine(arquetipo, financiamiento);
+  } = useGameEngine(arquetipo, financiamiento, playerName);
+
+  // Coreografía de interrupciones (Sprint 2 · A1). Recargar en medio de ella no la repite: la carta queda revelada.
+  const [seenAlertForEventId, setSeenAlertForEventId] = useState<string | null>(() =>
+    step === 'decision' && currentEvent && stageFor(currentEvent) ? currentEvent.id : null
+  );
+  // Carta que acaba de revelarse tras la coreografía: anima su entrada una sola vez
+  const [revealedEventId, setRevealedEventId] = useState<string | null>(null);
 
   const {
     metrics,
@@ -43,237 +96,717 @@ export default function Game({ arquetipo, financiamiento, onResetToSetup }: Game
     maxTurns,
     lastPill,
     lastDecision,
+    phaseId,
   } = gameState;
+
+  // Sprint 3: opción elegida que está esperando el resultado de su minijuego
+  const [pendingMinigame, setPendingMinigame] = useState<{ optionIndex: number; turn: number } | null>(null);
+
+  // Estado de suspenso UI antes de revelar el impacto (A4)
+  const isReducedMotion = useReducedMotion();
+  const [isRevealing, setIsRevealing] = useState(false);
+  // Métricas previas a la decisión: el HUD las muestra mientras dura el suspenso
+  const [heldMetrics, setHeldMetrics] = useState<Metrics | null>(null);
+  const revealingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const displayMetrics = heldMetrics ?? metrics;
+
+  // Seguimiento de deltas reales para animaciones de métricas.
+  // Se calculan recién cuando termina el suspenso, para no revelar el impacto antes de tiempo.
+  const prevMetricsRef = useRef(metrics);
+  const deltasPendingRef = useRef(false);
+  // Hitos de confeti: una vez por métrica y por partida (las que ya arrancan en 100 no cuentan)
+  const celebratedMetricsRef = useRef<Set<keyof Metrics>>(
+    new Set(METRIC_KEYS.filter((k) => metrics[k] >= 100))
+  );
+  const [metricDeltas, setMetricDeltas] = useState<{
+    capital?: number;
+    reputacion?: number;
+    bienestar?: number;
+    key: number;
+    decisionId?: string;
+  }>({ key: 0 });
+
+  useEffect(() => {
+    if (step === 'decision') {
+      prevMetricsRef.current = metrics;
+      deltasPendingRef.current = true;
+      return;
+    }
+
+    if (step === 'outcome' && !isRevealing && deltasPendingRef.current) {
+      deltasPendingRef.current = false;
+      const prev = prevMetricsRef.current;
+      const deltas = computeMetricDeltas(prev, metrics);
+
+      setMetricDeltas((current) => ({
+        ...deltas,
+        key: current.key + 1,
+        decisionId: lastDecision ? decisionIdOf(lastDecision) : undefined,
+      }));
+      prevMetricsRef.current = metrics;
+
+      // A3: un tick por métrica que se movió, escalonado como los deltas flotantes (0ms, 150ms, 300ms)
+      METRIC_KEYS.forEach((k, i) => {
+        const delta = deltas[k];
+        if (delta === undefined || delta === 0) return;
+        setTimeout(() => {
+          playSound(delta > 0 ? 'tickUp' : 'tickDown');
+          // A4: una caída fuerte se siente en el dispositivo, además de oírse
+          if (delta <= BIG_DROP) vibrate(60);
+        }, i * 150);
+      });
+
+      // A6: confeti dorado cuando una métrica llega a 100 por primera vez en la partida
+      const reachedMax = METRIC_KEYS.filter(
+        (k) => metrics[k] >= 100 && prev[k] < 100 && !celebratedMetricsRef.current.has(k)
+      );
+      if (reachedMax.length > 0) {
+        reachedMax.forEach((k) => celebratedMetricsRef.current.add(k));
+        confetti('gold');
+      }
+    }
+  }, [step, metrics, isRevealing, lastDecision]);
+
+  const commitDecision = useCallback(
+    (optionIndex: number, turn: number, performance?: Performance) => {
+      if (isRevealing || step !== 'decision') return;
+      playSound('select');
+
+      const duration = getRevealingDuration(currentEvent?.kind, isReducedMotion);
+      if (duration > 0) {
+        setHeldMetrics(metrics);
+        setIsRevealing(true);
+      }
+
+      // Ejecutar de inmediato en el engine para persistir en localStorage
+      decide(optionIndex, turn, performance);
+
+      // Si reduced motion está activo, no hay suspenso (duración 0)
+      if (duration <= 0) {
+        return;
+      }
+
+      revealingTimerRef.current = setTimeout(() => {
+        setHeldMetrics(null);
+        setIsRevealing(false);
+      }, duration);
+    },
+    [isRevealing, step, decide, currentEvent?.kind, isReducedMotion, metrics]
+  );
+
+  const handleDecide = useCallback(
+    (optionIndex: number, turn: number) => {
+      if (isRevealing || step !== 'decision' || pendingMinigame) return;
+      // Una opción con minijuego lo juega primero; su resultado llega a commitDecision
+      if (hasPlayableMinigame(currentEvent?.options[optionIndex]?.minigame)) {
+        playSound('select');
+        setPendingMinigame({ optionIndex, turn });
+        return;
+      }
+      commitDecision(optionIndex, turn);
+    },
+    [isRevealing, step, pendingMinigame, currentEvent, commitDecision]
+  );
+
+  const resolveMinigame = useCallback(
+    (performance: Performance) => {
+      if (!pendingMinigame) return;
+      const { optionIndex, turn } = pendingMinigame;
+      setPendingMinigame(null);
+      if (performance === 'perfect') confetti('gold');
+      else if (performance === 'poor') {
+        playSound('thud');
+        vibrate(60);
+      }
+      commitDecision(optionIndex, turn, performance);
+    },
+    [pendingMinigame, commitDecision]
+  );
+
+  const handleRestartGame = () => {
+    if (revealingTimerRef.current) {
+      clearTimeout(revealingTimerRef.current);
+    }
+    setIsRevealing(false);
+    setHeldMetrics(null);
+    setSeenAlertForEventId(null);
+    setRevealedEventId(null);
+    setPendingMinigame(null);
+    setMetricDeltas({ key: 0 });
+    celebratedMetricsRef.current = new Set();
+    restartGame();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (revealingTimerRef.current) {
+        clearTimeout(revealingTimerRef.current);
+      }
+    };
+  }, []);
+
+  // B1: los textos con {nombre} se resuelven en el render; el motor guarda los textos crudos
+  const displayName = gameState.playerName;
+  const displayEvent = useMemo(
+    () => (currentEvent ? localizeEvent(currentEvent, displayName) : null),
+    [currentEvent, displayName]
+  );
+
+  // B2: resumen de la fase que acaba de cerrarse (el estado ya avanzó a la siguiente)
+  const [initialRecapPhaseId] = useState<number | null>(() =>
+    step === 'phase_recap' ? ((phaseId - 1) as PhaseId) : null
+  );
+  const phaseRecap = useMemo(
+    () => (step === 'phase_recap' ? buildPhaseRecap(gameState, (phaseId - 1) as PhaseId, displayName) : null),
+    [step, gameState, phaseId, displayName]
+  );
+
+  const currentPhase = PHASES.find((p) => p.id === phaseId) ?? PHASES[0];
+
+  // A6: confeti al pasar a una fase nueva (no al montar ni al reiniciar)
+  const prevPhaseRef = useRef(phaseId);
+  useEffect(() => {
+    if (phaseId > prevPhaseRef.current) {
+      confetti('default');
+    }
+    prevPhaseRef.current = phaseId;
+  }, [phaseId]);
+
+  // A6: confeti de victoria al llegar al desenlace final
+  const celebratedVictoryRef = useRef(false);
+  useEffect(() => {
+    if (step === 'ended' && status === 'victory' && !celebratedVictoryRef.current) {
+      celebratedVictoryRef.current = true;
+      confetti('victory');
+    } else if (step !== 'ended') {
+      celebratedVictoryRef.current = false;
+    }
+  }, [step, status]);
+
+  // A5: tinte tonal según el estrés de las métricas visibles
+  const stress = stressLevel(displayMetrics);
+  const isCalm = stress === 0;
+  const isLowWellbeing = displayMetrics.bienestar < 30;
+
+  // Deltas que muestra el panel "Elegiste": los mismos que el HUD (reales, con modificadores).
+  // Si no hay delta medido (recarga en pleno outcome), se usa el efecto neto del log.
+  const decisionDeltas = !lastDecision
+    ? {}
+    : metricDeltas.decisionId === decisionIdOf(lastDecision)
+    ? metricDeltas
+    : netDecisionEffect(lastDecision);
+
+  // Orquestador de la secuencia de capas en outcome (A3)
+  const [initialWasOutcome] = useState(() => step === 'outcome');
+  const outcomeSequenceKey = isRevealing
+    ? 'revealing'
+    : lastDecision
+    ? `${currentTurn}-${lastDecision.eventId}-${lastDecision.optionIndex}`
+    : `turn-${currentTurn}`;
+
+  const outcomeSequence = useSequence(
+    OUTCOME_STEPS,
+    {
+      key: outcomeSequenceKey,
+      initialCompleted: initialWasOutcome,
+    }
+  );
+
+  // Chequeo de alerta animada para interrupciones (Crisis o Imprevistos)
+  const isInterruption = currentEvent?.kind === 'crisis' || currentEvent?.kind === 'unforeseen';
+  const interruptionStage = stageFor(currentEvent);
+  const showIncomingAlert = Boolean(
+    interruptionStage &&
+    currentEvent &&
+    step === 'decision' &&
+    seenAlertForEventId !== currentEvent.id
+  );
+  const justRevealed = step === 'decision' && Boolean(currentEvent) && revealedEventId === currentEvent?.id;
+
+  useEffect(() => {
+    if (!showCompanyDrawer) return;
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowCompanyDrawer(false);
+    };
+    window.addEventListener('keydown', onEsc);
+    return () => window.removeEventListener('keydown', onEsc);
+  }, [showCompanyDrawer]);
+
+  // Atajos de teclado en Desktop (1, 2, 3 para elegir opción; Espacio/Enter para avanzar o saltar)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (showExitConfirm || showCompanyDrawer || showIncomingAlert || isRevealing || pendingMinigame) return;
+
+      if (step === 'decision' && currentEvent && status === 'playing') {
+        if (e.key === '1' && currentEvent.options[0]) {
+          handleDecide(0, currentTurn);
+        } else if (e.key === '2' && currentEvent.options[1]) {
+          handleDecide(1, currentTurn);
+        } else if (e.key === '3' && currentEvent.options[2]) {
+          handleDecide(2, currentTurn);
+        }
+      } else if (step === 'outcome') {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          if (!outcomeSequence.isCompleted) {
+            outcomeSequence.skipToEnd();
+          } else {
+            advance();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [step, currentEvent, status, currentTurn, showExitConfirm, showCompanyDrawer, showIncomingAlert, advance, outcomeSequence, isRevealing, pendingMinigame, handleDecide]);
 
   // Si la partida terminó y estamos en el paso final
   if (step === 'ended') {
     return (
-      <main className="max-w-md mx-auto p-4 flex flex-col min-h-screen justify-start">
+      <main className="w-full max-w-5xl mx-auto p-4 sm:p-6 flex flex-col min-h-screen justify-start">
         <EndGameReport
           gameState={gameState}
           arquetipo={arquetipo}
           financiamiento={financiamiento}
-          onRestart={restartGame}
-          onResetToSetup={onResetToSetup ?? restartGame}
+          onRestart={handleRestartGame}
+          onResetToSetup={() => (onResetToSetup ? onResetToSetup(displayName) : handleRestartGame())}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          fxEnabled={fxEnabled}
+          onToggleFx={toggleFx}
         />
       </main>
     );
   }
 
   const isGameOverOrVictory = status !== 'playing';
+  // B1: el resumen de fase es un hito dentro de la pantalla de juego (el encabezado queda fijo)
+  const recapOnScreen = step === 'phase_recap' ? phaseRecap : null;
 
   return (
-    <main className="max-w-md mx-auto p-4 flex flex-col min-h-screen justify-between relative">
-      {/* Header & Métricas */}
-      <header className="space-y-4">
-        <div className="flex justify-between items-center text-xs font-semibold text-slate-400">
-          <div className="flex items-center gap-2">
-            <span>TURNO {currentTurn} / {maxTurns}</span>
-            <span className="text-slate-600">•</span>
-            <span className="uppercase tracking-widest text-indigo-400">Fase {gameState.phaseId}</span>
+    <main
+      className="w-full max-w-5xl lg:max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col min-h-screen justify-between relative"
+      style={{ '--stress': stress } as React.CSSProperties}
+    >
+      {/* Atmósfera tonal por estrés (A5): tinte + viñeta, o resplandor cálido si todo está sano */}
+      <div aria-hidden="true" className="stress-layer stress-tint" />
+      <div aria-hidden="true" className="stress-layer stress-vignette" />
+      <div aria-hidden="true" className={`stress-layer calm-glow ${isCalm ? 'is-on' : ''}`} />
+
+      {/* Coreografía de la interrupción (crisis, imprevisto u oportunidad) antes de mostrar la carta */}
+      {showIncomingAlert && currentEvent && displayEvent && interruptionStage && (
+        <InterruptionStage
+          key={currentEvent.id}
+          event={displayEvent}
+          stage={interruptionStage}
+          onDone={() => {
+            setSeenAlertForEventId(currentEvent.id);
+            setRevealedEventId(currentEvent.id);
+          }}
+        />
+      )}
+
+      {/* Header Fijo con Blur (Sticky Top si hay scroll) */}
+      <header className={`stage-hud ${showIncomingAlert && interruptionStage ? `is-${interruptionStage.tone}` : ''} sticky top-0 z-30 bg-brand-canvas/90 dark:bg-night-canvas/90 backdrop-blur-md pt-2 sm:pt-3 pb-2 sm:pb-3 border-b border-slate-200 dark:border-slate-800/80 -mx-4 sm:-mx-6 px-4 sm:px-6 transition-colors shadow-sm space-y-2 sm:space-y-3`}>
+        <div className="flex justify-between items-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            {recapOnScreen ? (
+              <span className="uppercase tracking-widest text-amber-600 dark:text-amber-300 font-bold text-2xs sm:text-xs">
+                Fase {recapOnScreen.phaseId} completada
+              </span>
+            ) : (
+              <>
+                <span className="text-slate-800 dark:text-slate-200 font-bold tracking-wide">
+                  TURNO {currentTurn} / {maxTurns}
+                </span>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="uppercase tracking-widest text-brand-cobalt dark:text-indigo-400 font-bold text-2xs sm:text-xs">
+                  Fase {phaseId}<span className="hidden sm:inline">: {currentPhase.label}</span>
+                </span>
+              </>
+            )}
+            <span className="hidden md:inline-block text-slate-300 dark:text-slate-700">•</span>
+            <span className="hidden md:inline-block text-slate-600 dark:text-slate-400 font-normal">
+              {arquetipo.titulo} • {financiamiento.titulo}
+            </span>
           </div>
 
-          {/* Botón para volver al setup (Punto 6) */}
-          <button
-            type="button"
-            onClick={() => setShowExitConfirm(true)}
-            title="Cambiar estrategia / Volver al inicio"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 transition-colors text-[11px]"
-          >
-            <RotateCcw className="w-3 h-3 text-slate-400" />
-            <span>Reiniciar</span>
-          </button>
+          {/* Botones de acción del header: EffectsToggle, ThemeToggle y Reiniciar */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowCompanyDrawer(true)}
+              title="Mi empresa"
+              aria-label="Abrir panel Mi empresa"
+              className="lg:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors text-2xs font-medium shadow-sm"
+            >
+              <Building2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+              <span className="hidden min-[420px]:inline">Mi empresa</span>
+            </button>
+            <SoundToggle soundEnabled={soundEnabled} onToggle={toggleSound} />
+            <EffectsToggle fxEnabled={fxEnabled} onToggle={toggleFx} />
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
+            <button
+              type="button"
+              onClick={() => setShowExitConfirm(true)}
+              title="Cambiar estrategia / Volver al inicio"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 transition-colors text-2xs font-medium shadow-sm"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+              <span className="hidden sm:inline">Reiniciar</span>
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 bg-slate-900 p-3 rounded-xl border border-slate-800">
-          <div className="flex flex-col items-center">
-            <span className="flex items-center text-xs text-emerald-400 font-bold mb-1">
-              <DollarSign className="w-3.5 h-3.5 mr-0.5" /> {metrics.capital}%
-            </span>
-            <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-              <div
-                className="bg-emerald-500 h-full transition-all duration-300"
-                style={{ width: `${metrics.capital}%` }}
-              />
-            </div>
-            <span className="text-[10px] text-slate-500 mt-1">Capital</span>
-          </div>
+        {/* Línea de tiempo visual de 15 turnos */}
+        <TimelineBar currentTurn={currentTurn} maxTurns={maxTurns} milestonePhaseId={recapOnScreen?.phaseId} />
 
-          <div className="flex flex-col items-center">
-            <span className="flex items-center text-xs text-blue-400 font-bold mb-1">
-              <Award className="w-3.5 h-3.5 mr-0.5" /> {metrics.reputacion}%
-            </span>
-            <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-              <div
-                className="bg-blue-500 h-full transition-all duration-300"
-                style={{ width: `${metrics.reputacion}%` }}
-              />
-            </div>
-            <span className="text-[10px] text-slate-500 mt-1">Reputación</span>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <span className="flex items-center text-xs text-rose-400 font-bold mb-1">
-              <Heart className="w-3.5 h-3.5 mr-0.5" /> {metrics.bienestar}%
-            </span>
-            <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-              <div
-                className="bg-rose-500 h-full transition-all duration-300"
-                style={{ width: `${metrics.bienestar}%` }}
-              />
-            </div>
-            <span className="text-[10px] text-slate-500 mt-1">Bienestar</span>
-          </div>
+        {/* Panel de Métricas Vitales (con dorado al 100%, pulso y deltas flotantes) */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 sm:pt-1">
+          <MetricCard
+            label="Capital"
+            value={displayMetrics.capital}
+            icon={DollarSign}
+            variant="capital"
+            delta={metricDeltas.capital}
+            deltaKey={metricDeltas.key}
+            delayMs={0}
+            isCalculating={isRevealing}
+          />
+          <MetricCard
+            label="Reputación"
+            value={displayMetrics.reputacion}
+            icon={Award}
+            variant="reputacion"
+            delta={metricDeltas.reputacion}
+            deltaKey={metricDeltas.key}
+            delayMs={150}
+            isCalculating={isRevealing}
+          />
+          <MetricCard
+            label="Bienestar"
+            value={displayMetrics.bienestar}
+            icon={Heart}
+            variant="bienestar"
+            delta={metricDeltas.bienestar}
+            deltaKey={metricDeltas.key}
+            delayMs={300}
+            isCalculating={isRevealing}
+          />
         </div>
       </header>
 
-      {/* Área Central / Evento */}
-      <section className="my-auto py-4">
-        {currentEvent && (
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between min-h-[300px]">
-            <div>
-              <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider mb-1.5">
-                {currentEvent.kind === 'crisis' ? (
-                  <span className="text-rose-400 font-bold flex items-center gap-1">
-                    <AlertTriangle className="w-3.5 h-3.5" /> Crisis Operativa • Turno {currentTurn}
-                  </span>
-                ) : currentEvent.kind === 'unforeseen' ? (
-                  <span className="text-amber-400 font-bold flex items-center gap-1">
-                    <Zap className="w-3.5 h-3.5" /> Suceso Imprevisto • Turno {currentTurn}
-                  </span>
-                ) : (
-                  <span className="text-indigo-400">Dilema {currentTurn}</span>
-                )}
-                {step === 'outcome' && (
-                  <span className="text-amber-400 font-bold">Resultado</span>
-                )}
+      {/* Hito de fase (B1): el resumen ocupa el lugar del dilema y de "Mi empresa" */}
+      {recapOnScreen ? (
+        <div className="w-full my-auto py-6 stress-content">
+          <PhaseRecap
+            recap={recapOnScreen}
+            initialCompleted={initialRecapPhaseId === recapOnScreen.phaseId}
+            onContinue={continueFromRecap}
+            disabled={showExitConfirm || showCompanyDrawer}
+          />
+        </div>
+      ) : (
+      <div
+        style={{ '--side-w': companyCollapsed ? '56px' : '260px' } as React.CSSProperties}
+        className={`w-full my-auto py-6 lg:grid lg:grid-cols-[var(--side-w)_minmax(0,1fr)] xl:grid-cols-[var(--side-w)_minmax(0,1fr)_var(--side-w)] lg:gap-6 items-start lg:transition-[grid-template-columns] lg:duration-300 stress-content ${isLowWellbeing ? 'is-desaturated' : ''}`}
+      >
+        {/* Columna izquierda: panel Mi empresa (solo escritorio, sticky bajo el header) */}
+        <aside className="hidden lg:block sticky top-60 self-start max-h-[calc(100vh-16rem)] overflow-y-auto overflow-x-hidden">
+          <CompanyStatusCard
+            arquetipo={arquetipo}
+            financiamiento={financiamiento}
+            activeTags={gameState.activeTags}
+            collapsed={companyCollapsed}
+            onToggleCollapse={() => setCompanyCollapsed(!companyCollapsed)}
+          />
+        </aside>
+
+        {/* Columna central: carta del dilema + opciones juntas */}
+        <div className="min-w-0 w-full max-w-[640px] mx-auto space-y-5">
+          {currentEvent && displayEvent && (
+            <div
+              className={`bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 p-5 sm:p-7 rounded-2xl shadow-sm dark:shadow-xl flex flex-col justify-between transition-colors ${
+                showIncomingAlert ? 'invisible' : justRevealed ? 'stage-reveal' : ''
+              }`}
+            >
+              <div>
+                {/* Header del tipo de evento */}
+                <div className="flex items-center justify-between text-2xs font-bold uppercase tracking-wider mb-2">
+                  {currentEvent.kind === 'crisis' ? (
+                    <span className="text-rose-600 dark:text-rose-400 font-extrabold flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-500/70 animate-pulse">
+                      <AlertTriangle className="w-3.5 h-3.5" /> Crisis Operativa • Turno {currentTurn}
+                    </span>
+                  ) : currentEvent.kind === 'unforeseen' ? (
+                    <span className="text-amber-600 dark:text-amber-400 font-extrabold flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-500/70 animate-pulse">
+                      <Zap className="w-3.5 h-3.5" /> Suceso Imprevisto • Turno {currentTurn}
+                    </span>
+                  ) : (
+                    <span className="text-brand-cobalt dark:text-indigo-400 font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-indigo-950/50 border border-blue-200 dark:border-indigo-800/50">
+                      Dilema del Turno {currentTurn}
+                    </span>
+                  )}
+
+                  {step === 'outcome' && !isRevealing && (
+                    <span className="text-amber-600 dark:text-amber-400 font-extrabold flex items-center gap-1 text-2xs">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Decisión Registrada
+                    </span>
+                  )}
+                </div>
+
+                <h2 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2.5 leading-snug">
+                  <EventKindIcon kind={displayEvent.kind} />
+                  {displayEvent.title}
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  {displayEvent.description}
+                </p>
               </div>
-              <h2 className="text-lg font-bold text-slate-100 mb-2">{currentEvent.title}</h2>
-              <p className="text-sm text-slate-300 leading-relaxed">{currentEvent.description}</p>
-            </div>
 
-            {/* Panel de Resultado (D2) */}
-            {step === 'outcome' && (
-              <div className="mt-4 space-y-3 pt-3 border-t border-slate-800/80">
-                {/* Opción seleccionada */}
-                {lastDecision && (
-                  <div className="p-3 bg-slate-950/70 rounded-lg border border-slate-800/80 space-y-2">
-                    <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
-                      Elegiste: <span className="text-slate-200 normal-case font-normal">"{lastDecision.optionText}"</span>
+              {/* Estado de Suspenso / Calculando (A4) */}
+              {isRevealing && (
+                <div className="mt-5 p-5 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-indigo-200/60 dark:border-indigo-900/40 flex flex-col items-center justify-center space-y-2.5 py-6 text-center animate-in fade-in duration-200 shadow-sm">
+                  <div className="w-6 h-6 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" />
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                      {isInterruption ? 'Analizando impacto de la crisis…' : 'Calculando consecuencias…'}
                     </p>
+                    <p className="text-2xs text-slate-500 dark:text-slate-400">
+                      Simulando reacción de mercado y métricas vitales
+                    </p>
+                  </div>
+                </div>
+              )}
 
-                    {/* Deltas de la decisión */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {renderDeltaBadge(lastDecision.effects.capital, 'Capital', 'text-emerald-400')}
-                      {renderDeltaBadge(lastDecision.effects.reputacion, 'Reputación', 'text-blue-400')}
-                      {renderDeltaBadge(lastDecision.effects.bienestar, 'Bienestar', 'text-rose-400')}
+              {/* Panel de Resultado por capas (A3) */}
+              {step === 'outcome' && !isRevealing && (
+                <div className="mt-5 space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+                  {/* Paso ① (currentStep >= 0): Opción seleccionada y deltas */}
+                  {outcomeSequence.currentStep >= 0 && lastDecision && (
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-slate-200 dark:border-slate-800/80 space-y-2 animate-in fade-in duration-200">
+                      <p className="text-2xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
+                        Elegiste:{' '}
+                        <span className="text-slate-900 dark:text-slate-100 normal-case font-medium">
+                          "{personalize(lastDecision.optionText, displayName)}"
+                        </span>
+                      </p>
+
+                      {lastDecision.performance && (
+                        <p className="text-2xs font-semibold text-brand-navy dark:text-slate-100">
+                          {PERFORMANCE_LABEL[lastDecision.performance]}
+                          <span className="font-normal text-slate-500 dark:text-slate-400"> · {PERFORMANCE_HINT[lastDecision.performance]}</span>
+                        </p>
+                      )}
+
+                      {/* Deltas de la decisión */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {renderDeltaBadge(decisionDeltas.capital, 'Capital', 'text-emerald-600 dark:text-emerald-400')}
+                        {renderDeltaBadge(decisionDeltas.reputacion, 'Reputación', 'text-brand-cobalt dark:text-blue-400')}
+                        {renderDeltaBadge(decisionDeltas.bienestar, 'Bienestar', 'text-amber-600 dark:text-amber-400')}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Paso ② (currentStep >= 1): Texto de consecuencia narrativa personalizada */}
+                  {outcomeSequence.currentStep >= 1 && lastDecision?.outcomeText && (
+                    <div className="p-3.5 bg-slate-50/80 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/70 rounded-xl text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed animate-in fade-in duration-200">
+                      <span className="font-semibold text-slate-900 dark:text-slate-200">Consecuencia: </span>
+                      {personalize(lastDecision.outcomeText, displayName)}
+                    </div>
+                  )}
+
+                  {/* Paso ③ (currentStep >= 2): Micro-píldora didáctica que entra deslizándose */}
+                  {outcomeSequence.currentStep >= 2 && lastPill && (
+                    <div className="p-3.5 bg-indigo-50/80 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/70 rounded-xl animate-slide-up-fade shadow-sm">
+                      <p className="text-xs text-indigo-900 dark:text-indigo-200 leading-normal">
+                        <Lightbulb className={INLINE_ICON_CLASS} aria-hidden="true" /> <span className="font-semibold text-indigo-700 dark:text-indigo-300">Concepto clave:</span> {personalize(lastPill, displayName)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+
+          {/* Alternativas de Decisión o Botón Siguiente, debajo de la carta */}
+          <div className="space-y-4">
+          {/* Opciones de Decisión (Paso: decision) */}
+          {status === 'playing' && displayEvent && step === 'decision' && pendingMinigame && (
+            <div className="space-y-2">
+              <p className="px-1 text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Elegiste: <span className="normal-case font-medium text-slate-800 dark:text-slate-200">"{displayEvent.options[pendingMinigame.optionIndex].text}"</span>
+              </p>
+              <MinigameStage
+                spec={displayEvent.options[pendingMinigame.optionIndex].minigame!}
+                seed={seedFromText(`${displayEvent.id}:${pendingMinigame.turn}`)}
+                reputation={metrics.reputacion}
+                activeTags={gameState.activeTags}
+                onResolve={resolveMinigame}
+                onSkip={() => resolveMinigame('good')}
+              />
+            </div>
+          )}
+          {status === 'playing' && displayEvent && step === 'decision' && !pendingMinigame && (
+            <div className={`space-y-3 ${showIncomingAlert ? 'invisible' : ''}`}>
+              <div className="flex items-center justify-between px-1">
+                <p className="text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Alternativas Disponibles:
+                </p>
+                <span className="hidden sm:inline-block text-3xs text-slate-400 dark:text-slate-500 font-mono">
+                  Atajos: [1], [2], [3]
+                </span>
+              </div>
+
+              {displayEvent.options.map((option, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  disabled={isRevealing}
+                  onClick={() => handleDecide(idx, currentTurn)}
+                  style={justRevealed ? { animationDelay: `${250 + idx * 80}ms` } : undefined}
+                  className={`${justRevealed ? 'stage-option-in ' : ''}option-card w-full text-left p-4 bg-white hover:bg-slate-50 active:bg-slate-100 dark:bg-night-raised dark:hover:bg-night-raised-hover dark:active:bg-night-raised-press border border-slate-200 dark:border-slate-700/70 hover:border-brand-cobalt/50 dark:hover:border-indigo-500/60 rounded-xl text-xs sm:text-sm text-slate-800 dark:text-slate-200 space-y-2.5 group shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50 disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    <span className="option-key flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-3xs font-mono text-slate-600 dark:text-slate-400 group-hover:bg-brand-cobalt dark:group-hover:bg-indigo-600 group-hover:text-white group-hover:border-brand-cobalt dark:group-hover:border-indigo-500">
+                      {idx + 1}
+                    </span>
+                    <div className="leading-snug text-slate-800 dark:text-slate-200 group-hover:text-brand-navy dark:group-hover:text-white flex-1 font-medium">
+                      {option.text}
                     </div>
                   </div>
-                )}
 
-                {/* Texto de consecuencia narrativa personalizada */}
-                {lastDecision?.outcomeText && (
-                  <div className="p-3 bg-slate-950/50 border border-slate-800/70 rounded-lg text-xs text-slate-300 leading-relaxed">
-                    <span className="font-semibold text-slate-200">Consecuencia: </span>
-                    {lastDecision.outcomeText}
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
+                    <span className="text-3xs text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold">
+                      Tendencia esperada:
+                    </span>
+                    <ImpactBadges impactPreview={option.impactPreview} />
                   </div>
-                )}
-
-                {/* Micro-píldora didáctica */}
-                {lastPill && (
-                  <div className="p-3 bg-indigo-950/50 border border-indigo-800/70 rounded-lg">
-                    <p className="text-[11px] text-indigo-200 leading-normal">
-                      💡 <span className="font-semibold text-indigo-300">Concepto clave:</span> {lastPill}
+                  {hasPlayableMinigame(option.minigame) && (
+                    <p className="flex items-center gap-1.5 text-3xs font-semibold uppercase tracking-wider text-brand-cobalt dark:text-indigo-300">
+                      <Gamepad2 className="w-3.5 h-3.5" aria-hidden="true" />
+                      Minijuego: tu ejecución mejora o empeora el resultado
                     </p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </section>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
 
-      {/* Opciones de Decisión (Paso: decision) */}
-      {status === 'playing' && currentEvent && step === 'decision' && (
-        <footer className="space-y-2.5 pb-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-1">
-            Elegí una alternativa:
-          </p>
-          {currentEvent.options.map((option, idx) => (
-            <button
-              key={idx}
-              onClick={() => decide(idx, currentTurn)}
-              className="w-full text-left p-3.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 hover:border-slate-700 rounded-xl transition-all text-xs text-slate-200 space-y-2 group"
-            >
-              <div className="leading-snug text-slate-200 group-hover:text-white">
-                {option.text}
-              </div>
-              <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between">
-                <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
-                  Tendencia esperada:
-                </span>
-                <ImpactBadges impactPreview={option.impactPreview} />
-              </div>
-            </button>
-          ))}
-        </footer>
+          {/* Panel de Outcome / Botón Siguiente (Paso: outcome) */}
+          {step === 'outcome' && (
+            <div className="space-y-3">
+              {isRevealing ? (
+                <div className="p-4 bg-slate-100/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 rounded-xl text-center space-y-1 animate-in fade-in duration-200 shadow-sm">
+                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 animate-pulse">
+                    Procesando decisión…
+                  </p>
+                </div>
+              ) : outcomeSequence.isCompleted ? (
+                <div className="space-y-3 animate-in fade-in duration-200">
+                  <button
+                    type="button"
+                    onClick={advance}
+                    className="w-full py-4 px-4 bg-brand-navy hover:bg-brand-cobalt active:bg-brand-navy-press dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover text-white font-bold text-sm sm:text-base rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-cobalt/25 group"
+                  >
+                    <span>
+                      {isGameOverOrVictory
+                        ? 'Ver Desenlace Final'
+                        : isInterruption
+                        ? 'Continuar al Siguiente Turno'
+                        : 'Siguiente Turno'}
+                    </span>
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+
+                  <p className="text-center text-2xs text-slate-400 dark:text-slate-500 hidden sm:block">
+                    Presioná <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Espacio</kbd> o <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Enter</kbd> para avanzar
+                  </p>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={outcomeSequence.skipToEnd}
+                  className="w-full py-3.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <span>Saltar animación</span>
+                  <span className="text-3xs text-slate-400 font-mono hidden sm:inline">(Espacio)</span>
+                </button>
+              )}
+            </div>
+          )}
+          </div>
+        </div>
+
+        {/* Columna derecha reservada (futuro: avatar / log); mantiene centrada la carta */}
+        <div className="hidden xl:block" aria-hidden="true" />
+      </div>
       )}
 
-      {/* Panel de Outcome / Botón Siguiente (Paso: outcome) */}
-      {step === 'outcome' && (
-        <footer className="pb-4 pt-2">
-          <button
-            onClick={advance}
-            className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-semibold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25"
-          >
-            <span>
-              {isGameOverOrVictory
-                ? 'Ver Desenlace Final'
-                : (currentEvent?.kind === 'crisis' || currentEvent?.kind === 'unforeseen')
-                  ? 'Continuar al Siguiente Turno'
-                  : 'Siguiente Turno'}
-            </span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </footer>
+      {/* Drawer "Mi empresa" para pantallas menores a lg */}
+      {showCompanyDrawer && (
+        <div className="lg:hidden fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label="Mi empresa">
+          <div
+            className="absolute inset-0 bg-black/60 animate-in fade-in duration-200"
+            onClick={() => setShowCompanyDrawer(false)}
+          />
+          <div className="relative w-[88vw] max-w-sm h-full overflow-y-auto bg-brand-canvas dark:bg-night-canvas p-4 space-y-3 shadow-2xl animate-in slide-in-from-left duration-200">
+            <button
+              type="button"
+              onClick={() => setShowCompanyDrawer(false)}
+              aria-label="Cerrar panel Mi empresa"
+              className="ml-auto flex items-center gap-1 text-2xs font-semibold text-slate-600 dark:text-slate-300 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+            >
+              <X className="w-3.5 h-3.5" /> Cerrar
+            </button>
+            <CompanyStatusCard
+              arquetipo={arquetipo}
+              financiamiento={financiamiento}
+              activeTags={gameState.activeTags}
+            />
+          </div>
+        </div>
       )}
 
       {/* Modal de confirmación para salir o reiniciar (Punto 6) */}
       {showExitConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 text-center">
-            <div className="w-12 h-12 bg-rose-950/60 border border-rose-800/60 rounded-full flex items-center justify-center mx-auto text-rose-400">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-12 h-12 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 rounded-full flex items-center justify-center mx-auto text-rose-600 dark:text-rose-400">
               <RotateCcw className="w-5 h-5" />
             </div>
             <div className="space-y-1.5">
-              <h3 className="text-base font-bold text-slate-100">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 ¿Abandonar partida actual?
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                 Se perderá el progreso de esta trayectoria y volverás a la pantalla de configuración para elegir perfil y financiamiento.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-2.5 pt-2">
               <button
                 type="button"
-                onClick={() => setShowExitConfirm(false)}
-                className="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-colors"
-              >
-                Seguir jugando
-              </button>
-              <button
-                type="button"
                 onClick={() => {
                   setShowExitConfirm(false);
+                  setSeenAlertForEventId(null);
+                  setMetricDeltas({ key: 0 });
                   if (onResetToSetup) {
-                    onResetToSetup();
+                    onResetToSetup(displayName);
                   } else {
-                    restartGame();
+                    handleRestartGame();
                   }
                 }}
                 className="py-2.5 px-3 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-xl transition-colors shadow-md shadow-rose-600/20"
               >
                 Sí, salir
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowExitConfirm(false)}
+                className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-colors"
+              >
+                Seguir jugando
               </button>
             </div>
           </div>

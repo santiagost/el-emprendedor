@@ -22,6 +22,11 @@ export const GAME_EVENTS: GameEvent[] = [
     ...UNFORESEEN_EVENTS,
 ];
 
+const EVENTS_BY_ID = new Map<string, GameEvent>(GAME_EVENTS.map((ev) => [ev.id, ev]));
+
+/** Busca un evento del catálogo por id (undefined si ya no existe, p. ej. en guardados viejos). */
+export const getEventById = (id: string): GameEvent | undefined => EVENTS_BY_ID.get(id);
+
 export * from './builders';
 export * from './crisis';
-export * from './unforeseen';
+export * from './unforeseen';

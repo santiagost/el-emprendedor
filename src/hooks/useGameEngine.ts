@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import type { GameState, GameEvent, Archetype, Financing, GameStep } from '../types/game';
+import type { Performance, GameState, GameEvent, Archetype, Financing, GameStep } from '../types/game';
 import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, canDecide, checkTurnInterruption } from '../game/engine'
 import { type RNG, createRng } from '../game/rng';
+import { SAVED_GAME_STORAGE_KEY } from '../game/savedSession';
 
-const STORAGE_KEY = 'el_emprendedor_saved_game';
+const STORAGE_KEY = SAVED_GAME_STORAGE_KEY;
 
 const getInitialSeed = (): number => {
   if (typeof window !== 'undefined') {
@@ -56,14 +57,25 @@ const saveSession = (data: SavedSession | null) => {
   }
 };
 
-export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, rng?: RNG) => {
-  const [initialSeed] = useState<number>(() => getInitialSeed());
-  const [activeRng] = useState<RNG>(() => rng ?? createRng(initialSeed));
+export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, playerName?: string, rng?: RNG) => {
+  // Todo lo que consume el RNG inicial se arma en un único inicializador: en StrictMode React lo ejecuta dos veces,
+  // y así cada ejecución tiene su propio RNG (si no, el primer evento se sortea dos veces y la semilla cambia en dev).
+  const [initial] = useState(() => {
+    const seed = getInitialSeed();
+    const seededRng = rng ?? createRng(seed);
+    const savedSession = loadSavedSession(arquetipo.id, financiamiento.id);
+    return {
+      seed,
+      rng: seededRng,
+      saved: savedSession,
+      event: savedSession?.currentEvent ?? getInitialEvent(seededRng),
+    };
+  });
+  const { seed: initialSeed, rng: activeRng, saved } = initial;
 
-  const saved = useState<SavedSession | null>(() => loadSavedSession(arquetipo.id, financiamiento.id))[0];
 
-  const [gameState, setGameState] = useState<GameState>(() => saved?.gameState ?? startGame(arquetipo, financiamiento));
-  const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(() => saved?.currentEvent ?? getInitialEvent(activeRng));
+  const [gameState, setGameState] = useState<GameState>(() => saved?.gameState ?? { ...startGame(arquetipo, financiamiento), playerName });
+  const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(() => initial.event);
   const [step, setStep] = useState<GameStep>(() => saved?.step ?? 'decision');
 
   const updateStateAndPersist = (
@@ -87,7 +99,7 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, r
     }
   };
 
-  const decide = (optionIndex: number, turn: number) => {
+  const decide = (optionIndex: number, turn: number, performance?: Performance) => {
     if (!canDecide(gameState.status, currentEvent, step, turn, gameState.currentTurn)) return;
 
     const option = currentEvent.options[optionIndex];
@@ -97,7 +109,8 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, r
       currentEvent.id,
       currentEvent.title,
       optionIndex,
-      currentEvent.kind
+      currentEvent.kind,
+      performance
     );
 
     updateStateAndPersist(nextState, currentEvent, 'outcome');
@@ -131,14 +144,22 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, r
       updateStateAndPersist(endedState, null, 'ended');
     } else {
       const runningState: GameState = { ...advanced, pendingEvents: remainingPending };
-      updateStateAndPersist(runningState, nextEvent, 'decision');
+      // Al cerrar una fase (que no es la última) se muestra su resumen antes del primer dilema de la siguiente
+      const phaseChanged = nextPhaseId !== gameState.phaseId;
+      updateStateAndPersist(runningState, nextEvent, phaseChanged ? 'phase_recap' : 'decision');
     }
+  };
+
+  const continueFromRecap = () => {
+    if (step !== 'phase_recap') return;
+    updateStateAndPersist(gameState, currentEvent, 'decision');
   };
 
   const restartGame = () => {
     saveSession(null);
     const freshRng = rng ?? createRng(getInitialSeed());
-    const initialState = startGame(arquetipo, financiamiento);
+    // Volver a jugar conserva el nombre de la partida anterior
+    const initialState: GameState = { ...startGame(arquetipo, financiamiento), playerName: gameState.playerName };
     setGameState(initialState);
     setCurrentEvent(getInitialEvent(freshRng));
     setStep('decision');
@@ -150,6 +171,7 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, r
     step,
     decide,
     advance,
+    continueFromRecap,
     restartGame,
   };
 };

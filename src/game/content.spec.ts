@@ -3,6 +3,7 @@ import { GAME_EVENTS } from '../data/events';
 import { PHASES } from './phases';
 import { _templateBaseEvent, _templateGatedEvent } from '../data/events/_template';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
+import { KNOWN_TOKENS, NAME_TOKEN, personalize } from '../lib/personalize';
 
 import {
   validateEventIds,
@@ -54,6 +55,59 @@ describe('Integridad de Contenido (Content Spec)', () => {
       ...validateScheduledEvents([_templateBaseEvent, _templateGatedEvent]),
     ];
     expect(errors).toEqual([]);
+  });
+});
+
+/** Todos los textos de contenido que el jugador puede ver (donde se resuelven los tokens). */
+const contentTexts = (events: typeof GAME_EVENTS): { where: string; text: string }[] =>
+  events.flatMap((ev) => [
+    { where: `${ev.id}.title`, text: ev.title },
+    { where: `${ev.id}.description`, text: ev.description },
+    ...ev.options.flatMap((o, i) => [
+      { where: `${ev.id}.options[${i}].text`, text: o.text },
+      ...(o.outcomeText ? [{ where: `${ev.id}.options[${i}].outcomeText`, text: o.outcomeText }] : []),
+      ...(o.learningPill ? [{ where: `${ev.id}.options[${i}].learningPill`, text: o.learningPill }] : []),
+    ]),
+  ]);
+
+describe('Personalización con {nombre}', () => {
+  const texts = contentTexts(GAME_EVENTS);
+  const withToken = texts.filter((t) => t.text.includes(NAME_TOKEN));
+
+  it('toda llave en los textos es un token conocido', () => {
+    const unknown = texts.flatMap(({ where, text }) =>
+      (text.match(/\{[^}]*\}|[{}]/g) ?? [])
+        .filter((tok) => !KNOWN_TOKENS.includes(tok))
+        .map((tok) => `${where}: "${tok}"`)
+    );
+    expect(unknown).toEqual([]);
+  });
+
+  it('hay entre 8 y 10 eventos de ejemplo con el token', () => {
+    const eventsWithToken = new Set(withToken.map((t) => t.where.split('.')[0]));
+    expect(eventsWithToken.size).toBeGreaterThanOrEqual(8);
+    expect(eventsWithToken.size).toBeLessThanOrEqual(10);
+  });
+
+  it('sin nombre, ningún texto queda con llaves, dobles espacios, espacios antes de puntuación ni minúscula inicial', () => {
+    const problems = withToken.flatMap(({ where, text }) => {
+      const out = personalize(text);
+      const issues: string[] = [];
+      if (/[{}]/.test(out)) issues.push('llaves');
+      if (/\s{2,}/.test(out)) issues.push('doble espacio');
+      if (/\s[,.;:!?]/.test(out)) issues.push('espacio antes de puntuación');
+      if (/(^|[.!?]\s+)\p{Ll}/u.test(out)) issues.push('minúscula inicial de oración');
+      return issues.map((i) => `${where}: ${i} → "${out}"`);
+    });
+    expect(problems).toEqual([]);
+  });
+
+  it('con nombre, el texto lo incluye y no deja llaves', () => {
+    const problems = withToken.flatMap(({ where, text }) => {
+      const out = personalize(text, 'Santi');
+      return out.includes('Santi') && !/[{}]/.test(out) ? [] : [`${where} → "${out}"`];
+    });
+    expect(problems).toEqual([]);
   });
 });
 

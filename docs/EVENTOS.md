@@ -67,7 +67,64 @@ Nunca escribas objetos en crudo ni `impactPreview` manual. Usá los helpers de `
 
 ---
 
-## 5. Flujo de Trabajo
+## 5. Personalización con el nombre del jugador (`{nombre}`)
+
+El jugador puede cargar su nombre (opcional) en el Setup. Los textos de contenido pueden usar el token `{nombre}`: se resuelve **en el render** (`src/lib/personalize.ts`), no en el motor, así que el `decisionLog` y las partidas guardadas conservan el texto crudo.
+
+- **Dónde se puede usar:** `title`, `description`, `option.text`, `outcomeText` y `learningPill`.
+- **Tiene que leerse bien con y sin nombre.** Sin nombre, `personalize` quita el token y arregla puntuación y mayúscula inicial, pero solo para estas formas:
+  - Al inicio de una oración: `'{nombre}, un inversor pide una reunión.'` → sin nombre: *"Un inversor pide una reunión."*
+  - Al final, antes de la puntuación: `'¿Cómo salís al mercado, {nombre}?'` → *"¿Cómo salís al mercado?"*
+  - Entre comas: `'Mirá, {nombre}, esto cambia todo.'` → *"Mirá, esto cambia todo."*
+- **Evitá marcas de género** ("bienvenido/a"): usá voseo neutro.
+- **Un solo token permitido:** `{nombre}`. Cualquier otra llave falla en `content.spec.ts`, que además verifica con y sin nombre que no queden llaves, dobles espacios ni minúscula inicial de oración.
+- No hace falta tocar todos los eventos: hoy 10 eventos clave lo usan (socios, inversores, crisis).
+
+---
+
+## 6. Puesta en escena de crisis e imprevistos
+
+Los eventos con `kind: 'crisis'` o `kind: 'unforeseen'` no se muestran de golpe: entran con una coreografía (corte, cintilla de noticias, sello y suspenso) definida en `src/game/stage.ts`. Es solo capa visual; el motor no la usa.
+
+- **Sin hacer nada**, un evento nuevo usa el estilo de su tipo: sello "CRISIS" en rojo o "IMPREVISTO" en ámbar.
+- **Para darle identidad propia**, agregá su id en `STAGE_BY_EVENT` con el sello (una palabra corta, en mayúsculas) y las frases del ticker:
+  ```ts
+  imp_corte_de_luz: { stamp: 'APAGÓN', ticker: ['Sin servicio en la zona', 'Último momento'] },
+  ```
+- **Oportunidades** (un imprevisto bueno, como la viralización): sumá `tone: 'opportunity'` y `ribbon: 'Tendencia'`. Usan verde, más saturación y confeti en lugar de grises.
+- **El ticker no adelanta el contenido:** frases de clima ("Mercados en alerta"), nunca la consecuencia.
+- `stage.spec.ts` falla si una entrada de `STAGE_BY_EVENT` apunta a un id que no existe o que no es una interrupción, y si un sello pasa de 14 caracteres.
+
+---
+
+## 7. Minijuegos en las opciones
+
+Una opción puede llevar un minijuego que modula la **ejecución**: la opción define el efecto base (es el resultado "sólido") y el minijuego lo mejora o lo empeora. El motor no cambia: el minijuego solo produce un tier (`perfect`, `good`, `poor`).
+
+```ts
+defineOption('Texto', { capital: +35 }, {
+    minigame: {
+        kind: 'timing',            // 'timing' | 'tapping' | 'balance' | 'roulette'
+        title: 'Título opcional',  // si el contexto de la opción lo pide
+        rule: 'Regla en una línea.',
+        // Todo lo siguiente es opcional:
+        effectsByPerformance: { perfect: { reputacion: +15 }, poor: { capital: -10 } }, // reemplaza el escalado de ese tier
+        tagsByPerformance: { perfect: { removeTags: ['equity_diluido'] } },
+        outcomeTextByPerformance: { perfect: '...', poor: '...' },                      // la consecuencia cambia con la ejecución
+        riskBias: 0.12,            // solo 'roulette': positivo = opción más riesgosa
+    },
+    learningPill: '...',
+});
+```
+
+- **Si un evento tiene minijuego en una opción, lo tiene en todas** (un test lo exige): si solo una lo tuviera, el jugador la elegiría por curiosidad y no por la decisión.
+- Sin `effectsByPerformance`, los efectos escalan solos: los positivos x1,25 / x1 / x0,6 y los negativos x0,6 / x1 / x1,25 (perfecto / sólido / flojo).
+- Un `poor` nunca causa un game over que un `good` no hubiera causado: si lo provocara, se aplica `good`.
+- Los tipos: `timing` (frenar una aguja, 3 rondas), `tapping` (cazar bugs que aparecen cada vez más seguidos y se van solos; el rendimiento es eliminados sobre aparecidos), `balance` (mantener un cursor en un rango móvil con botones o A / D / flechas: cuanto más tiempo mantenés apretado, más fuerza; el margen crece con la Reputación) y `roulette` (ruleta que gira sin parar y se frena en seco con un toque; el tamaño de cada segmento sale de los tags activos y es la dificultad, y se ve en pantalla).
+- El jugador elige cuándo empezar y siempre puede saltar (resultado sólido) o activar el modo asistido.
+- Si querés dar más peso a un tag en la ruleta, listalo en `LAUNCH_TAILWINDS` o `LAUNCH_HEADWINDS` (`game/minigames/roulette.ts`).
+
+## 8. Flujo de Trabajo
 
 1. Para agregar eventos a la fase N, editá `src/data/events/faseN.ts`.
 2. Si inventás un tag nuevo, agregalo primero en `src/data/tags.ts` con su label y modifier pasivo.

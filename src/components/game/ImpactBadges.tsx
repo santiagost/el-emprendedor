@@ -14,13 +14,13 @@ const renderArrow = (direction: ImpactDirection) => {
 
 const getColorClass = (direction: ImpactDirection, activeColor: string) => {
   if (direction === 'up') return activeColor;
-  if (direction === 'down') return 'text-rose-400';
-  return 'text-slate-500';
+  if (direction === 'down') return 'text-rose-600 dark:text-rose-400';
+  return 'text-slate-400 dark:text-slate-500';
 };
 
 export default function ImpactBadges({ impactPreview, size = 'sm' }: ImpactBadgesProps) {
   const isSm = size === 'sm';
-  const textClass = isSm ? 'text-[10px]' : 'text-xs';
+  const textClass = isSm ? 'text-3xs' : 'text-xs';
   const iconClass = isSm ? 'w-3 h-3' : 'w-3.5 h-3.5';
 
   return (
@@ -29,7 +29,7 @@ export default function ImpactBadges({ impactPreview, size = 'sm' }: ImpactBadge
         title={`Capital: ${impactPreview.capital}`}
         className={`inline-flex items-center gap-0.5 ${getColorClass(
           impactPreview.capital,
-          'text-emerald-400'
+          'text-emerald-600 dark:text-emerald-400'
         )}`}
       >
         <DollarSign className={iconClass} />
@@ -40,7 +40,7 @@ export default function ImpactBadges({ impactPreview, size = 'sm' }: ImpactBadge
         title={`Reputación: ${impactPreview.reputacion}`}
         className={`inline-flex items-center gap-0.5 ${getColorClass(
           impactPreview.reputacion,
-          'text-blue-400'
+          'text-metric-reputacion dark:text-blue-400'
         )}`}
       >
         <Award className={iconClass} />
@@ -51,7 +51,7 @@ export default function ImpactBadges({ impactPreview, size = 'sm' }: ImpactBadge
         title={`Bienestar: ${impactPreview.bienestar}`}
         className={`inline-flex items-center gap-0.5 ${getColorClass(
           impactPreview.bienestar,
-          'text-pink-400'
+          'text-amber-500 dark:text-amber-400'
         )}`}
       >
         <Heart className={iconClass} />

@@ -1,4 +1,4 @@
-import type { GameEvent, GameState, GameStep, Archetype, Financing, PendingEvent, Metrics, GameStatus, GameOption, GameEventKind } from '../types/game';
+import type { Performance, GameEvent, GameState, GameStep, Archetype, Financing, PendingEvent, Metrics, GameStatus, GameOption, GameEventKind } from '../types/game';
 import { GAME_EVENTS, MAIN_EVENTS, CRISIS_EVENTS, UNFORESEEN_EVENTS } from '../data/events/index';
 import { MAX_TURNS, phaseForTurn, PHASES, type PhaseId } from './phases';
 import type { RNG } from './rng';
@@ -37,13 +37,15 @@ export const validateInitialMetrics = (initialMetric: number, archetypeEffect = 
 };
 
 export const startGame = (archetype: Archetype, financing: Financing): GameState => {
+  const metrics: Metrics = {
+    capital: validateInitialMetrics(INITIAL_STATE.metrics.capital, archetype.effects.capital, financing.effects.capital),
+    bienestar: validateInitialMetrics(INITIAL_STATE.metrics.bienestar, archetype.effects.bienestar, financing.effects.bienestar),
+    reputacion: validateInitialMetrics(INITIAL_STATE.metrics.reputacion, archetype.effects.reputacion, financing.effects.reputacion),
+  };
   return {
     ...INITIAL_STATE,
-    metrics: {
-      capital: validateInitialMetrics(INITIAL_STATE.metrics.capital, archetype.effects.capital, financing.effects.capital),
-      bienestar: validateInitialMetrics(INITIAL_STATE.metrics.bienestar, archetype.effects.bienestar, financing.effects.bienestar),
-      reputacion: validateInitialMetrics(INITIAL_STATE.metrics.reputacion, archetype.effects.reputacion, financing.effects.reputacion),
-    },
+    metrics,
+    initialMetrics: { ...metrics },
     activeTags: [...(archetype.tags || []), ...(financing.tags || [])],
     archetypeId: archetype.id,
     financingId: financing.id
@@ -297,16 +299,73 @@ export function checkTurnInterruption(
   return null;
 }
 
+/** Multiplicadores por rendimiento: los efectos positivos escalan hacia arriba y los negativos a la inversa. */
+const PERFORMANCE_GAIN: Record<Performance, number> = { perfect: 1.25, good: 1, poor: 0.6 };
+const PERFORMANCE_LOSS: Record<Performance, number> = { perfect: 0.6, good: 1, poor: 1.25 };
+
+export function scaleEffects(effects: Partial<Metrics>, performance: Performance): Partial<Metrics> {
+  if (performance === 'good') return effects;
+  const scaled: Partial<Metrics> = {};
+  (Object.keys(effects) as (keyof Metrics)[]).forEach((key) => {
+    const value = effects[key];
+    if (value == null) return;
+    const factor = value >= 0 ? PERFORMANCE_GAIN[performance] : PERFORMANCE_LOSS[performance];
+    scaled[key] = Math.sign(value) * Math.round(Math.abs(value) * factor);
+  });
+  return scaled;
+}
+
+const isGameOver = (status: GameStatus): boolean => status.startsWith('game_over');
+
+/**
+ * Efectos y etiquetas finales de una opción según el rendimiento en su minijuego.
+ * Sin minijuego (o sin rendimiento) es la opción tal cual. Un 'poor' nunca causa un game over por sí solo:
+ * si lo provocara y 'good' no, se aplica 'good'.
+ */
+export function resolveOption(
+  state: GameState,
+  option: GameOption,
+  performance?: Performance
+): { effects: Partial<Metrics>; addTags?: Tag[]; removeTags?: Tag[]; performance?: Performance; outcomeText?: string } {
+  const spec = option.minigame;
+  if (!spec || !performance) return { effects: option.effects, addTags: option.addTags, removeTags: option.removeTags };
+
+  const build = (tier: Performance) => {
+    const extra = spec.tagsByPerformance?.[tier];
+    return {
+      effects: spec.effectsByPerformance?.[tier] ?? scaleEffects(option.effects, tier),
+      // Lo que el rendimiento quita gana sobre lo que la opción suma (ej. 'perfect' evita Equity Diluido)
+      addTags: [...(option.addTags ?? []), ...(extra?.addTags ?? [])].filter((t) => !extra?.removeTags?.includes(t)),
+      removeTags: [...(option.removeTags ?? []), ...(extra?.removeTags ?? [])],
+      performance: tier,
+      outcomeText: spec.outcomeTextByPerformance?.[tier],
+    };
+  };
+  const statusOf = (r: ReturnType<typeof build>) => {
+    const tags = applyTags(state.activeTags, r.addTags, r.removeTags);
+    const metrics = applyModifiers(applyMetricsEffects(state.metrics, r.effects), tags);
+    return evaluateGameStatus(metrics, state.currentTurn, state.maxTurns);
+  };
+
+  const result = build(performance);
+  if (performance === 'poor' && isGameOver(statusOf(result)) && !isGameOver(statusOf(build('good')))) {
+    return build('good');
+  }
+  return result;
+}
+
 export function applyDecision(
   state: GameState,
   option: GameOption,
   eventId: string,
   eventTitle?: string,
   optionIndex?: number,
-  eventKind?: GameEventKind
+  eventKind?: GameEventKind,
+  performance?: Performance
 ): GameState {
-  const immediateMetrics = applyMetricsEffects(state.metrics, option.effects);
-  const nextTags = applyTags(state.activeTags, option.addTags, option.removeTags);
+  const resolved = resolveOption(state, option, performance);
+  const immediateMetrics = applyMetricsEffects(state.metrics, resolved.effects);
+  const nextTags = applyTags(state.activeTags, resolved.addTags, resolved.removeTags);
   const nextMetrics = applyModifiers(immediateMetrics, nextTags);
   const appliedModifiers = calculateModifiersDelta(nextTags);
 
@@ -328,10 +387,12 @@ export function applyDecision(
     kind: resolvedKind,
     optionIndex: optionIndex ?? 0,
     optionText: option.text,
-    outcomeText: option.outcomeText,
-    effects: option.effects,
+    outcomeText: resolved.outcomeText ?? option.outcomeText,
+    effects: resolved.effects,
     appliedModifiers,
     learningPill: option.learningPill,
+    ...(resolved.performance ? { performance: resolved.performance } : {}),
+    metricsAfter: nextMetrics,
   };
 
   return {

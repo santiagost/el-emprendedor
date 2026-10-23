@@ -9,7 +9,7 @@ export const fase2Events = [
         when: {
             tags: ['cliente_dependencia']
         },
-        description: 'Tu cliente corporativo postergó su liquidación 45 días más. No alcanzás a cubrir los costos fijos del mes.',
+        description: 'Tu cliente corporativo postergó su liquidación 45 días más. {nombre}, no alcanzás a cubrir los costos fijos del mes.',
         options: [
             defineOption(
                 'Tomar un crédito rápido a tasa usurera.',
@@ -92,7 +92,7 @@ export const fase2Events = [
         phaseId: 2,
         title: 'La Primera Contratación Clave',
         weight: 10,
-        description: 'La demanda supera lo que podés sostener solo. Necesitás sumar a alguien fuerte al equipo, pero cada perfil implica una apuesta distinta.',
+        description: 'La demanda supera lo que podés sostener solo, {nombre}. Necesitás sumar a alguien fuerte al equipo, pero cada perfil implica una apuesta distinta.',
         options: [
             defineOption(
                 'Contratar un perfil senior caro que ordene la operación desde el día uno.',

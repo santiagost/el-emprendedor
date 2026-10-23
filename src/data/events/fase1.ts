@@ -5,13 +5,23 @@ export const fase1Events = [
         id: 'f1_mvp_calidad',
         phaseId: 1,
         title: 'El Primer Prototipo',
-        description: 'El producto funciona pero tiene fallas visuales y bugs menores. ¿Cómo salís al mercado?',
+        description: 'El producto funciona pero tiene fallas visuales y bugs menores. ¿Cómo salís al mercado, {nombre}?',
         weight: 10,
         options: [
             defineOption(
                 'Lanzar ya mismo para validar con usuarios reales.',
                 { capital: 10, reputacion: -20 },
                 {
+                    minigame: {
+                        kind: 'roulette',
+                        riskBias: 0.12,
+                        title: 'Lanzamiento beta',
+                        rule: 'Salís sin estar del todo listo. Frená la ruleta con un toque: cuanto más cuidado fue tu producto, más grande el verde, pero cae donde apunte la flecha.',
+                        outcomeTextByPerformance: {
+                            perfect: 'Saliste rápido y, contra todo pronóstico, casi sin fallas. Los primeros clientes pagaron, la necesidad quedó confirmada y los pocos detalles feos pasaron desapercibidos.',
+                            poor: 'Saliste rápido y el producto falló fuerte en manos de los primeros usuarios. Hubo críticas duras y reembolsos, aunque aprendiste en semanas lo que otros tardan meses.',
+                        },
+                    },
                     addTags: ['cultura_lean'],
                     learningPill: 'Metodología Lean: Lanzar un MVP imperfecto ahorra meses de desarrollo en ideas que nadie quiere.',
                     outcomeText: 'Saliste rápido a la cancha con un producto con bugs. Recibiste críticas duras por fallas visuales, pero los primeros clientes pagaron y confirmaron que la necesidad existe.',
@@ -21,6 +31,16 @@ export const fase1Events = [
                 'Retrasar el lanzamiento 2 meses hasta que esté impecable.',
                 { capital: -15, reputacion: +15, bienestar: -10 },
                 {
+                    minigame: {
+                        kind: 'roulette',
+                        riskBias: -0.2,
+                        title: 'Lanzamiento pulido',
+                        rule: 'Esperaste dos meses para salir mejor preparado: hay mucho más verde, pero igual tenés que frenar la ruleta en el lugar justo.',
+                        outcomeTextByPerformance: {
+                            perfect: 'El producto salió impecable y generó elogios desde el primer día. Quemaste dos meses de ahorros, pero el lanzamiento valió cada uno.',
+                            poor: 'Pese a los dos meses de pulido, apareció un fallo que nadie previó. Quemaste ahorros y encima el lanzamiento salió torcido: el peor de los dos mundos.',
+                        },
+                    },
                     addTags: ["obsesion_calidad"],
                     learningPill: 'Costo de Oportunidad: Perfeccionar un producto sin feedback temprano quema caja sin validar demanda.',
                     outcomeText: 'Puliste cada detalle técnico. El producto salió impecable y generó elogios de los primeros usuarios, aunque quemaste dos meses de ahorros antes de ingresar un solo centavo.',
@@ -34,7 +54,7 @@ export const fase1Events = [
         phaseId: 1,
         title: 'La Elección del Co-Fundador',
         weight: 10,
-        description: 'Necesitás complementar tus habilidades. Aparecen dos personas interesadas en sumarse.',
+        description: '{nombre}, necesitás complementar tus habilidades. Aparecen dos personas interesadas en sumarse.',
         options: [
             defineOption(
                 'Sumar a un amigo de confianza técnica que comparte tu visión.',

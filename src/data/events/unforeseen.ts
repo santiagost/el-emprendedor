@@ -3,7 +3,7 @@ import { defineEvent, defineOption } from './builders';
 export const unforeseenEvents = [
   defineEvent({
     id: 'imp_salto_inflacionario',
-    title: '⚡ Salto Inflacionario Imprevisto',
+    title: 'Salto Inflacionario Imprevisto',
     kind: 'unforeseen',
     description:
       'Un shock macroeconómico disparó los costos de insumos, servicios y alquileres un 35% de golpe. El presupuesto del mes quedó desactualizado.',
@@ -34,7 +34,7 @@ export const unforeseenEvents = [
 
   defineEvent({
     id: 'imp_caida_servidores',
-    title: '⚡ Caída Crítica de Servidores',
+    title: 'Caída Crítica de Servidores',
     kind: 'unforeseen',
     description:
       'Una falla técnica imprevista en la nube dejó tus sistemas caídos durante 6 horas en pleno horario de mayor demanda. Clientes molestos inundan soporte.',
@@ -65,7 +65,7 @@ export const unforeseenEvents = [
 
   defineEvent({
     id: 'imp_viralizacion_inesperada',
-    title: '⚡ Viralización Inesperada en Redes',
+    title: 'Viralización Inesperada en Redes',
     kind: 'unforeseen',
     description:
       'Un referente de tu nicho recomendó espontáneamente tu producto ante 200.000 seguidores. El tráfico y las altas se dispararon un 500% en un día.',
@@ -96,7 +96,7 @@ export const unforeseenEvents = [
 
   defineEvent({
     id: 'imp_inspeccion_sorpresa',
-    title: '⚡ Inspección Impositiva y Laboral Sorpresiva',
+    title: 'Inspección Impositiva y Laboral Sorpresiva',
     kind: 'unforeseen',
     description:
       'Inspectores del organismo regulador se presentan en tus oficinas para una auditoría sorpresa de encuadre laboral, contratos y facturación.',
