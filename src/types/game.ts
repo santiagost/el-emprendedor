@@ -17,6 +17,21 @@ export interface ImpactPreview {
 
 export type GameEventKind = 'main' | 'crisis' | 'unforeseen';
 
+export type MinigameKind = 'timing' | 'tapping' | 'balance' | 'roulette';
+
+/** Rendimiento del jugador en un minijuego: tier discreto para que el motor siga siendo puro y testeable. */
+export type Performance = 'perfect' | 'good' | 'poor';
+
+export interface MinigameSpec {
+    kind: MinigameKind;
+    difficulty?: 1 | 2 | 3;
+    /** Textos del encabezado cuando el minijuego necesita otro contexto que el de su tipo. */
+    title?: string;
+    rule?: string;
+    /** Etiquetas extra según el rendimiento (se suman a las de la opción). */
+    tagsByPerformance?: Partial<Record<Performance, { addTags?: Tag[]; removeTags?: Tag[] }>>;
+}
+
 export interface GameOption {
     text: string;
     impactPreview: ImpactPreview;
@@ -29,6 +44,8 @@ export interface GameOption {
         eventId: string;
         delayTurns: number;
     };
+    /** Si está, elegir esta opción dispara un minijuego que modula la ejecución (los efectos base son el rendimiento 'good'). */
+    minigame?: MinigameSpec;
 }
 
 export interface EventConditions {
@@ -78,6 +95,8 @@ export interface DecisionLogEntry {
     effects: Partial<Metrics>;
     appliedModifiers?: Partial<Metrics>;
     learningPill?: string;
+    /** Rendimiento en el minijuego de la opción; solo si la opción tenía uno. */
+    performance?: Performance;
     /** Métricas resultantes tras esta decisión (con modificadores y clamp). Opcional: guardados viejos no lo tienen. */
     metricsAfter?: Metrics;
 }

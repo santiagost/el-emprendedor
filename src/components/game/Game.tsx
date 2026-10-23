@@ -3,8 +3,8 @@ import { useGameEngine } from '../../hooks/useGameEngine';
 import { useTheme } from '../../hooks/useTheme';
 import { useSequence } from '../../hooks/useSequence';
 import { useStoredFlag } from '../../hooks/useStoredFlag';
-import type { Archetype, DecisionLogEntry, Financing, Metrics } from '../../types/game';
-import { DollarSign, Award, Heart, ArrowRight, RotateCcw, AlertTriangle, Zap, CheckCircle2, Building2, Lightbulb, X } from 'lucide-react';
+import type { Archetype, DecisionLogEntry, Financing, Metrics, Performance } from '../../types/game';
+import { DollarSign, Award, Heart, ArrowRight, RotateCcw, AlertTriangle, Zap, CheckCircle2, Building2, Lightbulb, X, Gamepad2 } from 'lucide-react';
 import { EventKindIcon } from '../common/EventKindIcon';
 import { INLINE_ICON_CLASS } from '../common/iconStyles';
 import ImpactBadges from './ImpactBadges';
@@ -14,6 +14,7 @@ import MetricCard from './MetricCard';
 import TimelineBar from './TimelineBar';
 import CompanyStatusCard from './CompanyStatusCard';
 import InterruptionStage from './InterruptionStage';
+import MinigameStage from './minigames/MinigameStage';
 import ThemeToggle from '../common/ThemeToggle';
 import EffectsToggle from '../common/EffectsToggle';
 import SoundToggle from '../common/SoundToggle';
@@ -21,6 +22,7 @@ import { useEffectsToggle, useReducedMotion } from '../../lib/motion';
 import { PHASES, type PhaseId } from '../../game/phases';
 import { buildPhaseRecap } from '../../game/recap';
 import { stageFor } from '../../game/stage';
+import { hasPlayableMinigame, PERFORMANCE_HINT, PERFORMANCE_LABEL, seedFromText } from '../../game/minigames/performance';
 import { computeMetricDeltas, getRevealingDuration, netDecisionEffect, stressLevel } from '../../game/ui';
 import { confetti, vibrate } from '../../lib/fx';
 import { playSound, useSoundToggle } from '../../lib/sound';
@@ -97,6 +99,9 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
     phaseId,
   } = gameState;
 
+  // Sprint 3: opción elegida que está esperando el resultado de su minijuego
+  const [pendingMinigame, setPendingMinigame] = useState<{ optionIndex: number; turn: number } | null>(null);
+
   // Estado de suspenso UI antes de revelar el impacto (A4)
   const isReducedMotion = useReducedMotion();
   const [isRevealing, setIsRevealing] = useState(false);
@@ -161,8 +166,8 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
     }
   }, [step, metrics, isRevealing, lastDecision]);
 
-  const handleDecide = useCallback(
-    (optionIndex: number, turn: number) => {
+  const commitDecision = useCallback(
+    (optionIndex: number, turn: number, performance?: Performance) => {
       if (isRevealing || step !== 'decision') return;
       playSound('select');
 
@@ -173,7 +178,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
       }
 
       // Ejecutar de inmediato en el engine para persistir en localStorage
-      decide(optionIndex, turn);
+      decide(optionIndex, turn, performance);
 
       // Si reduced motion está activo, no hay suspenso (duración 0)
       if (duration <= 0) {
@@ -188,6 +193,35 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
     [isRevealing, step, decide, currentEvent?.kind, isReducedMotion, metrics]
   );
 
+  const handleDecide = useCallback(
+    (optionIndex: number, turn: number) => {
+      if (isRevealing || step !== 'decision' || pendingMinigame) return;
+      // Una opción con minijuego lo juega primero; su resultado llega a commitDecision
+      if (hasPlayableMinigame(currentEvent?.options[optionIndex]?.minigame)) {
+        playSound('select');
+        setPendingMinigame({ optionIndex, turn });
+        return;
+      }
+      commitDecision(optionIndex, turn);
+    },
+    [isRevealing, step, pendingMinigame, currentEvent, commitDecision]
+  );
+
+  const resolveMinigame = useCallback(
+    (performance: Performance) => {
+      if (!pendingMinigame) return;
+      const { optionIndex, turn } = pendingMinigame;
+      setPendingMinigame(null);
+      if (performance === 'perfect') confetti('gold');
+      else if (performance === 'poor') {
+        playSound('thud');
+        vibrate(60);
+      }
+      commitDecision(optionIndex, turn, performance);
+    },
+    [pendingMinigame, commitDecision]
+  );
+
   const handleRestartGame = () => {
     if (revealingTimerRef.current) {
       clearTimeout(revealingTimerRef.current);
@@ -196,6 +230,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
     setHeldMetrics(null);
     setSeenAlertForEventId(null);
     setRevealedEventId(null);
+    setPendingMinigame(null);
     setMetricDeltas({ key: 0 });
     celebratedMetricsRef.current = new Set();
     restartGame();
@@ -297,7 +332,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
   // Atajos de teclado en Desktop (1, 2, 3 para elegir opción; Espacio/Enter para avanzar o saltar)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (showExitConfirm || showCompanyDrawer || showIncomingAlert || isRevealing) return;
+      if (showExitConfirm || showCompanyDrawer || showIncomingAlert || isRevealing || pendingMinigame) return;
 
       if (step === 'decision' && currentEvent && status === 'playing') {
         if (e.key === '1' && currentEvent.options[0]) {
@@ -321,7 +356,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [step, currentEvent, status, currentTurn, showExitConfirm, showCompanyDrawer, showIncomingAlert, advance, outcomeSequence, isRevealing, handleDecide]);
+  }, [step, currentEvent, status, currentTurn, showExitConfirm, showCompanyDrawer, showIncomingAlert, advance, outcomeSequence, isRevealing, pendingMinigame, handleDecide]);
 
   // Si la partida terminó y estamos en el paso final
   if (step === 'ended') {
@@ -549,6 +584,13 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                         </span>
                       </p>
 
+                      {lastDecision.performance && (
+                        <p className="text-[11px] font-semibold text-[#0A2540] dark:text-slate-100">
+                          {PERFORMANCE_LABEL[lastDecision.performance]}
+                          <span className="font-normal text-slate-500 dark:text-slate-400"> · {PERFORMANCE_HINT[lastDecision.performance]}</span>
+                        </p>
+                      )}
+
                       {/* Deltas de la decisión */}
                       <div className="flex flex-wrap gap-1.5">
                         {renderDeltaBadge(decisionDeltas.capital, 'Capital', 'text-emerald-600 dark:text-emerald-400')}
@@ -583,7 +625,20 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
           {/* Alternativas de Decisión o Botón Siguiente, debajo de la carta */}
           <div className="space-y-4">
           {/* Opciones de Decisión (Paso: decision) */}
-          {status === 'playing' && displayEvent && step === 'decision' && (
+          {status === 'playing' && displayEvent && step === 'decision' && pendingMinigame && (
+            <div className="space-y-2">
+              <p className="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Elegiste: <span className="normal-case font-medium text-slate-800 dark:text-slate-200">"{displayEvent.options[pendingMinigame.optionIndex].text}"</span>
+              </p>
+              <MinigameStage
+                spec={displayEvent.options[pendingMinigame.optionIndex].minigame!}
+                seed={seedFromText(`${displayEvent.id}:${pendingMinigame.turn}`)}
+                onResolve={resolveMinigame}
+                onSkip={() => resolveMinigame('good')}
+              />
+            </div>
+          )}
+          {status === 'playing' && displayEvent && step === 'decision' && !pendingMinigame && (
             <div className={`space-y-3 ${showIncomingAlert ? 'invisible' : ''}`}>
               <div className="flex items-center justify-between px-1">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -618,6 +673,12 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
                     </span>
                     <ImpactBadges impactPreview={option.impactPreview} />
                   </div>
+                  {hasPlayableMinigame(option.minigame) && (
+                    <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#0052CC] dark:text-indigo-300">
+                      <Gamepad2 className="w-3.5 h-3.5" aria-hidden="true" />
+                      Minijuego: tu ejecución mejora o empeora el resultado
+                    </p>
+                  )}
                 </button>
               ))}
             </div>

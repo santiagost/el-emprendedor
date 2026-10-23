@@ -38,6 +38,10 @@ export const fase3Events = [
                 'Aceptar la inversión para pisar el acelerador.',
                 { capital: +35, reputacion: +15, bienestar: -15 },
                 {
+                    minigame: {
+                        kind: 'timing',
+                        tagsByPerformance: { perfect: { removeTags: ['equity_diluido'] } },
+                    },
                     addTags: ['inversion_externa', 'equity_diluido'],
                     learningPill: 'Venture Capital: Inyecta velocidad extrema a cambio de perder autonomía sobre el rumbo de tu propia empresa.',
                     outcomeText: 'Ingresó el fondo de VC con capital fresco. Podés acelerar fuerte, pero en cada reunión mensual sentís la presión implacable de los inversores sobre tus decisiones.',
@@ -47,6 +51,11 @@ export const fase3Events = [
                 'Rechazar la oferta y continuar autofinanciados (Bootstrapping).',
                 { reputacion: +5, bienestar: +10 },
                 {
+                    minigame: {
+                        kind: 'timing',
+                        title: 'Defender tu decisión',
+                        rule: 'Frená la aguja dentro de la zona verde para explicarle al fondo por qué elegís crecer solo. Tres rondas, cada una más rápida.',
+                    },
                     addTags: ['autonomia_estrategica'],
                     learningPill: 'Bootstrapping: Crecer con tus propios ingresos te da libertad absoluta, pero limita tu velocidad de expansión.',
                     outcomeText: 'Rechazaste ceder capital. Crecés a tu propio ritmo con lo que genera el negocio, conservando la independencia total para decidir el rumbo de tu vida y tu empresa.',

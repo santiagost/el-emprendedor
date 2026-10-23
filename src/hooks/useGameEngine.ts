@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { GameState, GameEvent, Archetype, Financing, GameStep } from '../types/game';
+import type { Performance, GameState, GameEvent, Archetype, Financing, GameStep } from '../types/game';
 import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, canDecide, checkTurnInterruption } from '../game/engine'
 import { type RNG, createRng } from '../game/rng';
 import { SAVED_GAME_STORAGE_KEY } from '../game/savedSession';
@@ -88,7 +88,7 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, p
     }
   };
 
-  const decide = (optionIndex: number, turn: number) => {
+  const decide = (optionIndex: number, turn: number, performance?: Performance) => {
     if (!canDecide(gameState.status, currentEvent, step, turn, gameState.currentTurn)) return;
 
     const option = currentEvent.options[optionIndex];
@@ -98,7 +98,8 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, p
       currentEvent.id,
       currentEvent.title,
       optionIndex,
-      currentEvent.kind
+      currentEvent.kind,
+      performance
     );
 
     updateStateAndPersist(nextState, currentEvent, 'outcome');
