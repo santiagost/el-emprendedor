@@ -11,89 +11,93 @@ export interface TappingBug {
 
 export interface TappingState {
   elapsedMs: number;
-  /** Avance de la entrega, de 0 a 1. */
-  progress: number;
-  taps: number;
-  /** Instante en que se llenó la barra; null si todavía no. */
-  filledAtMs: number | null;
   bugs: TappingBug[];
+  /** Cuánto se queda cada bicho en pantalla antes de irse solo. */
+  lifetimeMs: number;
   squashed: number[];
   missed: number[];
 }
 
-export const TAPPING_DURATION_MS = 5000;
-export const BUG_LIFETIME_MS = 1300;
-const DECAY_PER_S = 0.08;
-const TAP_GAIN = 0.06;
-const ASSISTED_GAIN_FACTOR = 1.4;
-/** Pasado este avance cada toque rinde menos: la fatiga. */
-const FATIGUE_FROM = 0.7;
-const FATIGUE_FACTOR = 0.55;
-/** Un bicho que se te pasa sin aplastar te cuesta este avance. */
-const BUG_PENALTY = 0.06;
-/** Con al menos esta holgura al llenar la barra, la entrega es perfecta. */
-const PERFECT_SPARE_MS = 800;
-const BUG_COUNT = 3;
+export const BUG_COUNT = 18;
+export const BUG_LIFETIME_MS = 1400;
+const ASSISTED_LIFETIME_FACTOR = 1.5;
+const FIRST_SPAWN_MS = 600;
+const SPAWN_SPAN_MS = 7000;
+/** Más de 1: cada vez aparecen más seguidos, como cuando se acerca la entrega. */
+const RAMP = 1.4;
+const MIN_DISTANCE = 0.22;
+export const TAPPING_DURATION_MS = FIRST_SPAWN_MS + SPAWN_SPAN_MS + BUG_LIFETIME_MS * ASSISTED_LIFETIME_FACTOR;
+/** Proporción de bichos eliminados para cada nivel. */
+const PERFECT_RATIO = 0.85;
+const GOOD_RATIO = 0.55;
 
+/** Cada bicho aparece más pronto que el anterior; la posición evita los bichos recientes para que no se tapen. */
 export function buildBugs(seed: number): TappingBug[] {
   const rng = createRng(seed);
-  const slot = (TAPPING_DURATION_MS - 1500 - BUG_LIFETIME_MS) / BUG_COUNT;
-  return Array.from({ length: BUG_COUNT }, (_, id) => ({
-    id,
-    spawnMs: Math.round(700 + id * slot + rng.nextFloat(0, slot * 0.6)),
-    x: rng.nextFloat(0.08, 0.92),
-    y: rng.nextFloat(0.2, 0.8),
-  }));
+  const bugs: TappingBug[] = [];
+  for (let id = 0; id < BUG_COUNT; id++) {
+    const u = id / (BUG_COUNT - 1);
+    const spawnMs = Math.round(FIRST_SPAWN_MS + SPAWN_SPAN_MS * (1 - (1 - u) ** RAMP));
+    let x = 0;
+    let y = 0;
+    for (let tries = 0; tries < 30; tries++) {
+      x = rng.nextFloat(0.08, 0.92);
+      y = rng.nextFloat(0.15, 0.85);
+      const clear = bugs
+        .slice(-6)
+        .every((b) => Math.hypot((b.x - x) * 1.6, b.y - y) >= MIN_DISTANCE);
+      if (clear) break;
+    }
+    bugs.push({ id, spawnMs, x, y });
+  }
+  return bugs;
 }
 
-export function createTapping(seed: number): TappingState {
-  return { elapsedMs: 0, progress: 0, taps: 0, filledAtMs: null, bugs: buildBugs(seed), squashed: [], missed: [] };
+export function createTapping(seed: number, assisted = false): TappingState {
+  return {
+    elapsedMs: 0,
+    bugs: buildBugs(seed),
+    lifetimeMs: Math.round(BUG_LIFETIME_MS * (assisted ? ASSISTED_LIFETIME_FACTOR : 1)),
+    squashed: [],
+    missed: [],
+  };
 }
 
-export const isTappingFinished = (s: TappingState): boolean =>
-  s.filledAtMs !== null || s.elapsedMs >= TAPPING_DURATION_MS;
+export const isTappingFinished = (s: TappingState): boolean => s.squashed.length + s.missed.length >= s.bugs.length;
 
-export function tap(s: TappingState, assisted = false): TappingState {
-  if (isTappingFinished(s)) return s;
-  const base = TAP_GAIN * (assisted ? ASSISTED_GAIN_FACTOR : 1);
-  const gain = s.progress >= FATIGUE_FROM ? base * FATIGUE_FACTOR : base;
-  const progress = Math.min(1, s.progress + gain);
-  return { ...s, taps: s.taps + 1, progress, filledAtMs: progress >= 1 ? s.elapsedMs : null };
-}
-
-export function squashBug(s: TappingState, id: number): TappingState {
-  if (isTappingFinished(s) || s.squashed.includes(id) || s.missed.includes(id)) return s;
-  if (!visibleBugs(s).some((b) => b.id === id)) return s;
-  return { ...s, squashed: [...s.squashed, id] };
-}
-
-/** Bichos que están en pantalla ahora (ya aparecieron, siguen vivos y no se aplastaron). */
+/** Bichos que están en pantalla ahora (ya aparecieron, siguen vivos y no se eliminaron). */
 export function visibleBugs(s: TappingState): TappingBug[] {
   return s.bugs.filter(
     (b) =>
       s.elapsedMs >= b.spawnMs &&
-      s.elapsedMs < b.spawnMs + BUG_LIFETIME_MS &&
+      s.elapsedMs < b.spawnMs + s.lifetimeMs &&
       !s.squashed.includes(b.id) &&
       !s.missed.includes(b.id)
   );
 }
 
-export function advance(s: TappingState, dtMs: number): TappingState {
-  if (isTappingFinished(s)) return s;
-  const elapsedMs = Math.min(TAPPING_DURATION_MS, s.elapsedMs + dtMs);
-  let progress = Math.max(0, s.progress - (DECAY_PER_S * dtMs) / 1000);
-  const missed = [...s.missed];
-  for (const b of s.bugs) {
-    const expired = elapsedMs >= b.spawnMs + BUG_LIFETIME_MS;
-    if (expired && !s.squashed.includes(b.id) && !missed.includes(b.id)) {
-      missed.push(b.id);
-      progress = Math.max(0, progress - BUG_PENALTY);
-    }
-  }
-  return { ...s, elapsedMs, progress, missed };
+export function squashBug(s: TappingState, id: number): TappingState {
+  if (isTappingFinished(s) || !visibleBugs(s).some((b) => b.id === id)) return s;
+  return { ...s, squashed: [...s.squashed, id] };
 }
 
+/** Bichos que ya aparecieron hasta ahora (para la cuenta "eliminados / aparecidos"). */
+export const appearedCount = (s: TappingState): number => s.bugs.filter((b) => s.elapsedMs >= b.spawnMs).length;
+
+export function advance(s: TappingState, dtMs: number): TappingState {
+  if (isTappingFinished(s)) return s;
+  const elapsedMs = s.elapsedMs + dtMs;
+  const missed = [...s.missed];
+  for (const b of s.bugs) {
+    if (elapsedMs >= b.spawnMs + s.lifetimeMs && !s.squashed.includes(b.id) && !missed.includes(b.id)) missed.push(b.id);
+  }
+  return { ...s, elapsedMs, missed };
+}
+
+/** Rendimiento: bichos eliminados sobre los que aparecieron (en una partida terminada, sobre el total). */
 export function tappingPerformance(s: TappingState): Performance {
-  if (s.filledAtMs === null) return 'poor';
-  return TAPPING_DURATION_MS - s.filledAtMs >= PERFECT_SPARE_MS ? 'perfect' : 'good';
+  const ratio = s.squashed.length / s.bugs.length;
+  if (ratio >= PERFECT_RATIO) return 'perfect';
+  if (ratio >= GOOD_RATIO) return 'good';
+  return 'poor';
 }

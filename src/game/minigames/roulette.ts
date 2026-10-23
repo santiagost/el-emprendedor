@@ -24,7 +24,6 @@ export const LAUNCH_HEADWINDS: readonly Tag[] = ['deuda_riesgosa', 'equipo_sobre
 const BASE: RouletteSegments = { success: 0.5, minor: 0.3, critical: 0.2 };
 const TAG_WEIGHT = 0.05;
 const MIN_SEGMENT = 0.05;
-const MAX_NUDGE_DEG = 10;
 
 const round3 = (n: number) => Math.round(n * 1000) / 1000;
 
@@ -82,31 +81,34 @@ export function outcomeAt(wheelAngle: number, segments: RouletteSegments): Roule
   return 'critical';
 }
 
-/**
- * Empujón del jugador según el momento en que frena: oscila entre -10° y +10°.
- * El jugador tiene algo de agencia sin que la ruleta sea pura habilidad.
- */
-export function nudgeFromTap(tapMs: number | null): number {
-  if (tapMs === null) return 0;
-  return MAX_NUDGE_DEG * Math.sin((tapMs / 1000) * ((Math.PI * 2) / 0.9));
-}
+/** Velocidad de giro en grados por segundo (una vuelta cada ~2,4 s) y su versión asistida. */
+export const SPIN_SPEED_DEG_S = 150;
+export const SPIN_SPEED_ASSISTED_DEG_S = 90;
+/** Si el jugador no frena, la ruleta se detiene sola pasado este tiempo. */
+export const SPIN_AUTO_STOP_MS = 7000;
 
 export interface SpinPlan {
-  /** Ángulo de la ruleta que queda bajo el puntero antes del empujón. */
-  baseAngle: number;
-  /** Vueltas completas que da antes de frenar. */
-  turns: number;
+  /** Ángulo que está bajo el puntero cuando empieza a girar. */
+  startAngle: number;
+  /** Grados por segundo, siempre en el mismo sentido. */
+  speed: number;
 }
 
-/** Plan del giro: sale del RNG con semilla, así una misma decisión se reproduce igual. */
-export function planSpin(seed: number): SpinPlan {
+/** El punto de partida sale del RNG con semilla, así una misma decisión arranca igual. */
+export function planSpin(seed: number, assisted = false): SpinPlan {
   const rng = createRng(seed);
-  return { baseAngle: rng.nextFloat(0, 360), turns: rng.nextInt(4, 6) };
+  return { startAngle: rng.nextFloat(0, 360), speed: assisted ? SPIN_SPEED_ASSISTED_DEG_S : SPIN_SPEED_DEG_S };
 }
 
-/** Resultado final: el ángulo bajo el puntero se decide antes y el desenlace se lee del ángulo (nunca al revés). */
-export function resolveSpin(plan: SpinPlan, segments: RouletteSegments, nudgeDeg: number): { wheelAngle: number; outcome: RouletteOutcome } {
-  const wheelAngle = (((plan.baseAngle + nudgeDeg) % 360) + 360) % 360;
+/** Ángulo (0-360) de la ruleta que está bajo el puntero tras `elapsedMs` de giro. */
+export function angleAt(plan: SpinPlan, elapsedMs: number): number {
+  const a = (plan.startAngle + (plan.speed * elapsedMs) / 1000) % 360;
+  return (a + 360) % 360;
+}
+
+/** Frenar en seco: el desenlace es el segmento que está bajo el puntero en ese instante. */
+export function stopSpin(plan: SpinPlan, segments: RouletteSegments, elapsedMs: number): { wheelAngle: number; outcome: RouletteOutcome } {
+  const wheelAngle = angleAt(plan, Math.min(elapsedMs, SPIN_AUTO_STOP_MS));
   return { wheelAngle, outcome: outcomeAt(wheelAngle, segments) };
 }
 

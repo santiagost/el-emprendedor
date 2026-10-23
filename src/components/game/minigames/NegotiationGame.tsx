@@ -7,6 +7,7 @@ import {
   BALANCE_DURATION_MS,
   balancePerformance,
   buildBalance,
+  holdInput,
   inZone,
   pressure,
   stepBalance,
@@ -42,7 +43,7 @@ export default function NegotiationGame({ seed, reputation, title, rule, onResol
   return (
     <MinigameShell
       title={title ?? 'Negociación'}
-      rule={rule ?? 'Mantené el cursor dentro del rango aceptable mientras la otra parte empuja. Flechas, mantener los botones o arrastrar el dedo.'}
+      rule={rule ?? 'Mantené el cursor dentro del rango aceptable mientras la otra parte empuja. Cuanto más tiempo mantengas apretado un botón (o las teclas A / D o las flechas), más fuerte empujás.'}
       icon={<Handshake className="w-4 h-4" aria-hidden="true" />}
       onSkip={onSkip}
     >
@@ -75,8 +76,8 @@ function NegotiationBoard({
   const rightPushRef = useRef<HTMLSpanElement>(null);
   const statusRef = useRef<HTMLSpanElement>(null);
   const stateRef = useRef<BalanceState>({ pos: 0.5, vel: 0 });
-  // Fuentes de control: botones/teclas (-1, 0, 1) y dedo sobre la barra (posición objetivo o null)
-  const keysRef = useRef({ left: false, right: false });
+  // Fuentes de control: instante en que se empezó a apretar cada lado (botón o tecla) y dedo sobre la barra (posición objetivo o null)
+  const holdRef = useRef<{ left: number | null; right: number | null }>({ left: null, right: null });
   const dragRef = useRef<number | null>(null);
   const [performance, setPerformance] = useState<Performance | null>(null);
   const resolvedRef = useRef(false);
@@ -115,9 +116,10 @@ function NegotiationBoard({
     const loop = (now: number) => {
       const dt = last === null ? 0 : Math.min(50, now - last);
       last = now;
-      const keys = keysRef.current;
-      let input = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
-      if (dragRef.current !== null) input = (dragRef.current - stateRef.current.pos) * 10;
+      const hold = holdRef.current;
+      // La fuerza crece con el tiempo que llevás apretando
+      let input = (hold.right === null ? 0 : holdInput(now - hold.right)) - (hold.left === null ? 0 : holdInput(now - hold.left));
+      if (dragRef.current !== null) input = (dragRef.current - stateRef.current.pos) * 6;
       stateRef.current = stepBalance(stateRef.current, input, t, dt, params);
       t = Math.min(BALANCE_DURATION_MS, t + dt);
       const inside = inZone(stateRef.current.pos, t, params);
@@ -142,12 +144,13 @@ function NegotiationBoard({
   useEffect(() => {
     const set = (e: KeyboardEvent, down: boolean) => {
       const k = e.key.toLowerCase();
-      if (k === 'arrowleft' || k === 'a') {
-        e.preventDefault();
-        keysRef.current.left = down;
-      } else if (k === 'arrowright' || k === 'd') {
-        e.preventDefault();
-        keysRef.current.right = down;
+      const side = k === 'arrowleft' || k === 'a' ? 'left' : k === 'arrowright' || k === 'd' ? 'right' : null;
+      if (!side) return;
+      e.preventDefault();
+      if (down) {
+        if (holdRef.current[side] === null) holdRef.current[side] = window.performance.now();
+      } else {
+        holdRef.current[side] = null;
       }
     };
     const onDown = (e: KeyboardEvent) => set(e, true);
@@ -170,20 +173,17 @@ function NegotiationBoard({
     return () => clearTimeout(id);
   }, [performance, onResolve]);
 
+  const release = (side: 'left' | 'right') => {
+    holdRef.current[side] = null;
+  };
   const holdProps = (side: 'left' | 'right') => ({
     onPointerDown: (e: React.PointerEvent) => {
       e.preventDefault();
-      keysRef.current[side] = true;
+      holdRef.current[side] = window.performance.now();
     },
-    onPointerUp: () => {
-      keysRef.current[side] = false;
-    },
-    onPointerLeave: () => {
-      keysRef.current[side] = false;
-    },
-    onPointerCancel: () => {
-      keysRef.current[side] = false;
-    },
+    onPointerUp: () => release(side),
+    onPointerLeave: () => release(side),
+    onPointerCancel: () => release(side),
   });
 
   const dragTo = (e: React.PointerEvent) => {
@@ -253,7 +253,7 @@ function NegotiationBoard({
           </span>
         ) : (
           <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">
-            {running ? 'Flechas, mantené un botón o arrastrá sobre la barra' : ' '}
+            {running ? 'Mantené apretado: cuanto más tiempo, más fuerte empujás' : ' '}
           </span>
         )}
       </p>
@@ -269,6 +269,9 @@ function NegotiationBoard({
           >
             {side === 'left' ? <ChevronLeft className="w-4 h-4" aria-hidden="true" /> : null}
             {side === 'left' ? 'Izquierda' : 'Derecha'}
+            <kbd className="hidden sm:inline-flex items-center gap-1 rounded bg-white/15 px-1.5 py-0.5 text-[11px] font-semibold" aria-hidden="true">
+              {side === 'left' ? 'A / ←' : 'D / →'}
+            </kbd>
             {side === 'right' ? <ChevronRight className="w-4 h-4" aria-hidden="true" /> : null}
           </button>
         ))}

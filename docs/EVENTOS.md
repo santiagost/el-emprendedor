@@ -120,7 +120,7 @@ defineOption('Texto', { capital: +35 }, {
 - **Si un evento tiene minijuego en una opción, lo tiene en todas** (un test lo exige): si solo una lo tuviera, el jugador la elegiría por curiosidad y no por la decisión.
 - Sin `effectsByPerformance`, los efectos escalan solos: los positivos x1,25 / x1 / x0,6 y los negativos x0,6 / x1 / x1,25 (perfecto / sólido / flojo).
 - Un `poor` nunca causa un game over que un `good` no hubiera causado: si lo provocara, se aplica `good`.
-- Los tipos: `timing` (frenar una aguja, 3 rondas), `tapping` (llenar una barra con fatiga y bichos), `balance` (mantener un cursor en un rango móvil; el margen crece con la Reputación) y `roulette` (segmentos según los tags activos; la probabilidad se ve en pantalla).
+- Los tipos: `timing` (frenar una aguja, 3 rondas), `tapping` (cazar bugs que aparecen cada vez más seguidos y se van solos; el rendimiento es eliminados sobre aparecidos), `balance` (mantener un cursor en un rango móvil con botones o A / D / flechas: cuanto más tiempo mantenés apretado, más fuerza; el margen crece con la Reputación) y `roulette` (ruleta que gira sin parar y se frena en seco con un toque; el tamaño de cada segmento sale de los tags activos y es la dificultad, y se ve en pantalla).
 - El jugador elige cuándo empezar y siempre puede saltar (resultado sólido) o activar el modo asistido.
 - Si querés dar más peso a un tag en la ruleta, listalo en `LAUNCH_TAILWINDS` o `LAUNCH_HEADWINDS` (`game/minigames/roulette.ts`).
 

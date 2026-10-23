@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Rocket, CheckCircle2, AlertTriangle, XOctagon } from 'lucide-react';
 import MinigameShell from './MinigameShell';
-import { useReducedMotion } from '../../../lib/motion';
 import { playSound } from '../../../lib/sound';
 import { vibrate } from '../../../lib/fx';
 import {
   SEGMENT_ORDER,
   computeSegments,
-  nudgeFromTap,
   performanceFromOutcome,
   planSpin,
-  resolveSpin,
+  stopSpin,
+  angleAt,
+  SPIN_AUTO_STOP_MS,
   segmentArcs,
   type RouletteOutcome,
 } from '../../../game/minigames/roulette';
@@ -28,21 +28,12 @@ interface LaunchGameProps {
   onSkip: () => void;
 }
 
-const SPIN_MS = 4000;
-const SPIN_MS_REDUCED = 1800;
-const NUDGE_EASE_MS = 400;
 const RESULT_HOLD_MS = 1300;
 
 const OUTCOME_META: Record<RouletteOutcome, { label: string; text: string; fill: string; Icon: typeof CheckCircle2 }> = {
   success: { label: 'Éxito', text: 'Salió limpio.', fill: 'url(#seg-success)', Icon: CheckCircle2 },
   minor: { label: 'Bug leve', text: 'Salió con algún bug.', fill: 'url(#seg-minor)', Icon: AlertTriangle },
   critical: { label: 'Fallo crítico', text: 'Salió con un fallo serio.', fill: 'url(#seg-critical)', Icon: XOctagon },
-};
-
-const easeOutCubic = (u: number) => 1 - (1 - u) ** 3;
-const smoothstep = (u: number) => {
-  const c = Math.max(0, Math.min(1, u));
-  return c * c * (3 - 2 * c);
 };
 
 /** Punto del círculo (radio r) a `deg` grados horarios desde arriba, en coordenadas SVG centradas. */
@@ -59,84 +50,82 @@ const arcPath = (from: number, to: number, r = 90): string => {
 };
 
 /**
- * Lanzamiento beta: una ruleta con tres segmentos cuyo tamaño sale de lo que hiciste antes.
- * El desenlace se decide con el RNG de la semilla y se lee del ángulo final; el jugador solo puede empujarla hasta 10° al frenar.
+ * Lanzamiento beta: una ruleta que gira sin parar con tres segmentos cuyo tamaño sale de lo que hiciste antes.
+ * El jugador la frena en seco y el desenlace es el segmento que queda bajo la flecha: el tamaño es la dificultad, la puntería es suya.
  */
 export default function LaunchGame({ seed, activeTags, riskBias, title, rule, onResolve, onSkip }: LaunchGameProps) {
   return (
     <MinigameShell
       title={title ?? 'Lanzamiento beta'}
-      rule={rule ?? 'La ruleta decide cómo sale el lanzamiento. Frenala mientras gira para empujarla unos grados.'}
+      rule={rule ?? 'La ruleta gira sin parar. Tocá para frenarla: el resultado es el color que queda bajo la flecha de arriba.'}
       icon={<Rocket className="w-4 h-4" aria-hidden="true" />}
       onSkip={onSkip}
     >
-      {(running) => <LaunchBoard running={running} seed={seed} activeTags={activeTags} riskBias={riskBias} onResolve={onResolve} />}
+      {(running, assisted) => <LaunchBoard running={running} assisted={assisted} seed={seed} activeTags={activeTags} riskBias={riskBias} onResolve={onResolve} />}
     </MinigameShell>
   );
 }
 
 function LaunchBoard({
   running,
+  assisted,
   seed,
   activeTags,
   riskBias,
   onResolve,
 }: {
   running: boolean;
+  assisted: boolean;
   seed: number;
   activeTags: readonly Tag[];
   riskBias?: number;
   onResolve: (performance: Performance) => void;
 }) {
-  const reduced = useReducedMotion();
   const { segments, reasons } = useMemo(() => computeSegments(activeTags, riskBias), [activeTags, riskBias]);
   const arcs = useMemo(() => segmentArcs(segments), [segments]);
-  const plan = useMemo(() => planSpin(seed), [seed]);
+  const plan = useMemo(() => planSpin(seed, assisted), [seed, assisted]);
 
   const wheelRef = useRef<SVGGElement>(null);
-  const tapRef = useRef<{ at: number | null }>({ at: null });
-  const [nudged, setNudged] = useState(false);
+  const startedAtRef = useRef<number | null>(null);
+  const stoppedRef = useRef(false);
   const [outcome, setOutcome] = useState<RouletteOutcome | null>(null);
   const resolvedRef = useRef(false);
-  const startedAtRef = useRef<number | null>(null);
   const spinning = running && outcome === null;
 
-  // El giro arranca solo al terminar la cuenta atrás
+  const stopAt = (elapsed: number) => {
+    if (stoppedRef.current) return;
+    stoppedRef.current = true;
+    const result = stopSpin(plan, segments, elapsed);
+    if (wheelRef.current) wheelRef.current.style.transform = `rotate(${-result.wheelAngle}deg)`;
+    playSound('select');
+    vibrate(20);
+    setOutcome(result.outcome);
+  };
+
+  // Gira sin parar desde que termina la cuenta atrás
   useEffect(() => {
     if (!running) return;
-    const duration = reduced ? SPIN_MS_REDUCED : SPIN_MS;
-    const baseRotation = plan.turns * 360 + 360 - plan.baseAngle;
     let raf = 0;
-    let start: number | null = null;
     const loop = (now: number) => {
-      if (start === null) {
-        start = now;
-        startedAtRef.current = now;
-      }
-      const elapsed = now - start;
-      const u = Math.min(1, elapsed / duration);
-      const tap = tapRef.current.at;
-      const nudge = tap === null ? 0 : nudgeFromTap(tap) * smoothstep((elapsed - tap) / NUDGE_EASE_MS);
-      // El empujón mueve la ruleta en sentido contrario al ángulo que queda bajo el puntero
-      if (wheelRef.current) wheelRef.current.style.transform = `rotate(${baseRotation * easeOutCubic(u) - nudge}deg)`;
-      if (u >= 1 && (tap === null || elapsed - tap >= NUDGE_EASE_MS)) {
-        const result = resolveSpin(plan, segments, tap === null ? 0 : nudgeFromTap(tap));
-        setOutcome(result.outcome);
+      if (stoppedRef.current) return;
+      if (startedAtRef.current === null) startedAtRef.current = now;
+      const elapsed = now - startedAtRef.current;
+      if (elapsed >= SPIN_AUTO_STOP_MS) {
+        stopAt(elapsed);
         return;
       }
+      if (wheelRef.current) wheelRef.current.style.transform = `rotate(${-angleAt(plan, elapsed)}deg)`;
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [running, plan, segments, reduced]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running, plan, segments]);
 
-  // Frenar: Espacio, Enter o el botón. Solo cuenta una vez y solo mientras gira.
+  // Frenar: Espacio, Enter, un toque en la ruleta o el botón
   const brake = () => {
-    if (!spinning || tapRef.current.at !== null || startedAtRef.current === null) return;
-    tapRef.current.at = performance.now() - startedAtRef.current;
-    setNudged(true);
-    playSound('select');
-    vibrate(20);
+    if (!spinning || startedAtRef.current === null) return;
+    stopAt(performance.now() - startedAtRef.current);
   };
 
   useEffect(() => {
@@ -166,7 +155,7 @@ function LaunchBoard({
     <div className="space-y-3">
       <div className="flex flex-col sm:flex-row items-center gap-4">
         {/* Ruleta */}
-        <div className="relative shrink-0" aria-hidden="true">
+        <div className="relative shrink-0 cursor-pointer touch-manipulation select-none" aria-hidden="true" onPointerDown={brake}>
           <svg viewBox="-100 -100 200 200" className="w-52 h-52">
             <defs>
               <pattern id="seg-success" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
@@ -241,14 +230,14 @@ function LaunchBoard({
           </span>
         ) : (
           <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">
-            {spinning ? (nudged ? 'Empujón dado, esperá el resultado…' : 'Frená mientras gira para empujarla hasta 10°') : ' '}
+            {spinning ? 'Tocá cuando el color que querés esté bajo la flecha' : ' '}
           </span>
         )}
       </p>
 
       <button
         type="button"
-        disabled={!spinning || nudged}
+        disabled={!spinning}
         onPointerDown={(e) => {
           e.preventDefault();
           brake();

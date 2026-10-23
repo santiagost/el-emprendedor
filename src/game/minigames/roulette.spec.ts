@@ -4,8 +4,9 @@ import {
   segmentArcs,
   outcomeAt,
   planSpin,
-  resolveSpin,
-  nudgeFromTap,
+  angleAt,
+  stopSpin,
+  SPIN_AUTO_STOP_MS,
   performanceFromOutcome,
   LAUNCH_HEADWINDS,
   LAUNCH_TAILWINDS,
@@ -73,31 +74,35 @@ describe('ruleta', () => {
     expect(outcomeAt(-30, segments)).toBe('critical');
   });
 
-  it('el plan es reproducible por semilla y el empujón respeta ±10°', () => {
+  it('el plan es reproducible por semilla y la versión asistida gira más lento', () => {
     expect(planSpin(4)).toEqual(planSpin(4));
-    for (let t = 0; t < 4000; t += 13) expect(Math.abs(nudgeFromTap(t))).toBeLessThanOrEqual(10.0001);
-    expect(nudgeFromTap(null)).toBe(0);
+    expect(planSpin(4, true).speed).toBeLessThan(planSpin(4).speed);
+    expect(planSpin(4, true).startAngle).toBe(planSpin(4).startAngle);
   });
 
-  it('el empujón solo cambia el resultado cuando el ángulo cae a menos de 10° de un borde', () => {
-    let changed = 0;
-    for (let seed = 0; seed < 400; seed++) {
-      const plan = planSpin(seed);
-      const without = resolveSpin(plan, segments, 0).outcome;
-      const withNudge = resolveSpin(plan, segments, 10).outcome;
-      const nearEdge = [0, 180, 288, 360].some((edge) => Math.abs(plan.baseAngle - edge) < 10.01 || Math.abs(plan.baseAngle + 10 - edge) < 10.01);
-      if (without !== withNudge) {
-        changed++;
-        expect(nearEdge).toBe(true);
-      }
-    }
-    expect(changed).toBeGreaterThan(0);
+  it('gira siempre en el mismo sentido y da la vuelta completa', () => {
+    const plan = { startAngle: 10, speed: 120 };
+    expect(angleAt(plan, 0)).toBeCloseTo(10);
+    expect(angleAt(plan, 500)).toBeCloseTo(70);
+    expect(angleAt(plan, 3000)).toBeCloseTo(10);
   });
 
-  it('las frecuencias salen cerca de las probabilidades visibles', () => {
+  it('frenar lee el segmento bajo el puntero en ese instante', () => {
+    const plan = { startAngle: 0, speed: 100 };
+    expect(stopSpin(plan, segments, 1000).outcome).toBe('success'); // 100°
+    expect(stopSpin(plan, segments, 2000).outcome).toBe('minor'); // 200°
+    expect(stopSpin(plan, segments, 3200).outcome).toBe('critical'); // 320°
+  });
+
+  it('si no frena, se detiene sola al llegar al tiempo máximo', () => {
+    const plan = { startAngle: 0, speed: 100 };
+    expect(stopSpin(plan, segments, SPIN_AUTO_STOP_MS + 5000).wheelAngle).toBeCloseTo(angleAt(plan, SPIN_AUTO_STOP_MS));
+  });
+
+  it('el tamaño del segmento es la dificultad: frenar al azar cae según los porcentajes', () => {
     const counts = { success: 0, minor: 0, critical: 0 };
     const n = 4000;
-    for (let seed = 1; seed <= n; seed++) counts[resolveSpin(planSpin(seed), segments, 0).outcome]++;
+    for (let i = 0; i < n; i++) counts[stopSpin({ startAngle: 0, speed: 150 }, segments, ((i * 0.6180339) % 1) * 2400).outcome]++;
     expect(counts.success / n).toBeGreaterThan(0.45);
     expect(counts.success / n).toBeLessThan(0.55);
     expect(counts.critical / n).toBeGreaterThan(0.15);

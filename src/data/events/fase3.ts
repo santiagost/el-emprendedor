@@ -120,7 +120,7 @@ export const fase3Events = [
                     minigame: {
                         kind: 'tapping',
                         title: 'Crunch nocturno',
-                        rule: 'Tocá lo más rápido que puedas para tapar los huecos antes de que se acabe el tiempo. Pasado el 70 % cada toque rinde menos.',
+                        rule: 'Salen bugs en la entrega y se van solos en poco tiempo: tocá (o hacé clic en) cada uno para eliminarlo. Cuantos más elimines, mejor sale; cada vez aparecen más seguidos.',
                         outcomeTextByPerformance: {
                             perfect: 'Te pusiste la empresa al hombro y lo sacaste adelante: entregas impecables y un cliente que lo notó. Pero trabajaste de madrugada durante semanas y quedaste al borde del colapso físico y mental.',
                             poor: 'Quisiste cubrir todo y no llegaste: las entregas se cayeron y perdiste a un cliente. A cambio, te rendiste a tiempo, dormiste y tu salud quedó casi intacta.',
@@ -145,7 +145,7 @@ export const fase3Events = [
                             perfect: 'Negociaste con firmeza y los clientes aceptaron penalidades mucho más bajas. Frenaste la máquina, diste bonos de respiro al equipo y el margen dolió menos de lo previsto.',
                             poor: 'La negociación se te fue de las manos: los clientes impusieron penalidades más duras. Salvaste a tu gente con el bono de retención, pero el trimestre quedó muy golpeado.',
                         },
-                        rule: 'Mantené el cursor dentro del rango aceptable mientras los clientes empujan. Cuanta más reputación tengas, más margen.',
+                        rule: 'Mantené el cursor dentro del rango aceptable mientras los clientes empujan. Cuanto más tiempo mantengas apretado un botón (o A / D, o las flechas), más fuerte empujás. Cuanta más reputación tengas, más margen.',
                     },
                     removeTags: ['equipo_sobrecargado'],
                     learningPill: 'Retención de Talento: Cuesta hasta 3 veces más reemplazar a un colaborador clave que invertir en su bienestar.',

@@ -14,12 +14,15 @@ export interface BalanceState {
   vel: number;
 }
 
-const WIDTH_MIN = 0.15;
-const WIDTH_MAX = 0.27;
+const WIDTH_MIN = 0.2;
+const WIDTH_MAX = 0.32;
 const ASSISTED_WIDTH_FACTOR = 1.35;
-const INPUT_FORCE = 8;
-const PRESSURE = 5;
-const DAMPING = 3;
+const INPUT_FORCE = 3.2;
+const PRESSURE = 2.8;
+const DAMPING = 3.5;
+/** Un toque corto mueve poco: la fuerza arranca en este tramo y llega al máximo tras RAMP_MS de mantener. */
+const RAMP_START = 0.2;
+const RAMP_MS = 600;
 
 /**
  * Parámetros de la negociación. Con poca Reputación el rango aceptable es más angosto:
@@ -54,6 +57,13 @@ export function pressure(p: BalanceParams, tMs: number): number {
   return (Math.sin((Math.PI * 2 * t) / 2.6 + p.phases.push1) + 0.6 * Math.sin((Math.PI * 2 * t) / 1.3 + p.phases.push2)) / 1.6;
 }
 
+/**
+ * Fuerza de un botón según cuánto tiempo lleva apretado (0 a 1): un toque corto empuja suave
+ * y mantenerlo va ganando fuerza, así el movimiento depende de cuánto lo sostenés.
+ */
+export const holdInput = (heldMs: number): number =>
+  heldMs <= 0 ? 0 : Math.min(1, RAMP_START + (1 - RAMP_START) * (heldMs / RAMP_MS));
+
 /** Un paso de física: input va de -1 (izquierda) a 1 (derecha). El cursor rebota suave en los bordes. */
 export function stepBalance(s: BalanceState, input: number, tMs: number, dtMs: number, p: BalanceParams): BalanceState {
   const dt = dtMs / 1000;
@@ -74,9 +84,9 @@ export function stepBalance(s: BalanceState, input: number, tMs: number, dtMs: n
 export const inZone = (pos: number, tMs: number, p: BalanceParams): boolean =>
   Math.abs(pos - targetCenter(p, tMs)) <= p.width / 2;
 
-/** >= 75 % del tiempo dentro es perfecto; 40-75 %, bueno; menos, flojo. */
+/** >= 70 % del tiempo dentro es perfecto; 50-70 %, bueno; menos, flojo. */
 export function balancePerformance(fractionInZone: number): Performance {
-  if (fractionInZone >= 0.75) return 'perfect';
-  if (fractionInZone >= 0.4) return 'good';
+  if (fractionInZone >= 0.7) return 'perfect';
+  if (fractionInZone >= 0.5) return 'good';
   return 'poor';
 }

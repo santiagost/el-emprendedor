@@ -16,7 +16,7 @@ export const fase1Events = [
                         kind: 'roulette',
                         riskBias: 0.12,
                         title: 'Lanzamiento beta',
-                        rule: 'Salís sin estar del todo listo: la ruleta decide cómo sale. Cuanto más cuidado fue tu producto, más grande el verde.',
+                        rule: 'Salís sin estar del todo listo. Frená la ruleta con un toque: cuanto más cuidado fue tu producto, más grande el verde, pero cae donde apunte la flecha.',
                         outcomeTextByPerformance: {
                             perfect: 'Saliste rápido y, contra todo pronóstico, casi sin fallas. Los primeros clientes pagaron, la necesidad quedó confirmada y los pocos detalles feos pasaron desapercibidos.',
                             poor: 'Saliste rápido y el producto falló fuerte en manos de los primeros usuarios. Hubo críticas duras y reembolsos, aunque aprendiste en semanas lo que otros tardan meses.',
@@ -35,7 +35,7 @@ export const fase1Events = [
                         kind: 'roulette',
                         riskBias: -0.2,
                         title: 'Lanzamiento pulido',
-                        rule: 'Esperaste dos meses para salir mejor preparado: la ruleta tiene mucho más verde, pero igual puede salir mal.',
+                        rule: 'Esperaste dos meses para salir mejor preparado: hay mucho más verde, pero igual tenés que frenar la ruleta en el lugar justo.',
                         outcomeTextByPerformance: {
                             perfect: 'El producto salió impecable y generó elogios desde el primer día. Quemaste dos meses de ahorros, pero el lanzamiento valió cada uno.',
                             poor: 'Pese a los dos meses de pulido, apareció un fallo que nadie previó. Quemaste ahorros y encima el lanzamiento salió torcido: el peor de los dos mundos.',
