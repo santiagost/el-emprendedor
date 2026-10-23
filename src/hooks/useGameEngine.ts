@@ -58,13 +58,24 @@ const saveSession = (data: SavedSession | null) => {
 };
 
 export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, playerName?: string, rng?: RNG) => {
-  const [initialSeed] = useState<number>(() => getInitialSeed());
-  const [activeRng] = useState<RNG>(() => rng ?? createRng(initialSeed));
+  // Todo lo que consume el RNG inicial se arma en un único inicializador: en StrictMode React lo ejecuta dos veces,
+  // y así cada ejecución tiene su propio RNG (si no, el primer evento se sortea dos veces y la semilla cambia en dev).
+  const [initial] = useState(() => {
+    const seed = getInitialSeed();
+    const seededRng = rng ?? createRng(seed);
+    const savedSession = loadSavedSession(arquetipo.id, financiamiento.id);
+    return {
+      seed,
+      rng: seededRng,
+      saved: savedSession,
+      event: savedSession?.currentEvent ?? getInitialEvent(seededRng),
+    };
+  });
+  const { seed: initialSeed, rng: activeRng, saved } = initial;
 
-  const saved = useState<SavedSession | null>(() => loadSavedSession(arquetipo.id, financiamiento.id))[0];
 
   const [gameState, setGameState] = useState<GameState>(() => saved?.gameState ?? { ...startGame(arquetipo, financiamiento), playerName });
-  const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(() => saved?.currentEvent ?? getInitialEvent(activeRng));
+  const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(() => initial.event);
   const [step, setStep] = useState<GameStep>(() => saved?.step ?? 'decision');
 
   const updateStateAndPersist = (
