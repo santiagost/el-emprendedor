@@ -60,7 +60,9 @@ function CrunchBoard({
   seed: number;
   onResolve: (performance: Performance) => void;
 }) {
-  const stateRef = useRef(createTapping(seed, assisted));
+  // En pantallas táctiles se juega con dos dedos: más bugs y menos tiempo
+  const [touch] = useState(() => typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches === true);
+  const stateRef = useRef(createTapping(seed, assisted, touch));
   const progressRef = useRef<HTMLDivElement>(null);
   const heartRef = useRef<HTMLSpanElement>(null);
   const [bugs, setBugs] = useState<TappingBug[]>([]);

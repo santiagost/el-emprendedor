@@ -95,15 +95,15 @@ describe('balance', () => {
   });
 
   it('sin hacer nada la contraparte te saca del rango la mayor parte del tiempo', () => {
-    expect(avg(50, sloppy)).toBeLessThan(0.5);
+    expect(avg(50, sloppy)).toBeLessThan(0.58);
   });
 
   it('un jugador atento se queda dentro la mayor parte del tiempo', () => {
-    expect(avg(50, skilled)).toBeGreaterThanOrEqual(0.7);
+    expect(avg(50, skilled)).toBeGreaterThanOrEqual(0.72);
   });
 
   it('un jugador promedio rinde bien y uno distraído menos', () => {
-    expect(avg(50, average)).toBeGreaterThanOrEqual(0.5);
+    expect(avg(50, average)).toBeGreaterThanOrEqual(0.58);
     expect(avg(50, sloppy)).toBeLessThan(avg(50, average));
     expect(avg(50, average)).toBeLessThan(avg(50, skilled));
   });
@@ -112,11 +112,11 @@ describe('balance', () => {
     expect(avg(5, skilled)).toBeLessThan(avg(95, skilled));
   });
 
-  it('balancePerformance respeta los umbrales 70 % y 50 %', () => {
+  it('balancePerformance respeta los umbrales 72 % y 58 %', () => {
     expect(balancePerformance(0.9)).toBe('perfect');
-    expect(balancePerformance(0.7)).toBe('perfect');
+    expect(balancePerformance(0.72)).toBe('perfect');
     expect(balancePerformance(0.6)).toBe('good');
-    expect(balancePerformance(0.5)).toBe('good');
-    expect(balancePerformance(0.49)).toBe('poor');
+    expect(balancePerformance(0.58)).toBe('good');
+    expect(balancePerformance(0.57)).toBe('poor');
   });
 });

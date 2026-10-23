@@ -19,6 +19,9 @@ export interface TappingState {
 }
 
 export const BUG_COUNT = 18;
+/** En pantallas táctiles se puede jugar con dos dedos: salen más bugs y duran menos. */
+export const TOUCH_BUG_COUNT = 26;
+const TOUCH_LIFETIME_FACTOR = 0.75;
 export const BUG_LIFETIME_MS = 1400;
 const ASSISTED_LIFETIME_FACTOR = 1.5;
 const FIRST_SPAWN_MS = 600;
@@ -32,11 +35,11 @@ const PERFECT_RATIO = 0.85;
 const GOOD_RATIO = 0.55;
 
 /** Cada bicho aparece más pronto que el anterior; la posición evita los bichos recientes para que no se tapen. */
-export function buildBugs(seed: number): TappingBug[] {
+export function buildBugs(seed: number, count = BUG_COUNT): TappingBug[] {
   const rng = createRng(seed);
   const bugs: TappingBug[] = [];
-  for (let id = 0; id < BUG_COUNT; id++) {
-    const u = id / (BUG_COUNT - 1);
+  for (let id = 0; id < count; id++) {
+    const u = id / (count - 1);
     const spawnMs = Math.round(FIRST_SPAWN_MS + SPAWN_SPAN_MS * (1 - (1 - u) ** RAMP));
     let x = 0;
     let y = 0;
@@ -53,11 +56,12 @@ export function buildBugs(seed: number): TappingBug[] {
   return bugs;
 }
 
-export function createTapping(seed: number, assisted = false): TappingState {
+export function createTapping(seed: number, assisted = false, touch = false): TappingState {
+  const lifetime = BUG_LIFETIME_MS * (assisted ? ASSISTED_LIFETIME_FACTOR : 1) * (touch ? TOUCH_LIFETIME_FACTOR : 1);
   return {
     elapsedMs: 0,
-    bugs: buildBugs(seed),
-    lifetimeMs: Math.round(BUG_LIFETIME_MS * (assisted ? ASSISTED_LIFETIME_FACTOR : 1)),
+    bugs: buildBugs(seed, touch ? TOUCH_BUG_COUNT : BUG_COUNT),
+    lifetimeMs: Math.round(lifetime),
     squashed: [],
     missed: [],
   };

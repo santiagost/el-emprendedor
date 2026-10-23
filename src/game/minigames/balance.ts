@@ -14,11 +14,11 @@ export interface BalanceState {
   vel: number;
 }
 
-const WIDTH_MIN = 0.2;
-const WIDTH_MAX = 0.32;
+const WIDTH_MIN = 0.24;
+const WIDTH_MAX = 0.36;
 const ASSISTED_WIDTH_FACTOR = 1.35;
 const INPUT_FORCE = 3.2;
-const PRESSURE = 2.8;
+const PRESSURE = 2.6;
 const DAMPING = 3.5;
 /** Un toque corto mueve poco: la fuerza arranca en este tramo y llega al máximo tras RAMP_MS de mantener. */
 const RAMP_START = 0.2;
@@ -84,9 +84,9 @@ export function stepBalance(s: BalanceState, input: number, tMs: number, dtMs: n
 export const inZone = (pos: number, tMs: number, p: BalanceParams): boolean =>
   Math.abs(pos - targetCenter(p, tMs)) <= p.width / 2;
 
-/** >= 70 % del tiempo dentro es perfecto; 50-70 %, bueno; menos, flojo. */
+/** >= 72 % del tiempo dentro es perfecto; 58-72 %, bueno; menos, flojo. */
 export function balancePerformance(fractionInZone: number): Performance {
-  if (fractionInZone >= 0.7) return 'perfect';
-  if (fractionInZone >= 0.5) return 'good';
+  if (fractionInZone >= 0.72) return 'perfect';
+  if (fractionInZone >= 0.58) return 'good';
   return 'poor';
 }

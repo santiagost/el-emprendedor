@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { createTapping, advance, squashBug, visibleBugs, appearedCount, tappingPerformance, isTappingFinished, buildBugs, BUG_COUNT, BUG_LIFETIME_MS, TAPPING_DURATION_MS } from './tapping';
+import { createTapping, advance, squashBug, visibleBugs, appearedCount, tappingPerformance, isTappingFinished, buildBugs, BUG_COUNT, TOUCH_BUG_COUNT, BUG_LIFETIME_MS, TAPPING_DURATION_MS } from './tapping';
 
 /** Juega con un ritmo: elimina de a un bug (el más viejo en pantalla) cada `gapMs`; null = no toca nada. */
-function play(gapMs: number | null, { assisted = false, seed = 1 } = {}) {
-  let s = createTapping(seed, assisted);
+function play(gapMs: number | null, { assisted = false, seed = 1, touch = false } = {}) {
+  let s = createTapping(seed, assisted, touch);
   let next = 0;
   while (!isTappingFinished(s)) {
     s = advance(s, 10);
@@ -66,6 +66,15 @@ describe('tapping (cazar bugs)', () => {
   it('el modo asistido ayuda', () => {
     expect(play(1100, { assisted: true }).squashed.length).toBeGreaterThan(play(1100).squashed.length);
     expect(tappingPerformance(play(800, { assisted: true }))).toBe('good');
+  });
+
+  it('en pantallas táctiles salen más bugs y duran menos, así que el mismo ritmo rinde menos', () => {
+    const mouse = createTapping(1);
+    const touch = createTapping(1, false, true);
+    expect(touch.bugs).toHaveLength(TOUCH_BUG_COUNT);
+    expect(touch.lifetimeMs).toBeLessThan(mouse.lifetimeMs);
+    expect(play(500, { touch: true }).squashed.length / TOUCH_BUG_COUNT).toBeLessThan(play(500).squashed.length / BUG_COUNT);
+    expect(tappingPerformance(play(300, { touch: true }))).toBe('perfect');
   });
 
   it('termina cuando se resolvieron todos y no avanza después', () => {
