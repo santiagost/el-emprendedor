@@ -4,6 +4,7 @@ import type { Metrics } from '../../../types/game';
 import type { MetricCurves } from '../../../game/endReport';
 import Sparkline from './Sparkline';
 import { METRIC_LABELS, METRIC_ORDER } from './metricLabels';
+import Card from '../../common/Card';
 
 const UI: Record<keyof Metrics, { icon: LucideIcon; stroke: string; text: string }> = {
   capital: { icon: DollarSign, stroke: '#0F9D58', text: 'text-emerald-700 dark:text-emerald-400' },
@@ -24,9 +25,10 @@ export default function EndMetricsPanel({ metrics, curves }: EndMetricsPanelProp
   });
 
   return (
-    <section
+    <Card
+      as="section"
       aria-label="Cómo se movieron tus métricas"
-      className="bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col gap-4 h-full"
+      className="p-4 sm:p-5 flex flex-col gap-4 h-full"
     >
       <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">Cómo se movieron tus métricas</h3>
       <div className="flex-1 flex flex-col justify-around gap-5">
@@ -69,6 +71,6 @@ export default function EndMetricsPanel({ metrics, curves }: EndMetricsPanelProp
           ))}
         </div>
       )}
-    </section>
+    </Card>
   );
 }

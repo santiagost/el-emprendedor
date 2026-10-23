@@ -5,6 +5,8 @@ import type { Metrics } from '../../types/game';
 import type { PhaseRecap as PhaseRecapData } from '../../game/recap';
 import { PHASES } from '../../game/phases';
 import { useSequence } from '../../hooks/useSequence';
+import Button from '../common/Button';
+import Card from '../common/Card';
 
 interface PhaseRecapProps {
   recap: PhaseRecapData;
@@ -97,9 +99,10 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8 items-start">
         {/* ① Recorrido de las métricas durante la fase */}
-        <section
+        <Card
+          as="section"
           aria-label="Recorrido de las métricas en la fase"
-          className="bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm animate-slide-up-fade"
+          className="p-4 sm:p-5 animate-slide-up-fade"
         >
           <div className="grid grid-cols-3 lg:grid-cols-1 gap-3 sm:gap-5 lg:gap-6">
             {METRICS_UI.map(({ key, label, icon: Icon, stroke, text }) => {
@@ -137,7 +140,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
               );
             })}
           </div>
-        </section>
+        </Card>
 
         <div className="space-y-4 min-w-0">
           {/* ② Perfil de la fase y titular */}
@@ -167,15 +170,15 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
       <div className="w-full max-w-[640px] mx-auto pt-2">
         {sequence.isCompleted ? (
           <div className="space-y-2 animate-slide-up-fade">
-            <button
-              type="button"
+            <Button
+              size="lg"
               disabled={disabled}
               onClick={onContinue}
-              className="w-full py-4 px-4 bg-brand-navy hover:bg-brand-cobalt active:bg-brand-navy-press dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover text-white font-bold text-sm sm:text-base rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-cobalt/25 group disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full shadow-lg shadow-brand-cobalt/25 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span>{nextPhase ? `Empezar Fase ${nextPhase.id}: ${nextPhase.label}` : 'Continuar'}</span>
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
+            </Button>
             <p className="text-center text-2xs text-slate-400 dark:text-slate-500 hidden sm:block">
               Presioná{' '}
               <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Espacio</kbd> o{' '}
@@ -183,15 +186,15 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
             </p>
           </div>
         ) : (
-          <button
-            type="button"
+          <Button
+            variant="secondary"
             disabled={disabled}
             onClick={sequence.skipToEnd}
-            className="w-full py-3.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3.5 px-4 text-xs sm:text-sm rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span>Saltar animación</span>
             <span className="text-3xs text-slate-400 font-mono hidden sm:inline">(Espacio)</span>
-          </button>
+          </Button>
         )}
       </div>
     </section>

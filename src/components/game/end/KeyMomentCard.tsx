@@ -3,6 +3,7 @@ import { ChevronDown } from 'lucide-react';
 import { splitPivots, type Outlook } from '../../../game/endReport';
 import type { Retrospective, Verdict } from '../../../game/retrospective';
 import { VerdictBadge } from './Verdict';
+import Card from '../../common/Card';
 
 interface KeyMomentCardProps {
   retrospective: Retrospective;
@@ -43,7 +44,7 @@ export default function KeyMomentCard({ retrospective, outlook, lost }: KeyMomen
         </div>
       </div>
 
-      <div className="bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-5">
+      <Card className="p-4 sm:p-6 space-y-5">
         <div className="flex flex-col lg:flex-row gap-5 lg:gap-6 lg:items-start">
           {main && (
             <div className="flex-1 min-w-0 grid grid-cols-[24px_minmax(0,1fr)] gap-x-2.5">
@@ -138,7 +139,7 @@ export default function KeyMomentCard({ retrospective, outlook, lost }: KeyMomen
             )}
           </div>
         )}
-      </div>
+      </Card>
     </section>
   );
 }

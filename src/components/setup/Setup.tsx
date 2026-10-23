@@ -6,6 +6,8 @@ import ImpactBadges from '../game/ImpactBadges';
 import ThemeToggle from '../common/ThemeToggle';
 import EffectsToggle from '../common/EffectsToggle';
 import SoundToggle from '../common/SoundToggle';
+import Button from '../common/Button';
+import Card from '../common/Card';
 import { useSoundToggle } from '../../lib/sound';
 import { useTheme } from '../../hooks/useTheme';
 import { useEffectsToggle } from '../../lib/motion';
@@ -72,7 +74,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                 </div>
 
                 {/* Explicación de Métricas Vitales (Stitch: Capital Esmeralda, Reputación Cobalto, Bienestar Ámbar) */}
-                <div className="bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl space-y-2.5 shadow-sm">
+                <Card className="p-3.5 sm:p-4 space-y-2.5">
                     <div className="flex items-center justify-between text-2xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                         <span>Métricas Vitales de Supervivencia</span>
                         <span className="text-3xs text-rose-600 dark:text-rose-400 font-extrabold uppercase">Tocar 0% = Derrota Inmediata</span>
@@ -103,7 +105,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                             </p>
                         </div>
                     </div>
-                </div>
+                </Card>
 
                 <nav aria-label="Progreso de configuración" className="flex items-center gap-3">
                     {[1, 2].map((item) => {
@@ -192,14 +194,14 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                         })}
                     </div>
 
-                    <button
-                        type="button"
+                    <Button
+                        size="md"
                         onClick={handleArquetipoContinue}
                         disabled={!arquetipo}
-                        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-navy hover:bg-brand-cobalt dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover px-4 py-3.5 text-sm font-bold text-white transition-all shadow-md disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
+                        className="mt-6 w-full shadow-md disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
                     >
                         Continuar a Financiamiento <ArrowRight className="h-4 w-4" />
-                    </button>
+                    </Button>
                 </section>
             )}
 
@@ -254,7 +256,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                         })}
                     </div>
 
-                    <div className="mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-night-surface p-4 sm:p-5 shadow-sm">
+                    <Card className="mt-6 p-4 sm:p-5">
                         <label htmlFor="player-name" className="block text-sm font-bold text-slate-900 dark:text-slate-100">
                             ¿Cómo te llamás? <span className="font-normal text-slate-400 dark:text-slate-500">(opcional)</span>
                         </label>
@@ -282,7 +284,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                 Recordar nombre para futuras partidas
                             </label>
                         )}
-                    </div>
+                    </Card>
 
                     <div className="mt-4 flex gap-3">
                         <button
@@ -292,14 +294,14 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                         >
                             <ArrowLeft className="h-4 w-4" /> Volver
                         </button>
-                        <button
-                            type="button"
+                        <Button
+                            size="md"
                             onClick={handleStart}
                             disabled={!financiamiento}
-                            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-navy hover:bg-brand-cobalt dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover px-4 py-3.5 text-sm font-bold text-white transition-all shadow-md disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
+                            className="flex-1 shadow-md disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
                         >
                             Comenzar Simulación <ArrowRight className="h-4 w-4" />
-                        </button>
+                        </Button>
                     </div>
                 </section>
             )}

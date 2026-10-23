@@ -1,4 +1,5 @@
 import { Volume2, VolumeX } from 'lucide-react';
+import IconButton from './IconButton';
 
 interface SoundToggleProps {
   soundEnabled: boolean;
@@ -8,8 +9,7 @@ interface SoundToggleProps {
 
 export default function SoundToggle({ soundEnabled, onToggle, className = '' }: SoundToggleProps) {
   return (
-    <button
-      type="button"
+    <IconButton
       onClick={(e) => {
         onToggle();
         // Con el mouse, soltar el foco: si no, Espacio (que avanza las escenas) volvería a activar el botón
@@ -18,13 +18,14 @@ export default function SoundToggle({ soundEnabled, onToggle, className = '' }: 
       aria-pressed={soundEnabled}
       title={soundEnabled ? 'Sonido: activado (clic para silenciar)' : 'Sonido: apagado (clic para activar)'}
       aria-label={soundEnabled ? 'Silenciar sonido' : 'Activar sonido'}
-      className={`inline-flex items-center justify-center p-2 rounded-xl transition-all duration-200 border ${
+      tone={
         soundEnabled
-          ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-800/80 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 shadow-sm'
-          : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 shadow-sm'
-      } ${className}`}
+          ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-800/80 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50'
+          : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'
+      }
+      className={className}
     >
       {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-    </button>
+    </IconButton>
   );
 }

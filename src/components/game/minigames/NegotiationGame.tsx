@@ -16,6 +16,7 @@ import {
 } from '../../../game/minigames/balance';
 import { PERFORMANCE_LABEL } from '../../../game/minigames/performance';
 import type { Performance } from '../../../types/game';
+import Button from '../../common/Button';
 
 interface NegotiationGameProps {
   seed: number;
@@ -260,12 +261,11 @@ function NegotiationBoard({
 
       <div className="grid grid-cols-2 gap-2">
         {(['left', 'right'] as const).map((side) => (
-          <button
+          <Button
             key={side}
-            type="button"
-            disabled={disabled}
+                disabled={disabled}
             {...holdProps(side)}
-            className="py-4 px-4 bg-brand-navy hover:bg-brand-cobalt active:bg-brand-navy-press dark:bg-brand-cobalt dark:hover:bg-brand-cobalt-hover disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-colors touch-none select-none inline-flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50"
+            className="py-4 px-4 text-sm rounded-xl disabled:opacity-50 touch-none select-none"
           >
             {side === 'left' ? <ChevronLeft className="w-4 h-4" aria-hidden="true" /> : null}
             {side === 'left' ? 'Izquierda' : 'Derecha'}
@@ -273,7 +273,7 @@ function NegotiationBoard({
               {side === 'left' ? 'A / ←' : 'D / →'}
             </kbd>
             {side === 'right' ? <ChevronRight className="w-4 h-4" aria-hidden="true" /> : null}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

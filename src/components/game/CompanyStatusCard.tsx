@@ -3,6 +3,7 @@ import { TAGS, type Tag } from '../../data/tags';
 import { buildCompanyStory } from '../../game/companyStory';
 import CompanyStory from './CompanyStory';
 import { Building2, Landmark, Layers, PanelLeftClose, PanelLeftOpen, Tag as TagIcon, UserRound } from 'lucide-react';
+import Card from '../common/Card';
 
 interface CompanyStatusCardProps {
   arquetipo: Archetype;
@@ -27,7 +28,7 @@ export default function CompanyStatusCard({
     const iconBox =
       'w-9 h-9 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/70 flex items-center justify-center text-slate-600 dark:text-slate-300';
     return (
-      <div className="bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800/90 rounded-2xl py-2.5 flex flex-col items-center gap-2 shadow-sm transition-colors">
+      <Card className="py-2.5 flex flex-col items-center gap-2 transition-colors">
         {onToggleCollapse && (
           <button
             type="button"
@@ -52,12 +53,12 @@ export default function CompanyStatusCard({
             {activeTags.length}
           </span>
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800/90 rounded-2xl p-4 space-y-3.5 shadow-sm transition-colors">
+    <Card className="p-4 space-y-3.5 transition-colors">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-indigo-950/70 border border-blue-200 dark:border-indigo-800/60 flex items-center justify-center text-brand-cobalt dark:text-blue-400">
@@ -175,6 +176,6 @@ export default function CompanyStatusCard({
           </div>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

@@ -1,4 +1,5 @@
 import { Clapperboard } from 'lucide-react';
+import IconButton from './IconButton';
 
 interface EffectsToggleProps {
   fxEnabled: boolean;
@@ -8,8 +9,7 @@ interface EffectsToggleProps {
 
 export default function EffectsToggle({ fxEnabled, onToggle, className = '' }: EffectsToggleProps) {
   return (
-    <button
-      type="button"
+    <IconButton
       onClick={onToggle}
       title={
         fxEnabled
@@ -17,11 +17,12 @@ export default function EffectsToggle({ fxEnabled, onToggle, className = '' }: E
           : 'Efectos y animaciones: Desactivados (clic para activar)'
       }
       aria-label={fxEnabled ? 'Desactivar efectos y animaciones' : 'Activar efectos y animaciones'}
-      className={`relative inline-flex items-center justify-center p-2 rounded-xl transition-all duration-200 border ${
+      tone={
         fxEnabled
-          ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800/80 text-amber-600 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50 shadow-sm'
-          : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 shadow-sm'
-      } ${className}`}
+          ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800/80 text-amber-600 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50'
+          : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'
+      }
+      className={className}
     >
       <div className="relative">
         <Clapperboard
@@ -36,6 +37,6 @@ export default function EffectsToggle({ fxEnabled, onToggle, className = '' }: E
       <span className="sr-only">
         {fxEnabled ? 'Efectos activados' : 'Efectos reducidos'}
       </span>
-    </button>
+    </IconButton>
   );
 }
