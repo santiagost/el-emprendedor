@@ -40,6 +40,8 @@ export interface MinigameSpec {
 
 export interface GameOption {
     text: string;
+    /** Frase en condicional bajo el título de la opción; se muestra solo si existe. */
+    hint?: string;
     impactPreview: ImpactPreview;
     effects: Partial<Metrics>;
     addTags?: Tag[];
