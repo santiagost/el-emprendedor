@@ -4,6 +4,8 @@ import { hasPlayableMinigame } from '../../game/minigames/performance';
 
 interface OptionListProps {
   options: GameOption[];
+  /** Texto en condicional bajo el título de cada opción (mismo orden que `options`); vacío = sin texto. */
+  hints: string[];
   /** La coreografía de la interrupción todavía está en pantalla: las opciones ocupan su lugar pero no se ven. */
   hidden: boolean;
   /** La carta acaba de revelarse: las opciones entran escalonadas. */
@@ -13,7 +15,7 @@ interface OptionListProps {
 }
 
 /** Alternativas del dilema, debajo de la carta (se eligen con clic o con las teclas 1, 2 y 3). */
-export default function OptionList({ options, hidden, justRevealed, disabled, onPick }: OptionListProps) {
+export default function OptionList({ options, hints, hidden, justRevealed, disabled, onPick }: OptionListProps) {
   return (
     <div className={`space-y-3 ${hidden ? 'invisible' : ''}`}>
       <div className="flex items-center justify-between px-1">
@@ -39,9 +41,9 @@ export default function OptionList({ options, hidden, justRevealed, disabled, on
             <span className="block text-base sm:text-lg font-bold leading-snug text-brand-navy dark:text-slate-100">
               {option.text}
             </span>
-            {option.hint && (
+            {hints[idx] && (
               <span className="block text-sm leading-relaxed italic text-slate-600 dark:text-slate-300">
-                {option.hint}
+                {hints[idx]}
               </span>
             )}
             {hasPlayableMinigame(option.minigame) && (

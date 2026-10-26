@@ -13,6 +13,7 @@ import ExitConfirmModal from './ExitConfirmModal';
 import GameHeader from './GameHeader';
 import EventCard from './EventCard';
 import OptionList from './OptionList';
+import { buildOptionHint, buildOutcomeForecast } from '../../game/optionHint';
 import OutcomeActions from './OutcomeActions';
 import InterruptionStage from './InterruptionStage';
 import MinigameStage from './minigames/MinigameStage';
@@ -138,6 +139,15 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
   const displayEvent = useMemo(
     () => (currentEvent ? localizeEvent(currentEvent, displayName) : null),
     [currentEvent, displayName]
+  );
+
+  // "Qué podría venir" del resultado: solo mientras se muestra la decisión que acaba de tomarse
+  const forecast = useMemo(
+    () =>
+      step === 'outcome' && displayEvent && lastDecision?.eventId === displayEvent.id
+        ? buildOutcomeForecast(displayEvent, lastDecision.optionIndex, lastDecision.performance)
+        : null,
+    [step, displayEvent, lastDecision]
   );
 
   // B2: resumen de la fase que acaba de cerrarse (el estado ya avanzó a la siguiente)
@@ -334,6 +344,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
               lastDecision={lastDecision}
               decisionDeltas={reveal.decisionDeltas}
               lastPill={lastPill}
+              forecast={forecast}
               playerName={displayName}
             />
           )}
@@ -360,6 +371,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
           {status === 'playing' && displayEvent && step === 'decision' && !pendingMinigame && (
             <OptionList
               options={displayEvent.options}
+              hints={displayEvent.options.map((_, i) => buildOptionHint(displayEvent, i))}
               hidden={showIncomingAlert}
               justRevealed={justRevealed}
               disabled={isRevealing}

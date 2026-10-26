@@ -33,6 +33,8 @@ interface EventCardProps {
   lastDecision: DecisionLogEntry | null | undefined;
   decisionDeltas: MetricDeltas;
   lastPill: string | null | undefined;
+  /** "Qué podría venir" tras la decisión (siempre en condicional); null si no deja nada pendiente. */
+  forecast?: string | null;
   playerName?: string;
 }
 
@@ -46,6 +48,7 @@ export default function EventCard({
   lastDecision,
   decisionDeltas,
   lastPill,
+  forecast,
   playerName,
 }: EventCardProps) {
   const isInterruption = event.kind === 'crisis' || event.kind === 'unforeseen';
@@ -140,6 +143,11 @@ export default function EventCard({
           {layer >= 1 && lastDecision?.outcomeText && (
             <p className="px-5 sm:px-7 pt-5 text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed max-w-[64ch] animate-in fade-in duration-200">
               {personalize(lastDecision.outcomeText, playerName)}
+            </p>
+          )}
+          {layer >= 1 && forecast && (
+            <p className="px-5 sm:px-7 pt-3 text-sm italic text-slate-500 dark:text-slate-400 leading-relaxed max-w-[64ch] animate-in fade-in duration-200">
+              {forecast}
             </p>
           )}
 
