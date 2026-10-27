@@ -12,6 +12,10 @@ export const fase3Events = [
                 'Ajustar precios inmediatamente trasladando el 100% de la inflación.',
                 { capital: +10, reputacion: -30, bienestar: -5 },
                 {
+                    surprise: {
+                        effects: { capital: -5, reputacion: -30, bienestar: -5 },
+                        outcomeText: 'Trasladaste el aumento de inmediato, pero los clientes no lo convalidaron: muchos se pasaron a la competencia y lo que ganabas por precio lo perdiste en volumen. Encima el clima en el equipo se resintió.',
+                    },
                     learningPill: 'Poder de Fijación de Precios (Pricing Power): Trasladar costos sin valor diferencial destruye la fidelidad del cliente.',
                     outcomeText: 'Trasladaste el aumento de inmediato. Salvaste la rentabilidad del mes, pero muchos clientes históricos se sintieron defraudados y migraron a alternativas.',
                 }
@@ -20,6 +24,10 @@ export const fase3Events = [
                 'Absorber parte del costo para ganar clientes de la competencia.',
                 { capital: -25, reputacion: +25, bienestar: -10 },
                 {
+                    surprise: {
+                        effects: { capital: -25, reputacion: -5, bienestar: -10 },
+                        outcomeText: 'Absorbiste el impacto y quemaste caja, pero la competencia también absorbió el costo y casi nadie notó tu esfuerzo. Algunos clientes hasta pensaron que estabas bajando la calidad.',
+                    },
                     learningPill: 'Estrategia Competitiva en Crisis: Las empresas con caja pueden ganar cuota de mercado sacrificando margen temporal.',
                     outcomeText: 'Absorbiste el impacto reduciendo tu margen temporalmente. Quemaste reservas de caja, pero capturaste una marea de clientes desencantados con la competencia.',
                 }
@@ -166,6 +174,10 @@ export const fase3Events = [
                 'Invertir fuerte en la campaña y apostar a un salto de escala.',
                 { capital: -20, reputacion: +15 },
                 {
+                    surprise: {
+                        effects: { capital: +10, reputacion: +15 },
+                        outcomeText: 'Pusiste una suma importante en pauta y la campaña explotó: las ventas pagaron la inversión antes de fin de mes y además ganaste visibilidad de marca.',
+                    },
                     addTags: ['generacion_ingresos'],
                     learningPill: 'CAC y Crecimiento: Pagar por crecer solo funciona si el cliente adquirido deja más de lo que costó conseguirlo.',
                     outcomeText: 'Pusiste una suma importante en pauta publicitaria. El tráfico explotó y conseguiste visibilidad de marca, aunque el costo de conversión resultó más alto de lo proyectado.',
@@ -175,6 +187,10 @@ export const fase3Events = [
                 'Crecer orgánico con referidos, lento pero sin quemar caja.',
                 { capital: +5, reputacion: +5, bienestar: +5 },
                 {
+                    surprise: {
+                        effects: { capital: -5, reputacion: +5, bienestar: +5 },
+                        outcomeText: 'Confiaste en el boca a boca, pero los referidos tardaron más de lo previsto y los gastos fijos siguieron corriendo. Los clientes que llegaron lo hicieron convencidos, aunque la caja se resintió.',
+                    },
                     addTags: ['clientes_diversificados'],
                     learningPill: 'Crecimiento Orgánico: Los clientes que llegan por recomendación cuestan poco, pagan mejor y se quedan más tiempo.',
                     outcomeText: 'Confiaste en la calidad y en la recomendación boca a boca. El crecimiento es más lento, pero cada cliente nuevo llega convencido y con costo de adquisición prácticamente cero.',
@@ -194,6 +210,10 @@ export const fase3Events = [
                 'Frenar las ventas nuevas hasta estabilizar la plataforma.',
                 { capital: -10, reputacion: +15 },
                 {
+                    surprise: {
+                        effects: { capital: +5, reputacion: +15 },
+                        outcomeText: 'Pausaste las altas para blindar la infraestructura. Los clientes esperaron sin cancelar y, al volver, compraron todo lo que tenían pendiente: la pausa terminó dejando caja.',
+                    },
                     addTags: ['procesos_solidos'],
                     learningPill: 'Deuda Técnica: Frenar para estabilizar duele en el corto plazo, pero operar sobre un sistema roto duele siempre.',
                     outcomeText: 'Pausaste las altas para reescribir código y blindar la infraestructura. Dejaste de facturar unos días, pero la plataforma ahora resiste picos masivos sin pestañear.',
@@ -203,6 +223,10 @@ export const fase3Events = [
                 'Aplicar un parche rápido y seguir vendiendo a toda máquina.',
                 { capital: +15, reputacion: -25, bienestar: -15 },
                 {
+                    surprise: {
+                        effects: { capital: -10, reputacion: -25, bienestar: -15 },
+                        outcomeText: 'Pusiste un parche rápido y seguiste vendiendo, pero se cayó en el peor momento: hubo que devolver ventas y pagar soporte de urgencia. Perdiste caja, reputación y la paz del equipo.',
+                    },
                     addTags: ['equipo_sobrecargado'],
                     learningPill: 'Costo de la Improvisación: El parche rápido sostiene la facturación hoy y factura el cansancio del equipo mañana.',
                     outcomeText: 'Pusiste un parche rápido y seguiste vendiendo. Salvaguardaste la caja de la semana, pero el equipo vive con el temor constante de que el sistema explote en cualquier momento.',

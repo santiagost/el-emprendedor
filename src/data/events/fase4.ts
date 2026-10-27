@@ -12,6 +12,10 @@ export const fase4Events = [
                 'Bajar los precios para entrar en guerra tarifaria directa.',
                 { capital: -30, bienestar: -20 },
                 {
+                    surprise: {
+                        effects: { capital: -30, reputacion: +10, bienestar: -20 },
+                        outcomeText: 'Entraste en guerra de precios y la caja se desplomó, pero los clientes celebraron los precios bajos y tu marca ganó fama de defender el bolsillo del consumidor.',
+                    },
                     learningPill: 'Guerra de Precios: Competir por precio contra un rival con más capital es casi siempre una sentencia de quiebra.',
                     outcomeText: 'Entraste en guerra de precios directa. El competidor tiene espaldas infinitas y tus márgenes se desplomaron hasta quemar la caja a un ritmo alarmante.',
                 }
@@ -20,6 +24,10 @@ export const fase4Events = [
                 'Pivotar a un nicho de altísima especialización y servicio.',
                 { capital: -10, reputacion: +25, bienestar: +5 },
                 {
+                    surprise: {
+                        effects: { capital: +10, reputacion: +25, bienestar: +5 },
+                        outcomeText: 'Te enfocaste en servicio premium hiper-personalizado y el nicho pagaba precios altos desde el primer mes: el pivote se financió solo y tus clientes leales te recomiendan.',
+                    },
                     learningPill: 'Diferenciación Estratégica: Cuando no podés ganar por escala, ganás por foco, cercanía y propuesta de valor única.',
                     outcomeText: 'Te retiraste de la pelea masiva y te enfocaste en servicio premium hiper-personalizado. Perdiste volumen pero tus clientes leales pagan el doble y te recomiendan.',
                 }
@@ -50,6 +58,10 @@ export const fase4Events = [
                 'Agotar tus ahorros personales en abogados para pelear por el control.',
                 { capital: -35, reputacion: -15, bienestar: -30 },
                 {
+                    surprise: {
+                        effects: { capital: -35, reputacion: +10, bienestar: -30 },
+                        outcomeText: 'Fuiste a la guerra legal con tus ahorros y quedaste descapitalizado y agotado. Pero la prensa contó la pelea como David contra Goliat y el mercado se puso de tu lado.',
+                    },
                     learningPill: 'Poder de Control: El porcentaje accionario define quién toma las decisiones cuando las papas queman.',
                     outcomeText: 'Fuiste a la guerra legal con tus ahorros personales. Frenaste la compra hostil pero quedaste descapitalizado y con heridas profundas en el directorio.',
                 }
@@ -71,6 +83,10 @@ export const fase4Events = [
                 'Repartir dividendos y pasar a un rol de presidente de directorio.',
                 { capital: +20, reputacion: +15, bienestar: +30 },
                 {
+                    surprise: {
+                        effects: { capital: +20, reputacion: -5, bienestar: +30 },
+                        outcomeText: 'Repartiste ganancias y delegaste la dirección diaria: tenés libertad financiera y tiempo. Pero el mercado leyó tu paso al costado como falta de ambición y algunos clientes grandes dudaron.',
+                    },
                     addTags: ['lifestyle_business'],
                     learningPill: 'Lifestyle Business: No todas las empresas deben volverse multinacionales; un negocio rentable y autónomo es un triunfo rotundo.',
                     outcomeText: 'Repartiste ganancias y delegaste la dirección diaria. Tenés un negocio rentable y predecible que te da libertad financiera y tiempo para tu familia.',
@@ -80,6 +96,10 @@ export const fase4Events = [
                 'Reinvertir el 100% de los dividendos en abrir mercado internacional.',
                 { capital: -25, reputacion: +30, bienestar: -15 },
                 {
+                    surprise: {
+                        effects: { capital: -25, reputacion: -5, bienestar: -15 },
+                        outcomeText: 'Apostaste todo a abrir mercado afuera, pero allá nadie te conocía: el lanzamiento pasó sin pena ni gloria y el tropiezo se notó también acá.',
+                    },
                     addTags: ['expansion_global'],
                     learningPill: 'Internacionalización: Escalar fronteras multiplica el valor potencial, pero reinicia el ciclo de riesgo e incertidumbre.',
                     outcomeText: 'Apostaste todo a abrir mercado en el exterior. La marca ahora compite a nivel regional, asumiendo nuevos desafíos y riesgos de escala.',
@@ -125,6 +145,10 @@ export const fase4Events = [
                 'Contratar un gerente general y pasar a un rol estratégico.',
                 { capital: -15, reputacion: +10, bienestar: +20 },
                 {
+                    surprise: {
+                        effects: { capital: -15, reputacion: +10, bienestar: -10 },
+                        outcomeText: 'Contrataste a una gerenta general, pero no encajó con el equipo: terminaste mediando en cada conflicto y descansaste menos que antes, aunque la empresa ganó orden hacia afuera.',
+                    },
                     addTags: ['lifestyle_business'],
                     learningPill: 'Delegación Real: Una empresa que no funciona sin el fundador no es un activo, es un empleo con más estrés.',
                     outcomeText: 'Contrataste a una gerenta general y le diste autonomía real. Al principio costó soltar, pero la empresa ahora crece sin depender de tu presencia diaria.',
@@ -134,6 +158,10 @@ export const fase4Events = [
                 'Seguir al mando de cada decisión operativa.',
                 { capital: +10, reputacion: -5, bienestar: -20 },
                 {
+                    surprise: {
+                        effects: { capital: -10, reputacion: -5, bienestar: -20 },
+                        outcomeText: 'Mantuviste el control de cada decisión y te volviste el cuello de botella: un contrato grande se cayó esperando tu firma y estás agotado.',
+                    },
                     learningPill: 'Techo del Fundador: Cuando todo pasa por vos, tu energía se convierte en el límite del crecimiento de la empresa.',
                     outcomeText: 'Mantuviste el control centralizado de cada decisión. Nada se mueve sin tu firma, pero estás agotado y la empresa no puede crecer más allá de tus horas despierto.',
                 }
@@ -152,6 +180,10 @@ export const fase4Events = [
                 'Franquiciar el modelo y escalar con capital de terceros.',
                 { capital: +20, reputacion: -10, bienestar: -5 },
                 {
+                    surprise: {
+                        effects: { capital: -5, reputacion: -10, bienestar: -5 },
+                        outcomeText: 'Franquiciaste la marca, pero los primeros franquiciados no llegaron a los números y tuviste que salir a sostenerlos con tu caja, además de lidiar con locales desalineados.',
+                    },
                     addTags: ['expansion_global'],
                     learningPill: 'Franquicias: Escalar con capital ajeno acelera la expansión, pero cada local descontrolado erosiona la marca.',
                     outcomeText: 'Franquiciaste la marca y abriste decenas de puntos en tiempo récord. El cobro de regalías engrosó tus ingresos, aunque lidias con quejas por locales desalineados.',
@@ -161,6 +193,10 @@ export const fase4Events = [
                 'Mantener operación propia y control total de la calidad.',
                 { capital: -10, reputacion: +15, bienestar: +5 },
                 {
+                    surprise: {
+                        effects: { capital: -10, reputacion: +15, bienestar: -10 },
+                        outcomeText: 'Rechazaste franquiciar para cuidar cada detalle y la reputación de excelencia se mantiene. Pero controlar cada local en persona te hizo vivir arriba del auto.',
+                    },
                     addTags: ['calidad_producto'],
                     learningPill: 'Control vs Escala: Crecer con locales propios es lento y caro, pero protege lo que te hizo llegar hasta acá.',
                     outcomeText: 'Rechazaste franquiciar para cuidar cada detalle con locales propios. El crecimiento es más lento, pero la reputación de excelencia se mantiene intacta.',
@@ -180,6 +216,10 @@ export const fase4Events = [
                 'Firmar la alianza con exclusividad.',
                 { capital: +15, reputacion: +10, bienestar: -10 },
                 {
+                    surprise: {
+                        effects: { capital: -10, reputacion: +10, bienestar: -10 },
+                        outcomeText: 'Firmaste una alianza exclusiva, pero el aliado no cumplió los volúmenes prometidos y la exclusividad te ató las manos con otros clientes.',
+                    },
                     addTags: ['red_contactos'],
                     learningPill: 'Alianzas Comerciales: Un buen socio multiplica tu alcance; la exclusividad define cuánto te cuesta si la relación se enfría.',
                     outcomeText: 'Firmaste una alianza exclusiva con un gigante comercial. Multiplicaste tus canales de venta de inmediato, aunque quedaste atado a sus condiciones contractuales.',
@@ -189,6 +229,10 @@ export const fase4Events = [
                 'Rechazar la alianza y competir en todos los frentes.',
                 { capital: -10, reputacion: +5, bienestar: +5 },
                 {
+                    surprise: {
+                        effects: { capital: +10, reputacion: +5, bienestar: +5 },
+                        outcomeText: 'Decidiste competir por tu cuenta y te fue mejor de lo esperado: ganaste clientes que el aliado nunca iba a atender, y no le debés exclusividad a nadie.',
+                    },
                     addTags: ['autonomia_estrategica'],
                     learningPill: 'Independencia Estratégica: Competir solo preserva tu libertad de movimiento, pero cada batalla se paga con caja propia.',
                     outcomeText: 'Decidiste competir por tu cuenta en todos los frentes. La tracción requiere esfuerzo propio continuo, pero no le debés explicaciones ni exclusividad a nadie.',

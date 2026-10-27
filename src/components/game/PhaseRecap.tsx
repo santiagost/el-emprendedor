@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { Metrics } from '../../types/game';
 import type { PhaseRecap as PhaseRecapData } from '../../game/recap';
 import { PHASES } from '../../game/phases';
+import { INTUITION_FIRST_PHASE, INTUITION_NOTE } from '../../game/intuition';
 import { useSequence } from '../../hooks/useSequence';
 import Button from '../common/Button';
 import Card from '../common/Card';
@@ -64,10 +65,16 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
   const phase = PHASES.find((p) => p.id === recap.phaseId) ?? PHASES[0];
   const nextPhase = PHASES.find((p) => p.id === recap.phaseId + 1);
 
+  // En el cierre de la fase anterior a la tendencia se avisa que es intuición, no certeza
+  const paragraphs = useMemo(
+    () => (recap.phaseId === INTUITION_FIRST_PHASE - 1 ? [...recap.paragraphs, INTUITION_NOTE] : recap.paragraphs),
+    [recap.paragraphs, recap.phaseId]
+  );
+
   // Pasos: ① recorrido de métricas, ② titular, ③… cada párrafo
   const steps = useMemo(
-    () => [{ at: 0 }, { at: 600 }, ...recap.paragraphs.map((_, i) => ({ at: 1400 + i * 900 }))],
-    [recap.paragraphs]
+    () => [{ at: 0 }, { at: 600 }, ...paragraphs.map((_, i) => ({ at: 1400 + i * 900 }))],
+    [paragraphs]
   );
   const sequence = useSequence(steps, { key: `recap-${recap.phaseId}`, initialCompleted });
 
@@ -155,9 +162,11 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
 
           {/* ③… Párrafos por capas */}
           <div className="space-y-3">
-            {recap.paragraphs.map((text, i) =>
+            {paragraphs.map((text, i) =>
               sequence.currentStep >= 2 + i ? (
-                <p key={i} className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed animate-slide-up-fade">
+                <p key={i} className={`text-sm sm:text-base leading-relaxed animate-slide-up-fade ${
+                  text === INTUITION_NOTE ? 'italic font-semibold text-brand-cobalt dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'
+                }`}>
                   {text}
                 </p>
               ) : null

@@ -20,6 +20,7 @@ import MinigameStage from './minigames/MinigameStage';
 import { useEffectsToggle } from '../../lib/motion';
 import type { PhaseId } from '../../game/phases';
 import { buildPhaseRecap } from '../../game/recap';
+import { INTUITION_FIRST_PHASE } from '../../game/intuition';
 import { stageFor } from '../../game/stage';
 import { hasPlayableMinigame, seedFromText } from '../../game/minigames/performance';
 import { stressLevel } from '../../game/ui';
@@ -375,6 +376,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
               hidden={showIncomingAlert}
               justRevealed={justRevealed}
               disabled={isRevealing}
+              showIntuition={phaseId >= INTUITION_FIRST_PHASE}
               onPick={(idx) => handleDecide(idx, currentTurn)}
             />
           )}

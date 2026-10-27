@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, checkTurnInterruption } from './engine';
+import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, checkTurnInterruption, rollSurprise, SURPRISE_MAX } from './engine';
 import { createRng } from './rng';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
 import type { GameState, GameEvent, GameOption } from '../types/game';
@@ -12,6 +12,8 @@ interface SimResult {
   game_over_bienestar: number;
   game_over_reputacion: number;
   ended_early: number;
+  /** Partidas por cantidad de sorpresas (índice = cantidad), solo las que llegaron a la victoria. */
+  surprisesInVictories: number[];
 }
 
 // Selector de opción según estrategia
@@ -50,7 +52,7 @@ function pickOption(
 }
 
 // Corre una partida completa hasta su desenlace
-function simulateGame(strategy: Strategy, seed: number): GameState['status'] {
+function simulateGame(strategy: Strategy, seed: number): { status: GameState['status']; surprises: number } {
   const rng = createRng(seed);
   const arquetipo = ARCHETYPES[0];
   const financiamiento = FINANCINGS[0];
@@ -60,7 +62,8 @@ function simulateGame(strategy: Strategy, seed: number): GameState['status'] {
 
   while (state.status === 'playing' && currentEvent) {
     const option = pickOption(currentEvent, state, strategy, rng);
-    state = applyDecision(state, option, currentEvent.id, currentEvent.title, undefined, currentEvent.kind);
+    const surprised = rollSurprise(state, option, rng);
+    state = applyDecision(state, option, currentEvent.id, currentEvent.title, undefined, currentEvent.kind, undefined, surprised);
 
     if (state.status !== 'playing') break;
 
@@ -87,7 +90,7 @@ function simulateGame(strategy: Strategy, seed: number): GameState['status'] {
     currentEvent = selection.event;
   }
 
-  return state.status;
+  return { status: state.status, surprises: state.surprisesPlayed ?? 0 };
 }
 
 // Ejecuta N corridas para una estrategia
@@ -98,12 +101,17 @@ function runBatch(strategy: Strategy, runs = 10000): SimResult {
     game_over_bienestar: 0,
     game_over_reputacion: 0,
     ended_early: 0,
+    surprisesInVictories: Array(SURPRISE_MAX + 1).fill(0),
   };
 
   for (let i = 0; i < runs; i++) {
-    const outcome = simulateGame(strategy, 1000 + i);
-    if (outcome in tally) {
-      tally[outcome as keyof SimResult]++;
+    const { status, surprises } = simulateGame(strategy, 1000 + i);
+    if (status !== 'victory' && status in tally) {
+      (tally[status as Exclude<keyof SimResult, 'surprisesInVictories' | 'victory'>])++;
+    }
+    if (status === 'victory') {
+      tally.victory++;
+      tally.surprisesInVictories[surprises]++;
     }
   }
 
@@ -128,11 +136,19 @@ describe('Simulación de Completabilidad (Monte Carlo)', () => {
       const results = runBatch(strategy, runs);
 
       console.log(`\nDistribución [${strategy}] (${runs} partidas):`);
-      console.table(results);
+      const { surprisesInVictories, ...outcomes } = results;
+      console.table(outcomes);
+      const wins = results.victory;
+      const mean = surprisesInVictories.reduce((acc, n, k) => acc + n * k, 0) / Math.max(wins, 1);
+      const below = surprisesInVictories.slice(0, 3).reduce((a, n) => a + n, 0);
+      console.log(
+        `Sorpresas por partida ganada [${strategy}]: ${surprisesInVictories.map((n, k) => `${k}: ${n}`).join(' | ')} | promedio ${mean.toFixed(2)} | con menos de 3: ${((below / Math.max(wins, 1)) * 100).toFixed(1)}%`
+      );
 
       // Criterios de aceptación del plan
       expect(results.ended_early, `Softlocks detectados en estrategia ${strategy}`).toBe(0);
       expect(results.victory, `Victoria inalcanzable en estrategia ${strategy}`).toBeGreaterThan(0);
+      expect(results.surprisesInVictories.length, 'El tope de sorpresas se respeta').toBe(SURPRISE_MAX + 1);
     }
   );
 });
