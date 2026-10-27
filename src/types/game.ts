@@ -38,6 +38,13 @@ export interface MinigameSpec {
     tagsByPerformance?: Partial<Record<Performance, { addTags?: Tag[]; removeTags?: Tag[] }>>;
 }
 
+/** Desenlace alternativo de una opción: en las fases avanzadas a veces el resultado contradice la tendencia que el jugador intuía. */
+export interface OptionSurprise {
+    /** Efectos completos que reemplazan a los de la opción (al menos una métrica contradice su tendencia). */
+    effects: Partial<Metrics>;
+    outcomeText: string;
+}
+
 export interface GameOption {
     text: string;
     /** Frase en condicional bajo el título de la opción; se muestra solo si existe. */
@@ -54,6 +61,8 @@ export interface GameOption {
     };
     /** Si está, elegir esta opción dispara un minijuego que modula la ejecución (los efectos base son el rendimiento 'good'). */
     minigame?: MinigameSpec;
+    /** Desenlace que puede salir en vez del normal (fases 3 y 4); las opciones con minijuego no lo tienen. */
+    surprise?: OptionSurprise;
 }
 
 export interface EventConditions {
@@ -105,6 +114,8 @@ export interface DecisionLogEntry {
     learningPill?: string;
     /** Rendimiento en el minijuego de la opción; solo si la opción tenía uno. */
     performance?: Performance;
+    /** El resultado fue el desenlace alternativo de la opción: contradice la tendencia que se veía. */
+    surprised?: true;
     /** Métricas resultantes tras esta decisión (con modificadores y clamp). Opcional: guardados viejos no lo tienen. */
     metricsAfter?: Metrics;
 }
@@ -124,6 +135,8 @@ export interface GameState {
     decisionLog: DecisionLogEntry[];
     lastDecision?: DecisionLogEntry | null;
     unforeseenEventsPlayed?: number;
+    /** Cuántas veces el resultado contradijo la tendencia mostrada; ajusta la probabilidad de las próximas. */
+    surprisesPlayed?: number;
     archetypeId?: string;
     financingId?: string;
     /** Nombre opcional del jugador; resuelve el token {nombre} de los textos en el render. */

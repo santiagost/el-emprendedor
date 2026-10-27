@@ -12,6 +12,8 @@ import {
   selectNextEvent,
   applyModifiers,
   checkTurnInterruption,
+  surpriseChance,
+  rollSurprise,
 } from './engine';
 import { createRng } from './rng';
 import { MAX_TURNS } from './phases';
@@ -617,6 +619,79 @@ describe('Motor de Juego (Engine Spec)', () => {
       expect(next.lastDecision?.kind).toBe('unforeseen');
       expect(next.unforeseenEventsPlayed).toBe(1);
       expect(next.decisionLog[0].outcomeText).toBe('Se aceleró el producto pero el equipo quedó cansado.');
+    });
+  });
+  describe('sorpresas (la tendencia a veces falla)', () => {
+    const state = (overrides: Partial<GameState> = {}): GameState => ({
+      currentTurn: 8,
+      maxTurns: MAX_TURNS,
+      phaseId: 3,
+      metrics: { capital: 50, bienestar: 50, reputacion: 50 },
+      activeTags: [],
+      history: [],
+      status: 'playing',
+      lastPill: null,
+      pendingEvents: [],
+      decisionLog: [],
+      ...overrides,
+    });
+    const option: GameOption = {
+      text: 'Subir precios',
+      impactPreview: { capital: 'up', bienestar: 'neutral', reputacion: 'down' },
+      effects: { capital: 10, reputacion: -10 },
+      learningPill: 'Pill',
+      surprise: { effects: { capital: -5, reputacion: -10 }, outcomeText: 'Los clientes se fueron.' },
+    };
+
+    it('la probabilidad es 0 antes de la fase 3, 25 % en la fase 3 y 0 con el tope de 6', () => {
+      expect(surpriseChance(state({ phaseId: 2, currentTurn: 5 }))).toBe(0);
+      expect(surpriseChance(state())).toBe(0.25);
+      expect(surpriseChance(state({ phaseId: 4, currentTurn: 12, surprisesPlayed: 6 }))).toBe(0);
+    });
+
+    it('en la fase 4 sube a faltantes / turnos que quedan mientras no salgan 3, y vuelve al 25 %', () => {
+      expect(surpriseChance(state({ phaseId: 4, currentTurn: 11, surprisesPlayed: 0 }))).toBeCloseTo(3 / 5);
+      expect(surpriseChance(state({ phaseId: 4, currentTurn: 13, surprisesPlayed: 2 }))).toBeCloseTo(1 / 3);
+      expect(surpriseChance(state({ phaseId: 4, currentTurn: 15, surprisesPlayed: 1 }))).toBe(1);
+      expect(surpriseChance(state({ phaseId: 4, currentTurn: 11, surprisesPlayed: 3 }))).toBe(0.25);
+    });
+
+    it('rollSurprise no consume el RNG sin sorpresa posible (sin opción, con minijuego o en fase 2)', () => {
+      const rng = createRng(1);
+      const before = rng.getState();
+      expect(rollSurprise(state(), { ...option, surprise: undefined }, rng)).toBe(false);
+      expect(rollSurprise(state(), { ...option, minigame: { kind: 'timing' } }, rng)).toBe(false);
+      expect(rollSurprise(state({ phaseId: 2 }), option, rng)).toBe(false);
+      expect(rng.getState()).toBe(before);
+    });
+
+    it('rollSurprise sortea con la probabilidad vigente', () => {
+      expect(rollSurprise(state({ phaseId: 4, currentTurn: 15, surprisesPlayed: 0 }), option, createRng(7))).toBe(true);
+      const rng = { next: () => 0.3 } as ReturnType<typeof createRng>;
+      expect(rollSurprise(state(), option, rng)).toBe(false);
+    });
+
+    it('applyDecision con sorpresa usa los efectos y el texto alternativos, la registra y la cuenta', () => {
+      const next = applyDecision(state(), option, 'f3_x', 'X', 0, 'main', undefined, true);
+      expect(next.metrics.capital).toBe(45);
+      expect(next.decisionLog[0].surprised).toBe(true);
+      expect(next.decisionLog[0].outcomeText).toBe('Los clientes se fueron.');
+      expect(next.surprisesPlayed).toBe(1);
+    });
+
+    it('sin sorpresa aplica el desenlace normal y no la registra', () => {
+      const next = applyDecision(state(), option, 'f3_x', 'X', 0, 'main', undefined, false);
+      expect(next.metrics.capital).toBe(60);
+      expect(next.decisionLog[0].surprised).toBeUndefined();
+      expect(next.surprisesPlayed).toBe(0);
+    });
+
+    it('la sorpresa nunca causa un game over por sí sola', () => {
+      const fatal: GameOption = { ...option, surprise: { effects: { capital: -20 }, outcomeText: 'Cayó.' } };
+      const next = applyDecision(state({ metrics: { capital: 15, bienestar: 50, reputacion: 50 } }), fatal, 'f3_x', 'X', 0, 'main', undefined, true);
+      expect(next.status).toBe('playing');
+      expect(next.metrics.capital).toBe(25);
+      expect(next.surprisesPlayed).toBe(0);
     });
   });
 });

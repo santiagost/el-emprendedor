@@ -3,6 +3,7 @@ import { GAME_EVENTS } from '../data/events';
 import { PHASES } from './phases';
 import { _templateBaseEvent, _templateGatedEvent } from '../data/events/_template';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
+import { intuitionMissMessage } from './intuition';
 import { KNOWN_TOKENS, NAME_TOKEN, personalize } from '../lib/personalize';
 
 import {
@@ -45,6 +46,24 @@ describe('Integridad de Contenido (Content Spec)', () => {
   it('cada fase tiene suficientes eventos base para sus turnos', () => {
     const errors = validatePhasePacing(GAME_EVENTS, PHASES);
     expect(errors).toEqual([]);
+  });
+
+  it('las sorpresas solo están en eventos principales de fase 3 y 4, sin minijuego, y contradicen su tendencia', () => {
+    const errors: string[] = [];
+    let total = 0;
+    for (const ev of GAME_EVENTS) {
+      ev.options.forEach((op, i) => {
+        if (!op.surprise) return;
+        total++;
+        const where = `${ev.id} opción ${i + 1}`;
+        if (ev.kind !== 'main' || ev.phaseId < 3) errors.push(`${where}: solo eventos principales de fase 3 o 4`);
+        if (op.minigame) errors.push(`${where}: tiene minijuego`);
+        if (!op.surprise.outcomeText) errors.push(`${where}: sin texto`);
+        if (!intuitionMissMessage(op.impactPreview, op.surprise.effects)) errors.push(`${where}: no contradice la tendencia`);
+      });
+    }
+    expect(errors).toEqual([]);
+    expect(total).toBe(17);
   });
 
   it('el template de autoría produce eventos válidos', () => {

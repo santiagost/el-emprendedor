@@ -1,6 +1,7 @@
 import { Gamepad2 } from 'lucide-react';
 import type { GameOption } from '../../types/game';
 import { hasPlayableMinigame } from '../../game/minigames/performance';
+import ImpactBadges from './ImpactBadges';
 
 interface OptionListProps {
   options: GameOption[];
@@ -11,11 +12,13 @@ interface OptionListProps {
   /** La carta acaba de revelarse: las opciones entran escalonadas. */
   justRevealed: boolean;
   disabled: boolean;
+  /** Fases avanzadas: cada opción muestra la tendencia que el jugador intuye (a veces falla). */
+  showIntuition?: boolean;
   onPick: (optionIndex: number) => void;
 }
 
 /** Alternativas del dilema, debajo de la carta (se eligen con clic o con las teclas 1, 2 y 3). */
-export default function OptionList({ options, hints, hidden, justRevealed, disabled, onPick }: OptionListProps) {
+export default function OptionList({ options, hints, hidden, justRevealed, disabled, showIntuition = false, onPick }: OptionListProps) {
   return (
     <div className={`space-y-3 ${hidden ? 'invisible' : ''}`}>
       <div className="flex items-center justify-between px-1">
@@ -44,6 +47,12 @@ export default function OptionList({ options, hints, hidden, justRevealed, disab
             {hints[idx] && (
               <span className="block text-sm leading-relaxed italic text-slate-600 dark:text-slate-300">
                 {hints[idx]}
+              </span>
+            )}
+            {showIntuition && (
+              <span className="flex items-center gap-2 pt-0.5 text-2xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Tu intuición:
+                <ImpactBadges impactPreview={option.impactPreview} size="md" />
               </span>
             )}
             {hasPlayableMinigame(option.minigame) && (

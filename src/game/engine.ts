@@ -317,6 +317,32 @@ export function scaleEffects(effects: Partial<Metrics>, performance: Performance
 
 const isGameOver = (status: GameStatus): boolean => status.startsWith('game_over');
 
+/** Primera fase donde se muestra la tendencia y puede fallar; desde la última se corrige si salieron pocas. */
+const SURPRISE_FIRST_PHASE: PhaseId = 3;
+const SURPRISE_LAST_PHASE: PhaseId = 4;
+export const SURPRISE_BASE_CHANCE = 0.25;
+export const SURPRISE_MIN = 3;
+export const SURPRISE_MAX = 6;
+
+/**
+ * Probabilidad de que la próxima opción con sorpresa falle: 25 % por defecto; en la última fase, si todavía no salieron
+ * SURPRISE_MIN, sube a faltantes / turnos que quedan (contando el actual); con SURPRISE_MAX ya no hay más.
+ */
+export function surpriseChance(state: GameState): number {
+  const played = state.surprisesPlayed ?? 0;
+  if (state.phaseId < SURPRISE_FIRST_PHASE || played >= SURPRISE_MAX) return 0;
+  if (state.phaseId < SURPRISE_LAST_PHASE || played >= SURPRISE_MIN) return SURPRISE_BASE_CHANCE;
+  const turnsLeft = state.maxTurns - state.currentTurn + 1;
+  return Math.min(1, Math.max(SURPRISE_BASE_CHANCE, (SURPRISE_MIN - played) / turnsLeft));
+}
+
+/** Sortea si el resultado de esta opción contradice la tendencia. Solo consume el RNG cuando la sorpresa es posible. */
+export function rollSurprise(state: GameState, option: GameOption, rng: RNG): boolean {
+  if (!option.surprise || option.minigame) return false;
+  const chance = surpriseChance(state);
+  return chance > 0 && rng.next() < chance;
+}
+
 /**
  * Efectos y etiquetas finales de una opción según el rendimiento en su minijuego.
  * Sin minijuego (o sin rendimiento) es la opción tal cual. Un 'poor' nunca causa un game over por sí solo:
@@ -325,8 +351,21 @@ const isGameOver = (status: GameStatus): boolean => status.startsWith('game_over
 export function resolveOption(
   state: GameState,
   option: GameOption,
-  performance?: Performance
-): { effects: Partial<Metrics>; addTags?: Tag[]; removeTags?: Tag[]; performance?: Performance; outcomeText?: string } {
+  performance?: Performance,
+  surprised?: boolean
+): { effects: Partial<Metrics>; addTags?: Tag[]; removeTags?: Tag[]; performance?: Performance; outcomeText?: string; surprised?: true } {
+  if (surprised && option.surprise && !option.minigame) {
+    const surprise = { effects: option.surprise.effects, addTags: option.addTags, removeTags: option.removeTags, outcomeText: option.surprise.outcomeText, surprised: true as const };
+    const statusOf = (effects: Partial<Metrics>) => {
+      const tags = applyTags(state.activeTags, option.addTags, option.removeTags);
+      return evaluateGameStatus(applyModifiers(applyMetricsEffects(state.metrics, effects), tags), state.currentTurn, state.maxTurns);
+    };
+    // Igual que un 'poor': la sorpresa nunca causa un game over por sí sola
+    if (isGameOver(statusOf(surprise.effects)) && !isGameOver(statusOf(option.effects))) {
+      return { effects: option.effects, addTags: option.addTags, removeTags: option.removeTags };
+    }
+    return surprise;
+  }
   const spec = option.minigame;
   if (!spec || !performance) return { effects: option.effects, addTags: option.addTags, removeTags: option.removeTags };
 
@@ -361,9 +400,10 @@ export function applyDecision(
   eventTitle?: string,
   optionIndex?: number,
   eventKind?: GameEventKind,
-  performance?: Performance
+  performance?: Performance,
+  surprised?: boolean
 ): GameState {
-  const resolved = resolveOption(state, option, performance);
+  const resolved = resolveOption(state, option, performance, surprised);
   const immediateMetrics = applyMetricsEffects(state.metrics, resolved.effects);
   const nextTags = applyTags(state.activeTags, resolved.addTags, resolved.removeTags);
   const nextMetrics = applyModifiers(immediateMetrics, nextTags);
@@ -392,6 +432,7 @@ export function applyDecision(
     appliedModifiers,
     learningPill: option.learningPill,
     ...(resolved.performance ? { performance: resolved.performance } : {}),
+    ...(resolved.surprised ? { surprised: true as const } : {}),
     metricsAfter: nextMetrics,
   };
 
@@ -405,6 +446,7 @@ export function applyDecision(
     decisionLog: [...(state.decisionLog ?? []), logEntry],
     lastDecision: logEntry,
     unforeseenEventsPlayed: (state.unforeseenEventsPlayed ?? 0) + (resolvedKind === 'unforeseen' ? 1 : 0),
+    surprisesPlayed: (state.surprisesPlayed ?? 0) + (resolved.surprised ? 1 : 0),
     status,
   };
 }

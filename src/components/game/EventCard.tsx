@@ -3,6 +3,7 @@ import type { DecisionLogEntry, GameEvent } from '../../types/game';
 import type { MetricDeltas } from '../../game/ui';
 import { PERFORMANCE_HINT, PERFORMANCE_LABEL } from '../../game/minigames/performance';
 import { personalize } from '../../lib/personalize';
+import { intuitionMissMessage } from '../../game/intuition';
 import { EventKindIcon } from '../common/EventKindIcon';
 import { INLINE_ICON_CLASS } from '../common/iconStyles';
 import Card from '../common/Card';
@@ -140,6 +141,15 @@ export default function EventCard({
           )}
 
           {/* Paso ②: consecuencia narrativa */}
+          {layer >= 1 && lastDecision?.surprised && (() => {
+            const expected = event.options[lastDecision.optionIndex]?.impactPreview;
+            const miss = expected && intuitionMissMessage(expected, lastDecision.effects);
+            return miss ? (
+              <p className="mx-5 sm:mx-7 mt-5 px-3.5 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-sm font-semibold text-amber-900 dark:text-amber-200 animate-in fade-in duration-200">
+                {miss}
+              </p>
+            ) : null;
+          })()}
           {layer >= 1 && lastDecision?.outcomeText && (
             <p className="px-5 sm:px-7 pt-5 text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed max-w-[64ch] animate-in fade-in duration-200">
               {personalize(lastDecision.outcomeText, playerName)}
