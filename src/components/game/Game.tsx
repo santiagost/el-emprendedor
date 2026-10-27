@@ -13,6 +13,7 @@ import ExitConfirmModal from './ExitConfirmModal';
 import GameHeader from './GameHeader';
 import EventCard from './EventCard';
 import OptionList from './OptionList';
+import { buildOptionHint, buildOutcomeForecast } from '../../game/optionHint';
 import OutcomeActions from './OutcomeActions';
 import InterruptionStage from './InterruptionStage';
 import MinigameStage from './minigames/MinigameStage';
@@ -138,6 +139,15 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
   const displayEvent = useMemo(
     () => (currentEvent ? localizeEvent(currentEvent, displayName) : null),
     [currentEvent, displayName]
+  );
+
+  // "Qué podría venir" del resultado: solo mientras se muestra la decisión que acaba de tomarse
+  const forecast = useMemo(
+    () =>
+      step === 'outcome' && displayEvent && lastDecision?.eventId === displayEvent.id
+        ? buildOutcomeForecast(displayEvent, lastDecision.optionIndex, lastDecision.performance)
+        : null,
+    [step, displayEvent, lastDecision]
   );
 
   // B2: resumen de la fase que acaba de cerrarse (el estado ya avanzó a la siguiente)
@@ -309,8 +319,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
         </div>
       ) : (
       <div
-        style={{ '--side-w': companyCollapsed ? '56px' : '260px' } as React.CSSProperties}
-        className={`w-full my-auto py-6 lg:grid lg:grid-cols-[var(--side-w)_minmax(0,1fr)] xl:grid-cols-[var(--side-w)_minmax(0,1fr)_var(--side-w)] lg:gap-6 items-start lg:transition-[grid-template-columns] lg:duration-300 stress-content ${isLowWellbeing ? 'is-desaturated' : ''}`}
+        className={`w-full my-auto py-6 lg:grid ${companyCollapsed ? 'lg:grid-cols-[56px_minmax(0,1fr)]' : 'lg:grid-cols-[minmax(240px,1fr)_minmax(0,2fr)]'} lg:gap-8 items-start lg:transition-[grid-template-columns] lg:duration-300 stress-content ${isLowWellbeing ? 'is-desaturated' : ''}`}
       >
         {/* Columna izquierda: panel Mi empresa (solo escritorio, sticky bajo el header) */}
         <aside className="hidden lg:block sticky top-60 self-start max-h-[calc(100vh-16rem)] overflow-y-auto overflow-x-hidden">
@@ -324,11 +333,10 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
         </aside>
 
         {/* Columna central: carta del dilema + opciones juntas */}
-        <div className="min-w-0 w-full max-w-[640px] mx-auto space-y-5">
+        <div className="min-w-0 w-full max-w-[760px] mx-auto space-y-5">
           {displayEvent && (
             <EventCard
               event={displayEvent}
-              currentTurn={currentTurn}
               hidden={showIncomingAlert}
               justRevealed={justRevealed}
               isRevealing={isRevealing}
@@ -336,6 +344,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
               lastDecision={lastDecision}
               decisionDeltas={reveal.decisionDeltas}
               lastPill={lastPill}
+              forecast={forecast}
               playerName={displayName}
             />
           )}
@@ -362,6 +371,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
           {status === 'playing' && displayEvent && step === 'decision' && !pendingMinigame && (
             <OptionList
               options={displayEvent.options}
+              hints={displayEvent.options.map((_, i) => buildOptionHint(displayEvent, i))}
               hidden={showIncomingAlert}
               justRevealed={justRevealed}
               disabled={isRevealing}
@@ -388,8 +398,6 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
           </div>
         </div>
 
-        {/* Columna derecha reservada (futuro: avatar / log); mantiene centrada la carta */}
-        <div className="hidden xl:block" aria-hidden="true" />
       </div>
       )}
 

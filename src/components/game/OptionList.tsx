@@ -1,10 +1,11 @@
 import { Gamepad2 } from 'lucide-react';
 import type { GameOption } from '../../types/game';
 import { hasPlayableMinigame } from '../../game/minigames/performance';
-import ImpactBadges from './ImpactBadges';
 
 interface OptionListProps {
   options: GameOption[];
+  /** Texto en condicional bajo el título de cada opción (mismo orden que `options`); vacío = sin texto. */
+  hints: string[];
   /** La coreografía de la interrupción todavía está en pantalla: las opciones ocupan su lugar pero no se ven. */
   hidden: boolean;
   /** La carta acaba de revelarse: las opciones entran escalonadas. */
@@ -14,13 +15,11 @@ interface OptionListProps {
 }
 
 /** Alternativas del dilema, debajo de la carta (se eligen con clic o con las teclas 1, 2 y 3). */
-export default function OptionList({ options, hidden, justRevealed, disabled, onPick }: OptionListProps) {
+export default function OptionList({ options, hints, hidden, justRevealed, disabled, onPick }: OptionListProps) {
   return (
     <div className={`space-y-3 ${hidden ? 'invisible' : ''}`}>
       <div className="flex items-center justify-between px-1">
-        <p className="text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Alternativas Disponibles:
-        </p>
+        <p className="text-sm font-bold text-slate-600 dark:text-slate-300">¿Qué hacés?</p>
         <span className="hidden sm:inline-block text-3xs text-slate-400 dark:text-slate-500 font-mono">
           Atajos: [1], [2], [3]
         </span>
@@ -33,29 +32,27 @@ export default function OptionList({ options, hidden, justRevealed, disabled, on
           disabled={disabled}
           onClick={() => onPick(idx)}
           style={justRevealed ? { animationDelay: `${250 + idx * 80}ms` } : undefined}
-          className={`${justRevealed ? 'stage-option-in ' : ''}option-card w-full text-left p-4 bg-white hover:bg-slate-50 active:bg-slate-100 dark:bg-night-raised dark:hover:bg-night-raised-hover dark:active:bg-night-raised-press border border-slate-200 dark:border-slate-700/70 hover:border-brand-cobalt/50 dark:hover:border-indigo-500/60 rounded-xl text-xs sm:text-sm text-slate-800 dark:text-slate-200 space-y-2.5 group shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50 disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`${justRevealed ? 'stage-option-in ' : ''}option-card w-full text-left p-4 sm:p-5 bg-white hover:bg-slate-50 active:bg-slate-100 dark:bg-night-raised dark:hover:bg-night-raised-hover dark:active:bg-night-raised-press border-2 border-slate-200 dark:border-slate-700/70 hover:border-brand-cobalt dark:hover:border-indigo-500 rounded-2xl group shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-start gap-3.5 sm:gap-4`}
         >
-          <div className="flex items-start gap-2.5">
-            <span className="option-key flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-3xs font-mono text-slate-600 dark:text-slate-400 group-hover:bg-brand-cobalt dark:group-hover:bg-indigo-600 group-hover:text-white group-hover:border-brand-cobalt dark:group-hover:border-indigo-500">
-              {idx + 1}
-            </span>
-            <div className="leading-snug text-slate-800 dark:text-slate-200 group-hover:text-brand-navy dark:group-hover:text-white flex-1 font-medium">
+          <span className="option-key flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 dark:bg-slate-800 text-base sm:text-xl font-extrabold tabular-nums text-brand-cobalt dark:text-indigo-300 group-hover:bg-brand-cobalt dark:group-hover:bg-indigo-600 group-hover:text-white">
+            {idx + 1}
+          </span>
+          <span className="min-w-0 flex-1 space-y-1.5">
+            <span className="block text-base sm:text-lg font-bold leading-snug text-brand-navy dark:text-slate-100">
               {option.text}
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
-            <span className="text-3xs text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold">
-              Tendencia esperada:
             </span>
-            <ImpactBadges impactPreview={option.impactPreview} />
-          </div>
-          {hasPlayableMinigame(option.minigame) && (
-            <p className="flex items-center gap-1.5 text-3xs font-semibold uppercase tracking-wider text-brand-cobalt dark:text-indigo-300">
-              <Gamepad2 className="w-3.5 h-3.5" aria-hidden="true" />
-              Minijuego: tu ejecución mejora o empeora el resultado
-            </p>
-          )}
+            {hints[idx] && (
+              <span className="block text-sm leading-relaxed italic text-slate-600 dark:text-slate-300">
+                {hints[idx]}
+              </span>
+            )}
+            {hasPlayableMinigame(option.minigame) && (
+              <span className="flex items-center gap-1.5 pt-1 text-2xs font-semibold uppercase tracking-wider text-brand-cobalt dark:text-indigo-300">
+                <Gamepad2 className="w-3.5 h-3.5" aria-hidden="true" />
+                Minijuego: tu ejecución mejora o empeora el resultado
+              </span>
+            )}
+          </span>
         </button>
       ))}
     </div>
