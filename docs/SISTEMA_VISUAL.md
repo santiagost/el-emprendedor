@@ -50,12 +50,21 @@ Regla de `className`: suma ancho, márgenes, layout, animación o estado `disabl
 
 `Game.tsx` orquesta la partida (motor, atajos de teclado, secuencias) y delega la UI:
 
-- `GameHeader`: turno y fase, herramientas, línea de turnos y métricas.
-- `EventCard`: carta del dilema, suspenso "Calculando…" y resultado por capas.
-- `OptionList`: alternativas del dilema.
+- Distribución: en escritorio (`lg`) hay dos columnas, el tablero a la izquierda (`MetricCard` con `layout="row"` y `CompanyStatusCard`, fijos al hacer scroll) y la carta a la derecha. En móvil y tablet las métricas van en el header y "Mi empresa" se abre como drawer.
+- `GameHeader`: turno y fase, herramientas, línea de turnos y métricas (estas solo debajo de `lg`).
+- `MetricCard`: métrica del HUD. `layout`: `tile` (header) o `row` (columna de escritorio, valor grande a la derecha).
+- `CompanyStatusCard`: "Mi empresa": perfil, financiamiento, relato y efectos activos con sus cifras por turno.
+- `EventCard`: carta del dilema, suspenso "Calculando…" y resultado por capas. Al mostrar el resultado la carta se da vuelta (`card-flip`) y los chips de delta entran de a uno (`delta-chip-in`).
+- `OptionList`: alternativas del dilema. Al elegir, la ficha sube (`is-picked`) y las otras se apagan (`is-dimmed`) durante 150 ms antes de decidir.
 - `OutcomeActions`: "Procesando…", "Saltar animación" o el botón para avanzar.
 - `CompanyDrawer`, `GameMenu` (menú de partida en móvil: sonido, efectos, tema y Reiniciar) y `ExitConfirmModal`: ventanas sobre el juego.
 - `useOutcomeReveal` (hook): suspenso, deltas del HUD, sonido, vibración y confeti de métricas.
+
+Movimiento reducido (preferencia del sistema o efectos apagados): las entradas (carta, chips, sello, cinta y "Para llevarte") pasan a un fundido de 150 ms, sin giro, rebote ni temblor, y la elección no espera.
+
+Setup ("elegí tu fundador"): progreso "1 de 2" en el header, nombre arriba, "Lo que tenés que cuidar", un ícono por perfil y financiamiento, y el botón fijo abajo en móvil.
+
+Cierre (`EndGameReport`): por capítulos con un índice fijo arriba (Resumen, Momento clave, Tu empresa, Fase por fase, Siguiente nivel) que en pantallas medianas suma Reintentar y Cambiar perfil. El héroe (`EndResultCard`) muestra las cifras finales con su cambio en la partida y el marcador de decisiones; las acciones se repiten al final.
 
 ---
 

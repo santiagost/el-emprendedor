@@ -60,7 +60,7 @@ export default function EventCard({
     <Card
       shadow="raised"
       className={`overflow-hidden transition-colors ${
-        hidden ? 'invisible' : justRevealed ? 'stage-reveal' : ''
+        hidden ? 'invisible' : justRevealed ? 'stage-reveal' : showOutcome ? 'card-flip' : ''
       }`}
     >
       {event.kind === 'crisis' && (
@@ -118,11 +118,10 @@ export default function EventCard({
                 )}
               </div>
 
-              {/* Deltas en una fila de chips (A2): el color es el de la métrica; flecha y signo marcan la dirección y las bajas van en coral punteado (B1) */}
+              {/* Deltas en una fila de chips (A2), que entran de a uno (C3): el color es el de la métrica; flecha y signo marcan la dirección y las bajas van en coral punteado (B1) */}
               <div className="flex flex-wrap gap-2 px-5 sm:px-7 pt-4">
-                {METRICS.map(({ key, label, up }) => {
-                  const value = decisionDeltas[key];
-                  if (!value) return null;
+                {METRICS.filter(({ key }) => decisionDeltas[key]).map(({ key, label, up }, i) => {
+                  const value = decisionDeltas[key] as number;
                   const after = lastDecision.metricsAfter?.[key];
                   const before = after !== undefined ? after - value : undefined;
                   const DeltaIcon = value > 0 ? ArrowUpRight : ArrowDownRight;
@@ -130,7 +129,8 @@ export default function EventCard({
                     <span
                       key={key}
                       title={after !== undefined && before !== undefined ? `${label}: ${before}% → ${after}%` : undefined}
-                      className={`inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full ${value > 0 ? up : 'border-[1.5px] border-dashed border-metric-peligro text-metric-peligro'}`}
+                      style={{ animationDelay: `${200 + i * 80}ms` }}
+                      className={`delta-chip-in inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full ${value > 0 ? up : 'border-[1.5px] border-dashed border-metric-peligro text-metric-peligro'}`}
                     >
                       <DeltaIcon className="w-4 h-4" aria-hidden="true" />
                       <span className="font-display text-base font-extrabold tabular-nums">

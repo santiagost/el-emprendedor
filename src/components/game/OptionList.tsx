@@ -12,13 +12,15 @@ interface OptionListProps {
   /** La carta acaba de revelarse: las opciones entran escalonadas. */
   justRevealed: boolean;
   disabled: boolean;
+  /** Opción recién elegida (C3): sube mientras las otras se apagan; null mientras se decide. */
+  pickedIndex?: number | null;
   /** Fases avanzadas: cada opción muestra la tendencia que el jugador intuye (a veces falla). */
   showIntuition?: boolean;
   onPick: (optionIndex: number) => void;
 }
 
 /** Alternativas del dilema, debajo de la carta (se eligen con clic o con las teclas 1, 2 y 3). */
-export default function OptionList({ options, hints, hidden, justRevealed, disabled, showIntuition = false, onPick }: OptionListProps) {
+export default function OptionList({ options, hints, hidden, justRevealed, disabled, pickedIndex = null, showIntuition = false, onPick }: OptionListProps) {
   return (
     <div className={`space-y-3 ${hidden ? 'invisible' : ''}`}>
       <div className="flex items-center justify-between px-1">
@@ -35,7 +37,7 @@ export default function OptionList({ options, hints, hidden, justRevealed, disab
           disabled={disabled}
           onClick={() => onPick(idx)}
           style={justRevealed ? { animationDelay: `${250 + idx * 80}ms` } : undefined}
-          className={`${justRevealed ? 'stage-option-in ' : ''}option-card w-full text-left p-4 sm:p-5 bg-white hover:bg-slate-50 active:bg-slate-100 dark:bg-night-raised dark:hover:bg-night-raised-hover dark:active:bg-night-raised-press border-2 border-slate-200 dark:border-slate-700/70 hover:border-brand-cobalt dark:hover:border-indigo-500 rounded-2xl group focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-start gap-3.5 sm:gap-4`}
+          className={`${justRevealed ? 'stage-option-in ' : ''}${pickedIndex === null ? '' : pickedIndex === idx ? 'is-picked ' : 'is-dimmed '}option-card w-full text-left p-4 sm:p-5 bg-white hover:bg-slate-50 active:bg-slate-100 dark:bg-night-raised dark:hover:bg-night-raised-hover dark:active:bg-night-raised-press border-2 border-slate-200 dark:border-slate-700/70 hover:border-brand-cobalt dark:hover:border-indigo-500 rounded-2xl group focus:outline-none focus:ring-2 focus:ring-brand-cobalt/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-start gap-3.5 sm:gap-4`}
         >
           <span className="option-key flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 dark:bg-slate-800 font-display text-base sm:text-xl font-extrabold tabular-nums text-brand-cobalt dark:text-indigo-300 group-hover:bg-brand-cobalt dark:group-hover:bg-indigo-600 group-hover:text-white">
             {idx + 1}

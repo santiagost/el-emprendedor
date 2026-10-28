@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { splitPivots, type Outlook } from '../../../game/endReport';
-import type { Retrospective, Verdict } from '../../../game/retrospective';
-import { VerdictBadge } from './Verdict';
+import type { Retrospective } from '../../../game/retrospective';
 import Card from '../../common/Card';
 
 interface KeyMomentCardProps {
@@ -32,16 +31,6 @@ export default function KeyMomentCard({ retrospective, outlook, lost }: KeyMomen
               : 'Con lo que sabés ahora, esta fue la decisión donde más margen tenías.'
             : 'Comparé cada decisión con la otra opción que tenías.'}
         </p>
-        <div className="flex flex-wrap gap-x-3 gap-y-1.5 pt-1.5">
-          {(['good', 'reasonable', 'could_be_better'] as Verdict[]).map((v) =>
-            totals[v] > 0 ? (
-              <span key={v} className="inline-flex items-center gap-1.5">
-                <VerdictBadge verdict={v} />
-                <span className="text-xs font-black tabular-nums text-slate-700 dark:text-slate-200">×{totals[v]}</span>
-              </span>
-            ) : null
-          )}
-        </div>
       </div>
 
       <Card className="p-4 sm:p-6 space-y-5">

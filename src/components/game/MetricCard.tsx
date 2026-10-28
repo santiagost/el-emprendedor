@@ -13,6 +13,8 @@ interface MetricCardProps {
   deltaKey?: number | string;
   delayMs?: number;
   isCalculating?: boolean;
+  /** `tile`: tarjeta del HUD superior (móvil y tablet). `row`: fila del tablero lateral en escritorio (B2), cifra primero. */
+  layout?: 'tile' | 'row';
 }
 
 export default function MetricCard({
@@ -24,7 +26,9 @@ export default function MetricCard({
   deltaKey,
   delayMs = 0,
   isCalculating = false,
+  layout = 'tile',
 }: MetricCardProps) {
+  const isRow = layout === 'row';
   const animatedValue = useCountUp(value, 700, delayMs);
   const isMax = value >= 100;
   const isCritical = value <= 25;
@@ -96,8 +100,9 @@ export default function MetricCard({
   }[variant];
 
   // Configuración de estado especial
-  let cardClasses =
-    'relative flex flex-col items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all duration-300';
+  let cardClasses = isRow
+    ? 'relative flex items-center gap-4 px-4 py-3.5 rounded-2xl border transition-all duration-300'
+    : 'relative flex flex-col items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all duration-300';
   let valueClasses = 'font-display text-xs sm:text-sm font-extrabold flex items-center justify-center tabular-nums';
   let barClasses = 'h-full rounded-full';
 
@@ -126,6 +131,8 @@ export default function MetricCard({
     barClasses += ` ${variantStyles.bar}`;
   }
 
+  if (isRow) valueClasses = valueClasses.replace('text-xs sm:text-sm', 'text-3xl leading-none');
+
   if (isCalculating) {
     cardClasses += ' ring-2 ring-indigo-500/40 border-indigo-400/60 dark:border-indigo-500/60 transition-all';
   }
@@ -135,6 +142,7 @@ export default function MetricCard({
       {/* Delta flotante animado con su respectivo stagger */}
       <FloatingDelta key={deltaKey} delta={delta} upClassName={variantStyles.text} delayMs={delayMs} />
 
+      <div className={isRow ? 'flex-1 min-w-0 space-y-2' : 'contents'}>
       {/* Badge de estado superior */}
       <div className="w-full flex items-center justify-between text-xs font-semibold mb-1">
         <span className="flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-wider text-xs font-bold">
@@ -167,12 +175,14 @@ export default function MetricCard({
         ) : null}
       </div>
 
-      {/* Valor numérico con interpolación useCountUp */}
-      <div className="my-0.5">
-        <span className={valueClasses}>
-          {animatedValue}%
-        </span>
-      </div>
+      {/* Valor numérico con interpolación useCountUp (en fila va a la derecha, después de la barra) */}
+      {!isRow && (
+        <div className="my-0.5">
+          <span className={valueClasses}>
+            {animatedValue}%
+          </span>
+        </div>
+      )}
 
       {/* Barra de progreso con capa fantasma (ghost bar) */}
       <div className="relative w-full bg-slate-100 dark:bg-slate-800/80 h-1.5 sm:h-2 rounded-full overflow-hidden mt-1 border border-slate-200 dark:border-slate-700/40">
@@ -190,6 +200,13 @@ export default function MetricCard({
           style={{ width: `${Math.max(0, Math.min(100, animatedValue))}%` }}
         />
       </div>
+      </div>
+
+      {isRow && (
+        <span className={valueClasses}>
+          {animatedValue}%
+        </span>
+      )}
     </div>
   );
 }

@@ -343,6 +343,49 @@ html.reduced-motion :is(.stage-ticker, .stage-stamp, .stage-shake, .stage-shake-
   animation: none !important;
 }
 
+/* C3: transiciones con intención. Al elegir, la ficha sube y las otras se apagan (150 ms);
+   después la carta se da vuelta para mostrar el resultado (350 ms) y los chips de delta entran de a uno (80 ms) */
+.option-card.is-picked {
+  transform: translateY(-4px);
+  border-color: var(--color-brand-cobalt);
+  box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--color-brand-cobalt) 45%, transparent);
+}
+
+.option-card.is-dimmed {
+  opacity: 0.35;
+}
+
+@keyframes cardFlip {
+  from { transform: perspective(1400px) rotateY(-90deg); }
+  to { transform: perspective(1400px) rotateY(0); }
+}
+
+@keyframes deltaChipIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes motionFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.card-flip { animation: cardFlip 350ms cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+.delta-chip-in { animation: deltaChipIn 250ms cubic-bezier(0.2, 1.2, 0.4, 1) both; }
+
+/* Movimiento reducido: las entradas pasan a un fundido de 150 ms, sin giro, rebote ni temblor.
+   Va después de las reglas que las apagan para ganarles con la misma especificidad. */
+@media (prefers-reduced-motion: reduce) {
+  :is(.card-flip, .delta-chip-in, .stage-stamp, .stage-ribbon, .stage-reveal, .stage-option-in, .animate-slide-up-fade) {
+    animation: motionFade 150ms ease-out both !important;
+  }
+  .option-card.is-picked { transform: none; }
+}
+
+html.reduced-motion :is(.card-flip, .delta-chip-in, .stage-stamp, .stage-ribbon, .stage-reveal, .stage-option-in, .animate-slide-up-fade) {
+  animation: motionFade 150ms ease-out both !important;
+}
+
 /* Sprint 2 · B1: segmentos de la fase cerrada en la barra de turnos */
 @keyframes phaseMilestone {
   0% { transform: scaleY(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
