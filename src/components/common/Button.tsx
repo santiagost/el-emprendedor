@@ -13,7 +13,7 @@ const VARIANTS = {
   danger: 'gap-2 bg-rose-600 hover:bg-rose-500 text-white font-semibold shadow-md shadow-rose-600/20',
   /** Botón chico de barra de herramientas (Mi empresa, Reiniciar, Cerrar). */
   toolbar:
-    'gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 text-2xs font-medium shadow-sm',
+    'gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 text-xs font-medium shadow-sm',
 } as const;
 
 /** El tamaño fija alto, texto y radio. `toolbar` ya trae el suyo; sin `size`, los pone quien lo usa. */

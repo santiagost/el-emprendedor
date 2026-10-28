@@ -4,7 +4,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Figtree', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Títulos, cifras y sellos. */
+  --font-display: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif;
 
   /* Marca */
   --color-brand-navy: #0A2540;
@@ -12,37 +14,56 @@
   --color-brand-cobalt: #0052CC;
   --color-brand-cobalt-hover: #0047B3;
   --color-brand-cyan: #00A3E0;
-  --color-brand-canvas: #F4F7FB;
+  --color-brand-canvas: #EEF2F7;
 
-  /* Superficies del modo oscuro (en claro, el fondo es brand-canvas y las tarjetas son blancas). */
-  --color-night-canvas: #071322;
-  --color-night-sunken: #0A1B2E;
-  --color-night-surface: #0B1E33;
-  --color-night-raised: #0E243A;
-  --color-night-raised-hover: #14304D;
-  --color-night-raised-press: #18395B;
-  --color-night-selected: #0E2C52;
+  /* Superficies del modo oscuro: mesa (fondo), ficha (paneles y opciones) y carta (la del turno, la única
+     con sombra). En claro, el fondo es brand-canvas y fichas y cartas son blancas. */
+  --color-night-canvas: #0A111D;
+  --color-night-sunken: #0D1522;
+  --color-night-surface: #111A29;
+  --color-night-card: #18233A;
+  --color-night-raised: #111A29;
+  --color-night-raised-hover: #18233A;
+  --color-night-raised-press: #1E2B45;
+  --color-night-selected: #14233F;
 
-  /* Color propio de cada métrica (en oscuro cada componente usa el tono emerald, blue o amber de Tailwind). */
-  --color-metric-capital: #0F9D58;
-  --color-metric-reputacion: #1B68D2;
-  --color-metric-bienestar: #FF9800;
-
-  /* Textos chicos: etiquetas, chips y ayudas. Por encima de 11 px se usa la escala de Tailwind (text-xs = 12 px). */
-  --text-2xs: 11px;
-  --text-3xs: 10px;
+  /* Un color, un significado: cada métrica tiene el suyo y peligro marca las bajas. Valores del modo claro
+     (pasan 4,5:1 sobre blanco); el modo oscuro los redefine en .dark. */
+  --color-metric-capital: #0B8A5C;
+  --color-metric-reputacion: #6D4FD6;
+  --color-metric-bienestar: #A86200;
+  --color-metric-peligro: #C8372C;
 }
 
 :root {
+  /* Sombra de la carta del turno y borde inferior de las fichas */
+  --carta-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 20px 40px -20px rgb(15 23 42 / 0.3);
+  --ficha-edge: #CBD5E1;
   --danger-bg-start: rgba(244, 63, 94, 0.08);
   --danger-bg-mid: rgba(225, 29, 72, 0.25);
   --danger-glow: rgba(244, 63, 94, 0.4);
 }
 
 .dark {
+  --carta-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 24px 48px -16px rgb(0 0 0 / 0.7);
+  --ficha-edge: #26334B;
+  --color-metric-capital: #3DDC97;
+  --color-metric-reputacion: #A78BFA;
+  --color-metric-bienestar: #FFB547;
+  --color-metric-peligro: #FF6B5E;
   --danger-bg-start: rgba(15, 23, 42, 0.95);
   --danger-bg-mid: rgba(88, 5, 25, 0.9);
   --danger-glow: rgba(244, 63, 94, 0.75);
+}
+
+@utility shadow-carta {
+  box-shadow: var(--carta-shadow);
+}
+
+@layer base {
+  h1, h2, h3 {
+    font-family: var(--font-display);
+  }
 }
 
 body {
@@ -322,6 +343,49 @@ html.reduced-motion :is(.stage-ticker, .stage-stamp, .stage-shake, .stage-shake-
   animation: none !important;
 }
 
+/* C3: transiciones con intención. Al elegir, la ficha sube y las otras se apagan (150 ms);
+   después la carta se da vuelta para mostrar el resultado (350 ms) y los chips de delta entran de a uno (80 ms) */
+.option-card.is-picked {
+  transform: translateY(-4px);
+  border-color: var(--color-brand-cobalt);
+  box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--color-brand-cobalt) 45%, transparent);
+}
+
+.option-card.is-dimmed {
+  opacity: 0.35;
+}
+
+@keyframes cardFlip {
+  from { transform: perspective(1400px) rotateY(-90deg); }
+  to { transform: perspective(1400px) rotateY(0); }
+}
+
+@keyframes deltaChipIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes motionFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.card-flip { animation: cardFlip 350ms cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+.delta-chip-in { animation: deltaChipIn 250ms cubic-bezier(0.2, 1.2, 0.4, 1) both; }
+
+/* Movimiento reducido: las entradas pasan a un fundido de 150 ms, sin giro, rebote ni temblor.
+   Va después de las reglas que las apagan para ganarles con la misma especificidad. */
+@media (prefers-reduced-motion: reduce) {
+  :is(.card-flip, .delta-chip-in, .stage-stamp, .stage-ribbon, .stage-reveal, .stage-option-in, .animate-slide-up-fade) {
+    animation: motionFade 150ms ease-out both !important;
+  }
+  .option-card.is-picked { transform: none; }
+}
+
+html.reduced-motion :is(.card-flip, .delta-chip-in, .stage-stamp, .stage-ribbon, .stage-reveal, .stage-option-in, .animate-slide-up-fade) {
+  animation: motionFade 150ms ease-out both !important;
+}
+
 /* Sprint 2 · B1: segmentos de la fase cerrada en la barra de turnos */
 @keyframes phaseMilestone {
   0% { transform: scaleY(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
@@ -345,6 +409,8 @@ html.reduced-motion .phase-milestone { animation: none !important; }
 .option-card {
   position: relative;
   overflow: hidden;
+  /* Ficha: un borde inferior la hace sentir presionable, sin sombra que compita con la carta */
+  box-shadow: 0 2px 0 var(--ficha-edge);
   transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease, background-color 150ms ease, opacity 150ms ease;
 }
 

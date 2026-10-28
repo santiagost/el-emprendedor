@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Activity, ArrowRight } from 'lucide-react';
-import type { GameEvent } from '../../types/game';
+import type { GameEvent, Metrics } from '../../types/game';
 import { actAt, stageTimeline, type EventStage, type StageTone } from '../../game/stage';
 import { useReducedMotion } from '../../lib/motion';
 import { confetti, vibrate } from '../../lib/fx';
@@ -11,6 +11,9 @@ interface InterruptionStageProps {
   /** Evento ya personalizado (título y descripción con el nombre resuelto). */
   event: GameEvent;
   stage: EventStage;
+  /** Turno, fase y métricas: el overlay los resume arriba para no pisar el HUD (A6). */
+  turnLabel: string;
+  metrics: Metrics;
   /** Se llama al terminar la coreografía (o al saltarla): la carta del evento queda a la vista. */
   onDone: () => void;
 }
@@ -47,7 +50,13 @@ const TONE_UI: Record<StageTone, { backdrop: string; edge: string; ribbon: strin
  * El quinto momento es de lectura: el texto se desenfoca y queda a la vista hasta que el jugador sigue
  * (Espacio, Enter o clic). Recién ahí el overlay se desvanece y Game revela la carta.
  */
-export default function InterruptionStage({ event, stage, onDone }: InterruptionStageProps) {
+const HUD_METRICS = [
+  { key: 'capital', label: 'Capital', dot: 'bg-metric-capital' },
+  { key: 'reputacion', label: 'Reputación', dot: 'bg-metric-reputacion' },
+  { key: 'bienestar', label: 'Bienestar', dot: 'bg-metric-bienestar' },
+] as const;
+
+export default function InterruptionStage({ event, stage, turnLabel, metrics, onDone }: InterruptionStageProps) {
   const reducedMotion = useReducedMotion();
   const [timeline] = useState(() => stageTimeline(stage.tone, reducedMotion));
   const [act, setAct] = useState(() => actAt(timeline, 0));
@@ -84,6 +93,15 @@ export default function InterruptionStage({ event, stage, onDone }: Interruption
     const t = setTimeout(finish, reducedMotion ? 0 : 300);
     return () => clearTimeout(t);
   }, [leaving, finish, reducedMotion]);
+
+  // Sin scroll de fondo mientras dura la escena: en escritorio se veía la barra del panel de atrás (A6)
+  useEffect(() => {
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, []);
 
   const canSkip = act >= 4 || actAt(timeline, timeline.skippableAt) <= act;
 
@@ -135,81 +153,105 @@ export default function InterruptionStage({ event, stage, onDone }: Interruption
       <div className={`absolute inset-0 ${ui.backdrop}`} />
       <div aria-hidden="true" className={`absolute inset-0 pointer-events-none stage-edge ${ui.edge}`} />
 
-      <div className={`relative h-full flex flex-col items-center justify-center px-4 ${shakeClass}`}>
+      <div className={`relative h-full flex flex-col ${shakeClass}`}>
+        {/* Resumen del HUD: turno y métricas a la vista, sin que el sello ni la cintilla lo tapen (A6) */}
+        <div className="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-slate-300">
+          <span className="truncate">{turnLabel}</span>
+          <span className="flex shrink-0 items-center gap-3 font-bold tabular-nums text-white">
+            {HUD_METRICS.map(({ key, label, dot }) => (
+              <span key={key} className="flex items-center gap-1" title={label}>
+                <span aria-hidden="true" className={`w-2 h-2 rounded-sm ${dot}`} />
+                <span className="sr-only">{label}</span>
+                {metrics[key]}
+              </span>
+            ))}
+          </span>
+        </div>
+
         {/* Acto 1: cintilla con ticker */}
-        {act >= 1 && (
-          <div aria-hidden="true" className={`absolute left-0 right-0 top-[18%] flex items-stretch shadow-2xl stage-ribbon ${ui.ribbon}`}>
-            <span className={`shrink-0 px-3 sm:px-5 py-2 text-xs sm:text-sm font-black uppercase tracking-[0.2em] ${ui.label}`}>
-              {stage.ribbon}
-            </span>
-            <div className="overflow-hidden flex-1 py-2">
-              <div className="stage-ticker whitespace-nowrap text-xs sm:text-sm font-bold uppercase tracking-wider w-max">
-                <span className="pr-8">{tickerText}</span>
-                <span className="pr-8">{tickerText}</span>
+        <div className="shrink-0 h-10 sm:h-11">
+          {act >= 1 && (
+            <div aria-hidden="true" className={`flex items-stretch shadow-2xl stage-ribbon ${ui.ribbon}`}>
+              <span className={`shrink-0 px-3 sm:px-5 py-2 text-xs sm:text-sm font-black uppercase tracking-[0.2em] ${ui.label}`}>
+                {stage.ribbon}
+              </span>
+              <div className="overflow-hidden flex-1 py-2">
+                <div className="stage-ticker whitespace-nowrap text-xs sm:text-sm font-bold uppercase tracking-wider w-max">
+                  <span className="pr-8">{tickerText}</span>
+                  <span className="pr-8">{tickerText}</span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-
-        <div className="w-full max-w-lg flex flex-col items-center gap-10 text-center">
-          {/* Acto 2: sello */}
-          {act >= 2 && (
-            <div
-              aria-hidden="true"
-              className={`stage-stamp -rotate-[8deg] mb-4 px-5 sm:px-7 py-2 rounded-xl border-4 text-3xl sm:text-5xl font-black uppercase tracking-[0.15em] ${ui.stamp}`}
-            >
-              {stage.stamp}
-            </div>
           )}
+        </div>
 
-          {/* Acto 3: suspenso, con el título a la vista y el resto difuminado. Acto 4: lectura, sin apuro. */}
-          {act >= 3 && (
-            <div className="w-full space-y-3 stage-fade-in">
-              <h2 className="text-xl sm:text-2xl font-black text-white leading-snug">
-                <EventKindIcon kind={event.kind} />
-                {event.title}
-              </h2>
-              {act < 4 ? (
-                <>
-                  <p aria-hidden="true" className="text-sm sm:text-base text-slate-200 leading-relaxed blur-[6px] line-clamp-3">
-                    {event.description}
-                  </p>
-                  <div className="flex items-center justify-center gap-2 pt-2 text-2xs font-bold uppercase tracking-widest text-slate-300">
-                    <Activity className="w-4 h-4 stage-heartbeat" />
-                    <span>Analizando impacto…</span>
-                  </div>
-                  <div className="mx-auto h-1 w-40 rounded-full bg-white/15 overflow-hidden">
-                    <div
-                      className={`h-full ${ui.bar} stage-progress`}
-                      style={{ '--stage-suspense': `${suspenseMs}ms` } as React.CSSProperties}
-                    />
-                  </div>
-                </>
-              ) : (
-                <>
+        <div className="flex-1 min-h-0 flex flex-col items-center justify-center px-4 text-center overflow-y-auto">
+          <div className="w-full max-w-lg flex flex-col items-center gap-8 sm:gap-10 py-6">
+            {/* Acto 2: sello */}
+            {act >= 2 && (
+              <div
+                aria-hidden="true"
+                className={`stage-stamp -rotate-[8deg] px-5 sm:px-7 py-2 rounded-xl border-4 font-display text-3xl sm:text-5xl font-black uppercase tracking-[0.15em] ${ui.stamp}`}
+              >
+                {stage.stamp}
+              </div>
+            )}
+
+            {/* Acto 3: suspenso, con el título a la vista y el resto difuminado. Acto 4: lectura, sin apuro. */}
+            {act >= 3 && (
+              <div className="w-full space-y-3 stage-fade-in">
+                <h2 className="text-xl sm:text-2xl font-black text-white leading-snug">
+                  <EventKindIcon kind={event.kind} />
+                  {event.title}
+                </h2>
+                {act < 4 ? (
+                  <>
+                    <p aria-hidden="true" className="text-sm sm:text-base text-slate-200 leading-relaxed blur-[6px] line-clamp-3">
+                      {event.description}
+                    </p>
+                    <div className="flex items-center justify-center gap-2 pt-2 text-xs font-bold uppercase tracking-widest text-slate-300">
+                      <Activity className="w-4 h-4 stage-heartbeat" />
+                      <span>Analizando impacto…</span>
+                    </div>
+                    <div className="mx-auto h-1 w-40 rounded-full bg-white/15 overflow-hidden">
+                      <div
+                        className={`h-full ${ui.bar} stage-progress`}
+                        style={{ '--stage-suspense': `${suspenseMs}ms` } as React.CSSProperties}
+                      />
+                    </div>
+                  </>
+                ) : (
                   <p className="text-sm sm:text-base text-slate-100 leading-relaxed stage-reveal">{event.description}</p>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      advance();
-                    }}
-                    className={`mt-3 inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold shadow-xl stage-fade-in ${ui.ribbon}`}
-                  >
-                    <span>Ver alternativas</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                  <p className="text-2xs text-slate-400 hidden sm:block">
-                    o presioná <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-slate-200 font-mono">Espacio</kbd>
+                )}
+                {act === 3 && canSkip && (
+                  <p className="text-xs text-slate-400 pt-1 hidden sm:block">
+                    <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-slate-200 font-mono">Espacio</kbd> para saltar
                   </p>
-                </>
-              )}
-              {act === 3 && canSkip && (
-                <p className="text-2xs text-slate-400 pt-1 hidden sm:block">
-                  <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-slate-200 font-mono">Espacio</kbd> para saltar
-                </p>
-              )}
-            </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Acto 4: CTA en la zona del pulgar en móvil; centrado bajo el texto en escritorio */}
+        <div className="shrink-0 min-h-24 px-4 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] flex flex-col items-center gap-2 text-center">
+          {act >= 4 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  advance();
+                }}
+                className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 sm:py-3 rounded-xl text-base sm:text-sm font-bold shadow-xl stage-fade-in ${ui.ribbon}`}
+              >
+                <span>Ver alternativas</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <p className="text-xs text-slate-400 hidden sm:block">
+                o presioná <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-slate-200 font-mono">Espacio</kbd>
+              </p>
+            </>
           )}
         </div>
       </div>

@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { ExternalLink, Pin, Sparkles } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { ExternalLink, Pin, RefreshCw, RotateCcw, Sparkles } from 'lucide-react';
 import { INLINE_ICON_CLASS } from '../common/iconStyles';
 import type { GameState, Archetype, Financing } from '../../types/game';
 import { buildJourney } from '../../game/recap';
@@ -7,6 +7,7 @@ import { buildRetrospective } from '../../game/retrospective';
 import { buildCompanyStory } from '../../game/companyStory';
 import { buildEpilogue, buildMetricCurves, buildOutlook, buildTimeline, buildWhyLine } from '../../game/endReport';
 import CompanyStory from './CompanyStory';
+import Vitrina from './Vitrina';
 import EndResultCard from './end/EndResultCard';
 import EndMetricsPanel from './end/EndMetricsPanel';
 import KeyMomentCard from './end/KeyMomentCard';
@@ -18,6 +19,37 @@ import { useSoundToggle } from '../../lib/sound';
 import Button from '../common/Button';
 import Card from '../common/Card';
 import Modal from '../common/Modal';
+
+/** Capítulos del informe (B4): el índice fijo salta a cada uno. */
+const CHAPTERS = [
+  { id: 'informe-resumen', label: 'Resumen' },
+  { id: 'informe-momento', label: 'Momento clave' },
+  { id: 'informe-empresa', label: 'Tu empresa' },
+  { id: 'informe-vitrina', label: 'Vitrina' },
+  { id: 'informe-fases', label: 'Fase por fase' },
+  { id: 'informe-siguiente', label: 'Siguiente nivel' },
+] as const;
+
+/** Marca el capítulo que ocupa la parte alta de la pantalla. */
+function useActiveChapter(ids: readonly string[]) {
+  const [active, setActive] = useState(ids[0]);
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActive(visible[0].target.id);
+      },
+      { rootMargin: '-80px 0px -60% 0px' }
+    );
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [ids]);
+  return active;
+}
 
 interface EndGameReportProps {
   gameState: GameState;
@@ -58,27 +90,86 @@ export default function EndGameReport({
 
   const { soundEnabled, toggleSound } = useSoundToggle();
   const [showCtaModal, setShowCtaModal] = useState(false);
+  const chapters = useMemo(
+    () => CHAPTERS.filter((c) => c.id !== 'informe-momento' || retrospective.totals.total > 0),
+    [retrospective]
+  );
+  const chapterIds = useMemo(() => chapters.map((c) => c.id), [chapters]);
+  const activeChapter = useActiveChapter(chapterIds);
+  const goTo = (id: string) => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById(id)?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  };
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-7 pb-8 animate-in fade-in">
-      {(theme || fxEnabled !== undefined) && (
-        <div className="flex justify-end items-center gap-2">
-          <SoundToggle soundEnabled={soundEnabled} onToggle={toggleSound} />
-          {fxEnabled !== undefined && onToggleFx && <EffectsToggle fxEnabled={fxEnabled} onToggle={onToggleFx} />}
-          {theme && onToggleTheme && <ThemeToggle theme={theme} onToggle={onToggleTheme} />}
-        </div>
-      )}
+      {/* Marca a la izquierda, a la altura de las herramientas (no queda fija) */}
+      <div className="flex justify-between items-center gap-2">
+        <span className="font-display text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-slate-100 whitespace-nowrap">
+          El Emprendedor
+        </span>
+        {(theme || fxEnabled !== undefined) && (
+          <div className="flex items-center gap-2">
+            <SoundToggle soundEnabled={soundEnabled} onToggle={toggleSound} />
+            {fxEnabled !== undefined && onToggleFx && <EffectsToggle fxEnabled={fxEnabled} onToggle={onToggleFx} />}
+            {theme && onToggleTheme && <ThemeToggle theme={theme} onToggle={onToggleTheme} />}
+          </div>
+        )}
+      </div>
 
+      {/* Índice fijo: capítulos y, en pantallas medianas o más, las acciones */}
+      <nav
+        aria-label="Capítulos del informe"
+        className="sticky top-0 z-20 -mx-4 sm:mx-0 px-4 sm:px-3 py-2 sm:rounded-2xl bg-brand-canvas/90 dark:bg-night-canvas/90 backdrop-blur border-b sm:border border-slate-200 dark:border-slate-800 flex items-center gap-3"
+      >
+        <ul className="flex-1 min-w-0 flex gap-1 overflow-x-auto [scrollbar-width:none]">
+          {chapters.map((c) => (
+            <li key={c.id} className="shrink-0">
+              <button
+                type="button"
+                onClick={() => goTo(c.id)}
+                aria-current={activeChapter === c.id ? 'true' : undefined}
+                className={`min-h-9 px-3 rounded-lg text-sm font-semibold transition-colors ${
+                  activeChapter === c.id
+                    ? 'bg-white dark:bg-night-card text-slate-900 dark:text-slate-100 shadow-carta'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                }`}
+              >
+                {c.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="hidden md:flex shrink-0 gap-2">
+          <Button size="sm" onClick={onRestart}>
+            <RefreshCw className="w-4 h-4" aria-hidden="true" /> Reintentar
+          </Button>
+          <Button variant="secondary" size="sm" onClick={onResetToSetup}>
+            <RotateCcw className="w-4 h-4" aria-hidden="true" /> Cambiar perfil
+          </Button>
+        </div>
+      </nav>
+
+      <div id="informe-resumen" className="scroll-mt-20">
       <EndResultCard
         epilogue={epilogue}
+        metrics={metrics}
+        curves={curves}
+        totals={retrospective.totals}
         why={why}
         arquetipo={arquetipo}
         financiamiento={financiamiento}
         onRestart={onRestart}
         onResetToSetup={onResetToSetup}
       />
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-5 items-stretch">
+      <div id="informe-momento" className="scroll-mt-20">
+        <KeyMomentCard retrospective={retrospective} outlook={outlook} lost={status.startsWith('game_over')} />
+      </div>
+
+      <div className="space-y-5">
+      <div id="informe-empresa" className="scroll-mt-20 grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-5 items-stretch">
         <EndMetricsPanel metrics={metrics} curves={curves} />
 
         <Card as="section" aria-label="Cómo queda tu empresa" className="p-4 sm:p-6 flex flex-col gap-4 min-w-0">
@@ -103,12 +194,17 @@ export default function EndGameReport({
         </Card>
       </div>
 
-      <KeyMomentCard retrospective={retrospective} outlook={outlook} lost={status.startsWith('game_over')} />
+      <Card as="section" id="informe-vitrina" aria-label="Tu vitrina de reconocimientos" className="scroll-mt-20 p-4 sm:p-6">
+        <Vitrina activeTags={activeTags} variant="final" />
+      </Card>
+      </div>
 
-      <PhaseTimeline phases={timeline} />
+      <div id="informe-fases" className="scroll-mt-20">
+        <PhaseTimeline phases={timeline} />
+      </div>
 
       {/* CTA al Simulador Comercial (GDD §10) */}
-      <div className="p-5 sm:p-6 bg-gradient-to-br from-indigo-50/80 via-white to-blue-50/80 dark:from-indigo-950/80 dark:via-slate-900 dark:to-indigo-900/40 border border-indigo-200 dark:border-indigo-700/50 rounded-2xl space-y-3.5 shadow-sm dark:shadow-lg">
+      <div id="informe-siguiente" className="scroll-mt-20 p-5 sm:p-6 bg-gradient-to-br from-indigo-50/80 via-white to-blue-50/80 dark:from-indigo-950/80 dark:via-slate-900 dark:to-indigo-900/40 border border-indigo-200 dark:border-indigo-700/50 rounded-2xl space-y-3.5 shadow-sm dark:shadow-lg">
         <div className="flex items-center gap-2 text-indigo-900 dark:text-indigo-300 font-bold text-sm">
           <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" aria-hidden="true" />
           <span>Siguiente nivel: el mercado real</span>
@@ -125,6 +221,16 @@ export default function EndGameReport({
         </Button>
       </div>
 
+      {/* Las acciones se repiten al final, donde termina la lectura */}
+      <div className="grid grid-cols-2 gap-3 sm:flex sm:justify-center">
+        <Button size="md" onClick={onRestart} className="sm:min-w-48">
+          <RefreshCw className="w-4 h-4" aria-hidden="true" /> Reintentar
+        </Button>
+        <Button variant="secondary" size="md" onClick={onResetToSetup} className="sm:min-w-48">
+          <RotateCcw className="w-4 h-4" aria-hidden="true" /> Cambiar perfil
+        </Button>
+      </div>
+
       {showCtaModal && (
         <Modal
           onClose={() => setShowCtaModal(false)}
@@ -138,7 +244,7 @@ export default function EndGameReport({
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed text-left">
               En este segundo juego por equipos, gestionarás variables reales de mercado: estructura de costos fijos y variables, estrategia de precios elásticos y conquista de segmentos de mercado.
             </p>
-            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-400 text-left">
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 text-left">
               <Pin className={INLINE_ICON_CLASS} aria-hidden="true" /> <strong>Disponible en la plataforma TID:</strong> consultá con tu facilitador o docente para participar de la próxima simulación en vivo.
             </div>
             <Button size="sm" onClick={() => setShowCtaModal(false)} className="w-full">

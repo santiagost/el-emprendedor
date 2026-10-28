@@ -152,7 +152,7 @@ function PitchBoard({
           return (
             <li
               key={r.label}
-              className={`flex-1 flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded-lg border text-2xs font-semibold ${
+              className={`flex-1 flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold ${
                 active
                   ? 'border-brand-cobalt bg-brand-cobalt/5 text-brand-navy dark:border-indigo-400 dark:bg-indigo-500/10 dark:text-white'
                   : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'

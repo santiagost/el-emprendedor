@@ -197,7 +197,7 @@ function NegotiationBoard({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between text-2xs font-semibold text-slate-500 dark:text-slate-400" aria-hidden="true">
+      <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400" aria-hidden="true">
         <span>Presión de la otra parte</span>
         <span className="inline-flex items-center gap-0.5 text-brand-navy dark:text-slate-200">
           <span ref={leftPushRef} className="inline-block"><ChevronLeft className="w-4 h-4" /></span>
@@ -238,7 +238,7 @@ function NegotiationBoard({
       </div>
 
       <div className="space-y-1">
-        <div className="flex items-center justify-between text-2xs font-semibold text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400">
           <span ref={statusRef} aria-live="off">Dentro del rango</span>
           <span>Tiempo en el rango</span>
         </div>
@@ -269,7 +269,7 @@ function NegotiationBoard({
           >
             {side === 'left' ? <ChevronLeft className="w-4 h-4" aria-hidden="true" /> : null}
             {side === 'left' ? 'Izquierda' : 'Derecha'}
-            <kbd className="hidden sm:inline-flex items-center gap-1 rounded bg-white/15 px-1.5 py-0.5 text-2xs font-semibold" aria-hidden="true">
+            <kbd className="hidden sm:inline-flex items-center gap-1 rounded bg-white/15 px-1.5 py-0.5 text-xs font-semibold" aria-hidden="true">
               {side === 'left' ? 'A / ←' : 'D / →'}
             </kbd>
             {side === 'right' ? <ChevronRight className="w-4 h-4" aria-hidden="true" /> : null}

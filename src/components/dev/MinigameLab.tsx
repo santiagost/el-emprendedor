@@ -74,7 +74,7 @@ export default function MinigameLab() {
   return (
     <main className="w-full max-w-3xl mx-auto p-4 sm:p-6 space-y-5 text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-night-sunken min-h-screen">
       <header className="space-y-1">
-        <p className="text-2xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Solo desarrollo</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Solo desarrollo</p>
         <h1 className="text-xl font-bold text-slate-900 dark:text-white">Laboratorio de minijuegos</h1>
         <p className="text-xs text-slate-500 dark:text-slate-400">
           Juega las opciones con minijuego del contenido real. No toca la partida guardada.
@@ -159,7 +159,7 @@ export default function MinigameLab() {
                   key={tag}
                   type="button"
                   onClick={() => toggleTag(tag)}
-                  className={`px-2 py-1 rounded-md text-2xs font-medium border ${
+                  className={`px-2 py-1 rounded-md text-xs font-medium border ${
                     on
                       ? 'bg-brand-cobalt text-white border-brand-cobalt'
                       : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300'

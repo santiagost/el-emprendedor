@@ -44,7 +44,7 @@ export const confetti = (kind: ConfettiKind = 'default'): void => {
         particleCount: 90,
         spread: 100,
         origin: { y: 0.6 },
-        colors: ['#0052CC', '#0F9D58', '#FF9800', '#F59E0B', '#3B82F6'],
+        colors: ['#0052CC', '#3DDC97', '#A78BFA', '#FFB547', '#F59E0B'],
         disableForReducedMotion: true,
       });
     } else {

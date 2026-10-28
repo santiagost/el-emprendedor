@@ -76,7 +76,7 @@ export default function MinigameShell({ title, rule, icon, onSkip, children }: M
         <Button
           variant="secondary"
           onClick={onSkip}
-          className="shrink-0 self-start px-2.5 py-1.5 rounded-lg text-2xs"
+          className="shrink-0 self-start px-2.5 py-1.5 rounded-lg text-xs"
         >
           <FastForward className="w-3.5 h-3.5" aria-hidden="true" />
           Saltar (resultado normal)
@@ -98,8 +98,8 @@ export default function MinigameShell({ title, rule, icon, onSkip, children }: M
               <Play className="w-4 h-4" aria-hidden="true" />
               Empezar
             </Button>
-            <p className="text-2xs text-slate-600 dark:text-slate-300">Mirá el tablero y empezá cuando estés listo.</p>
-            <label className="mt-1 flex items-center gap-2 text-2xs text-slate-600 dark:text-slate-300 cursor-pointer select-none">
+            <p className="text-xs text-slate-600 dark:text-slate-300">Mirá el tablero y empezá cuando estés listo.</p>
+            <label className="mt-1 flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer select-none">
               <input type="checkbox" checked={assisted} onChange={(e) => setAssisted(e.target.checked)} className="accent-brand-cobalt" />
               Modo asistido (más margen)
             </label>
@@ -110,7 +110,7 @@ export default function MinigameShell({ title, rule, icon, onSkip, children }: M
             className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/80 dark:bg-night-raised/80 backdrop-blur-[1px]"
             aria-live="assertive"
           >
-            <span key={count} className="stage-stamp text-5xl font-black tabular-nums text-brand-navy dark:text-white">
+            <span key={count} className="stage-stamp font-display text-5xl font-black tabular-nums text-brand-navy dark:text-white">
               {count}
             </span>
           </div>

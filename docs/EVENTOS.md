@@ -32,8 +32,8 @@ Nunca escribas objetos en crudo ni `impactPreview` manual. Usá los helpers de `
 - `defineOption(text, effects, extra)`:
   - `text`: texto del botón.
   - `effects`: `{ capital?, bienestar?, reputacion? }` (sugerido entre -30 y +30 para mantener el balance).
-  - `extra`: `{ addTags?, removeTags?, learningPill, scheduledEvent? }`.
-  - El `impactPreview` (↑ ↓ →) se deriva solo del signo de `effects` y la interfaz lo renderiza automáticamente en los botones de decisión y en el setup inicial (`ImpactBadges`).
+  - `extra`: `{ addTags?, removeTags?, learningPill, scheduledEvent?, minigame?, surprise? }`.
+  - El `impactPreview` (↑ ↓ →) se deriva solo del signo de `effects`. La interfaz lo muestra en el setup inicial y, desde la fase 3, como "Tu intuición:" en los botones de decisión (ver sección 8).
 - `defineEvent({ id, phaseId, title, description, weight?, when?, options })`:
   - `phaseId`: 1 | 2 | 3 | 4. El id debe empezar con `f<phaseId>_`.
   - `weight`: probabilidad relativa en el sorteo (por defecto 10). Subir a 20-30 para eventos de crisis o consecuencias inmediatas.
@@ -124,7 +124,42 @@ defineOption('Texto', { capital: +35 }, {
 - El jugador elige cuándo empezar y siempre puede saltar (resultado sólido) o activar el modo asistido.
 - Si querés dar más peso a un tag en la ruleta, listalo en `LAUNCH_TAILWINDS` o `LAUNCH_HEADWINDS` (`game/minigames/roulette.ts`).
 
-## 8. Flujo de Trabajo
+## 8. Sorpresas: la tendencia que a veces falla
+
+Desde la **fase 3** cada cada opción de un evento principal muestra la tendencia de sus efectos ("Tu intuición:", las flechas del `impactPreview`). Al cierre de la fase 2 el resumen avisa que es intuición y no certeza. Para que no se pueda optimizar mirando solo las flechas, algunas opciones llevan un **desenlace alternativo** (`surprise`) que a veces sale en lugar del normal.
+
+```ts
+defineOption('Ajustar precios trasladando el 100% de la inflación.', { capital: +10, reputacion: -30, bienestar: -5 }, {
+    surprise: {
+        effects: { capital: -5, reputacion: -30, bienestar: -5 },  // efectos COMPLETOS, no un delta
+        outcomeText: 'Los clientes no lo convalidaron y se pasaron a la competencia...',
+    },
+    learningPill: '...',
+    outcomeText: 'Trasladaste el aumento de inmediato...',
+});
+```
+
+**Cómo funciona**
+- Solo cuenta si el evento es **principal** y de **fase 3 o 4**. En crisis e imprevistos no se muestran las flechas pero nunca falla.
+- **Probabilidad:** 25 %. En la fase 4, si todavía no salieron 3 sorpresas, sube a *sorpresas que faltan ÷ turnos que quedan* (turno 11 con 0 sorpresas: 60 %), con piso de 25 %. Con 6 sorpresas ya no sale ninguna (`surpriseChance` en `game/engine.ts`; constantes `SURPRISE_*`).
+- El **mínimo de 3 no está garantizado**: una sorpresa solo sale si el jugador elige una opción que la tenga. En la simulación, entre 18 y 24 % de las partidas ganadas terminan con menos de 3 (promedio cercano a 2,9).
+- El sorteo lo hace `useGameEngine.decide` (`rollSurprise`) con el RNG de la partida y se lo pasa a `applyDecision`; el motor sigue siendo puro. Se cuenta en `GameState.surprisesPlayed` y se marca en el `decisionLog` (`surprised`).
+- Si sale, la carta de resultado muestra antes del texto "Esta vez tu intuición falló: esperabas ganar Capital, pero perdiste." (`game/intuition.ts`). Si sale lo esperado no se dice nada.
+- Los **tags** son los de la opción (`addTags` / `removeTags`); la sorpresa solo cambia efectos y texto.
+- Igual que un `poor`, una sorpresa **nunca causa un game over** que el desenlace normal no hubiera causado: si lo provocara, se aplica el normal.
+
+**Cómo escribir una**
+- Los `effects` de la sorpresa tienen que **contradecir la flecha** de al menos una métrica (por ejemplo, una opción con Capital ↑ cuya sorpresa deja Capital negativo). `content.spec.ts` lo valida; si no, el mensaje "tu intuición falló" mentiría.
+- Lo más claro es invertir **una sola métrica** y dejar las otras iguales.
+- El `outcomeText` de la sorpresa reemplaza al normal: tiene que ser **autosuficiente** y coherente con todos los efectos (los que no cambian también).
+- Conviene en opciones donde sea creíble que falle (ajustar precios, franquiciar, firmar una exclusividad). No en costos obvios (pagar una multa, un senior caro, vender la empresa).
+- **Las opciones con minijuego no llevan `surprise`**: el desvío ya sale del rendimiento y no se muestra el mensaje de intuición (el motor ignora la sorpresa si hay minijuego, y un test lo exige).
+- Hoy hay **17 sorpresas** (6 mejores que lo esperado, 11 peores); el detalle está en `CATALOGO_EVENTOS.md`.
+- Para subir la frecuencia, el camino es sumar sorpresa a más opciones o adelantar el ajuste de probabilidad a la fase 3.
+
+---
+
+## 9. Flujo de Trabajo
 
 1. Para agregar eventos a la fase N, editá `src/data/events/faseN.ts`.
 2. Si inventás un tag nuevo, agregalo primero en `src/data/tags.ts` con su label y modifier pasivo.

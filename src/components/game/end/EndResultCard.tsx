@@ -1,7 +1,9 @@
 import { AlertTriangle, CheckCircle2, Flag, Info, RefreshCw, RotateCcw, XCircle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { Archetype, Financing } from '../../../types/game';
-import type { Epilogue, EpilogueTone, WhyLine } from '../../../game/endReport';
+import type { Archetype, Financing, Metrics } from '../../../types/game';
+import type { Epilogue, EpilogueTone, MetricCurves, WhyLine } from '../../../game/endReport';
+import type { Retrospective } from '../../../game/retrospective';
+import { METRIC_LABELS, METRIC_ORDER } from './metricLabels';
 import Button from '../../common/Button';
 import Card from '../../common/Card';
 
@@ -43,8 +45,24 @@ const TONES: Record<EpilogueTone, { icon: LucideIcon; pill: string; label: strin
   },
 };
 
+const METRIC_TEXT: Record<keyof Metrics, string> = {
+  capital: 'text-metric-capital',
+  reputacion: 'text-metric-reputacion',
+  bienestar: 'text-metric-bienestar',
+};
+
+/** Marcador de decisiones del héroe: cuántas de cada veredicto. */
+const SCORE: { key: 'good' | 'reasonable' | 'could_be_better'; one: string; many: string }[] = [
+  { key: 'good', one: 'Buena jugada', many: 'Buenas jugadas' },
+  { key: 'reasonable', one: 'Razonable', many: 'Razonables' },
+  { key: 'could_be_better', one: 'Pudo ir mejor', many: 'Pudieron ir mejor' },
+];
+
 interface EndResultCardProps {
   epilogue: Epilogue;
+  metrics: Metrics;
+  curves: MetricCurves | null;
+  totals: Retrospective['totals'];
   why: WhyLine;
   arquetipo: Archetype;
   financiamiento: Financing;
@@ -52,7 +70,7 @@ interface EndResultCardProps {
   onResetToSetup: () => void;
 }
 
-export default function EndResultCard({ epilogue, why, arquetipo, financiamiento, onRestart, onResetToSetup }: EndResultCardProps) {
+export default function EndResultCard({ epilogue, metrics, curves, totals, why, arquetipo, financiamiento, onRestart, onResetToSetup }: EndResultCardProps) {
   const tone = TONES[epilogue.tone];
   const Icon = tone.icon;
 
@@ -81,8 +99,8 @@ export default function EndResultCard({ epilogue, why, arquetipo, financiamiento
           </div>
         </div>
 
-        {/* Lado a lado en pantallas chicas y medias; apilados solo cuando hay una columna aparte */}
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 lg:w-56 shrink-0">
+        {/* En móvil van acá, lado a lado; desde md las lleva el índice fijo del informe */}
+        <div className="grid grid-cols-2 gap-3 md:hidden">
           <Button size="md" onClick={onRestart} className="shadow-md">
             <RefreshCw className="w-4 h-4" aria-hidden="true" /> Reintentar
           </Button>
@@ -90,6 +108,39 @@ export default function EndResultCard({ epilogue, why, arquetipo, financiamiento
             <RotateCcw className="w-4 h-4" aria-hidden="true" /> Cambiar perfil
           </Button>
         </div>
+      </div>
+
+      {/* Cifras finales y marcador de decisiones */}
+      <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-8">
+        <dl className="grid grid-cols-3 gap-3">
+          {METRIC_ORDER.map((key) => {
+            const delta = curves?.curves.find((c) => c.key === key)?.delta ?? 0;
+            return (
+              <div key={key} className="min-w-0 rounded-2xl bg-slate-50 dark:bg-night-surface px-2.5 py-3 sm:px-4">
+                <dt className={`text-xs font-bold uppercase sm:tracking-wider truncate ${METRIC_TEXT[key]}`}>{METRIC_LABELS[key]}</dt>
+                <dd className="font-display text-3xl sm:text-4xl font-extrabold tabular-nums leading-tight text-slate-900 dark:text-slate-100">
+                  {metrics[key]}
+                </dd>
+                {curves && (
+                  <dd className={`text-xs font-semibold tabular-nums ${delta < 0 ? 'text-metric-peligro' : 'text-slate-600 dark:text-slate-400'}`}>
+                    {delta > 0 ? '+' : delta < 0 ? '−' : '±'}
+                    {Math.abs(delta)} en la partida
+                  </dd>
+                )}
+              </div>
+            );
+          })}
+        </dl>
+        {totals.total > 0 && (
+          <dl className="grid grid-cols-3 gap-3 content-center">
+            {SCORE.map(({ key, one, many }) => (
+              <div key={key} className="min-w-0 flex flex-col">
+                <dt className="order-last text-xs font-semibold leading-snug text-slate-600 dark:text-slate-400">{totals[key] === 1 ? one : many}</dt>
+                <dd className="font-display text-2xl sm:text-3xl font-extrabold tabular-nums text-slate-900 dark:text-slate-100">{totals[key]}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </div>
 
       <p className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-600 dark:text-slate-400">
