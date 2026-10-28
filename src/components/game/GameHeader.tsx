@@ -1,4 +1,4 @@
-import { DollarSign, Award, Heart, RotateCcw, Building2, Ellipsis } from 'lucide-react';
+import { DollarSign, Award, Heart, RotateCcw, Building2, Ellipsis, Flag } from 'lucide-react';
 import type { Archetype, Financing, Metrics } from '../../types/game';
 import type { Theme } from '../../hooks/useTheme';
 import type { HudDeltas } from '../../hooks/useOutcomeReveal';
@@ -61,12 +61,12 @@ export default function GameHeader({
   const currentPhase = PHASES.find((p) => p.id === phaseId) ?? PHASES[0];
 
   return (
-    <header className={`stage-hud ${stageTone ? `is-${stageTone}` : ''} sticky top-0 z-30 bg-brand-canvas/90 dark:bg-night-canvas/90 backdrop-blur-md pt-2 sm:pt-3 pb-2 sm:pb-3 border-b border-slate-200 dark:border-slate-800/80 -mx-4 sm:-mx-6 px-4 sm:px-6 transition-colors shadow-sm space-y-2 sm:space-y-3`}>
+    <header className={`stage-hud ${stageTone ? `is-${stageTone}` : ''} sticky top-0 z-30 bg-brand-canvas/90 dark:bg-night-canvas/90 backdrop-blur-md pt-2 sm:pt-3 pb-2 sm:pb-3 border-b border-slate-200 dark:border-slate-800/80 -mx-4 sm:-mx-6 px-4 sm:px-6 transition-colors space-y-2 sm:space-y-3`}>
       <div className="flex justify-between items-center text-xs font-semibold text-slate-500 dark:text-slate-400">
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {recapPhaseId ? (
-            <span className="uppercase tracking-widest text-amber-600 dark:text-amber-300 font-bold text-xs">
-              Fase {recapPhaseId} completada
+            <span className="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-bold text-sm">
+              <Flag className="w-4 h-4" aria-hidden="true" /> Fase {recapPhaseId} de {PHASES.length} superada
             </span>
           ) : (
             <>
@@ -125,39 +125,41 @@ export default function GameHeader({
       {/* Línea de tiempo visual de 15 turnos */}
       <TimelineBar currentTurn={currentTurn} maxTurns={maxTurns} milestonePhaseId={recapPhaseId} />
 
-      {/* Panel de Métricas Vitales (con dorado al 100%, pulso y deltas flotantes) */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 sm:pt-1">
-        <MetricCard
-          label="Capital"
-          value={metrics.capital}
-          icon={DollarSign}
-          variant="capital"
-          delta={deltas.capital}
-          deltaKey={deltas.key}
-          delayMs={0}
-          isCalculating={isCalculating}
-        />
-        <MetricCard
-          label="Reputación"
-          value={metrics.reputacion}
-          icon={Award}
-          variant="reputacion"
-          delta={deltas.reputacion}
-          deltaKey={deltas.key}
-          delayMs={150}
-          isCalculating={isCalculating}
-        />
-        <MetricCard
-          label="Bienestar"
-          value={metrics.bienestar}
-          icon={Heart}
-          variant="bienestar"
-          delta={deltas.bienestar}
-          deltaKey={deltas.key}
-          delayMs={300}
-          isCalculating={isCalculating}
-        />
-      </div>
+      {/* Métricas vitales (dorado al 100%, pulso y deltas flotantes). En el fin de fase no se muestran: el resumen ya las trae (B3) */}
+      {!recapPhaseId && (
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 sm:pt-1">
+          <MetricCard
+            label="Capital"
+            value={metrics.capital}
+            icon={DollarSign}
+            variant="capital"
+            delta={deltas.capital}
+            deltaKey={deltas.key}
+            delayMs={0}
+            isCalculating={isCalculating}
+          />
+          <MetricCard
+            label="Reputación"
+            value={metrics.reputacion}
+            icon={Award}
+            variant="reputacion"
+            delta={deltas.reputacion}
+            deltaKey={deltas.key}
+            delayMs={150}
+            isCalculating={isCalculating}
+          />
+          <MetricCard
+            label="Bienestar"
+            value={metrics.bienestar}
+            icon={Heart}
+            variant="bienestar"
+            delta={deltas.bienestar}
+            deltaKey={deltas.key}
+            delayMs={300}
+            isCalculating={isCalculating}
+          />
+        </div>
+      )}
     </header>
   );
 }

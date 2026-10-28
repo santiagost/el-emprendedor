@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { ArrowDownRight, ArrowRight, ArrowUpRight, Award, DollarSign, Flag, Heart } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, ArrowUpRight, Award, DollarSign, Heart } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Metrics } from '../../types/game';
 import type { PhaseRecap as PhaseRecapData } from '../../game/recap';
@@ -34,7 +34,7 @@ function Sparkline({ values, stroke, label }: { values: number[]; stroke: string
   return (
     <svg
       viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
-      className="w-full h-9 lg:h-12 overflow-visible"
+      className="w-full h-8 overflow-visible"
       preserveAspectRatio="none"
       role="img"
       aria-label={`Recorrido de ${label} durante la fase: de ${values[0]} a ${values[values.length - 1]}`}
@@ -71,7 +71,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
     [recap.paragraphs, recap.phaseId]
   );
 
-  // Pasos: ① recorrido de métricas, ② titular, ③… cada párrafo
+  // Pasos: ① fase, sello y titular, ② métricas, ③… cada párrafo
   const steps = useMemo(
     () => [{ at: 0 }, { at: 600 }, ...paragraphs.map((_, i) => ({ at: 1400 + i * 900 }))],
     [paragraphs]
@@ -97,82 +97,78 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
 
   return (
     <section aria-label={`Resumen de la fase ${phase.id}`} className="w-full max-w-5xl mx-auto space-y-5">
-      <div className="space-y-1.5 animate-slide-up-fade">
-        <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-brand-cobalt dark:text-indigo-400">
-          <Flag className="w-3.5 h-3.5" /> Fin de la Fase {phase.id}
-        </p>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight">{phase.label}</h2>
+      {/* ① Nivel superado: nombre de la fase, el perfil como sello y el titular */}
+      <div className="space-y-3 animate-slide-up-fade">
+        <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 leading-[0.98]">{phase.label}</h2>
+        {/* El sello cae rotado (animación stage-stamp); el margen evita que pise el título y el titular */}
+        <div className="py-2.5 pl-1">
+          <span className="stage-stamp inline-block px-3.5 py-1.5 rounded-[10px] border-[3px] border-indigo-500 dark:border-indigo-300 font-display text-lg sm:text-xl font-extrabold uppercase tracking-[0.06em] text-indigo-700 dark:text-indigo-200">
+            {recap.trend.label}
+          </span>
+        </div>
+        <p className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100 leading-snug max-w-[56ch]">{recap.headline}</p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8 items-start">
-        {/* ① Recorrido de las métricas durante la fase */}
-        <Card
-          as="section"
-          aria-label="Recorrido de las métricas en la fase"
-          className="p-4 sm:p-5 animate-slide-up-fade"
-        >
-          <div className="grid grid-cols-3 lg:grid-cols-1 gap-3 sm:gap-5 lg:gap-6">
-            {METRICS_UI.map(({ key, label, icon: Icon, stroke, text }) => {
+        {/* ② Métricas de la fase en filas: nombre, recorrido, valor final y cambio */}
+        {sequence.currentStep >= 1 && (
+          <Card
+            as="section"
+            aria-label="Cómo cambiaron tus métricas en la fase"
+            className="px-4 sm:px-5 py-1.5 animate-slide-up-fade"
+          >
+            {METRICS_UI.map(({ key, label, icon: Icon, stroke, text }, i) => {
               const delta = recap.deltas?.[key];
               const showDelta = delta !== undefined && Math.abs(delta) >= 4;
               return (
-                <div key={key} className="space-y-1.5 min-w-0">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className={`flex items-center gap-1 text-xs font-bold uppercase tracking-wider ${text}`}>
-                      <Icon className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">{label}</span>
-                    </span>
-                  </div>
+                <div
+                  key={key}
+                  className={`grid grid-cols-[6.5rem_minmax(0,1fr)_3rem_3.5rem] items-center gap-2.5 py-3 ${
+                    i > 0 ? 'border-t border-slate-200 dark:border-slate-800' : ''
+                  }`}
+                >
+                  <span className={`flex items-center gap-1.5 min-w-0 text-sm font-semibold ${text}`}>
+                    <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    <span className="truncate">{label}</span>
+                  </span>
                   {recap.series ? (
                     <Sparkline values={recap.series.map((s) => s[key])} stroke={stroke} label={label} />
                   ) : (
-                    <div className="h-9 lg:h-12" />
+                    <span />
                   )}
-                  <div className="flex items-baseline justify-between">
-                    <span className="font-display text-sm sm:text-base font-black tabular-nums text-slate-900 dark:text-slate-100">
-                      {recap.endMetrics[key]}%
-                    </span>
+                  <span className="font-display text-xl font-extrabold tabular-nums text-right text-slate-900 dark:text-slate-100">
+                    {recap.endMetrics[key]}
+                  </span>
+                  <span
+                    className={`inline-flex items-center justify-end gap-0.5 text-xs font-bold tabular-nums ${
+                      showDelta && (delta as number) > 0 ? text : 'text-metric-peligro'
+                    }`}
+                  >
                     {showDelta && (
-                      <span
-                        className={`inline-flex items-center gap-0.5 text-xs font-bold tabular-nums ${
-                          (delta as number) > 0 ? text : 'text-metric-peligro'
-                        }`}
-                      >
+                      <>
                         {(delta as number) > 0 ? <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" /> : <ArrowDownRight className="w-3.5 h-3.5" aria-hidden="true" />}
                         {(delta as number) > 0 ? '+' : '−'}
                         {Math.abs(delta as number)}
-                      </span>
+                      </>
                     )}
-                  </div>
+                  </span>
                 </div>
               );
             })}
-          </div>
-        </Card>
+          </Card>
+        )}
 
-        <div className="space-y-4 min-w-0">
-          {/* ② Perfil de la fase y titular */}
-          {sequence.currentStep >= 1 && (
-            <div className="space-y-2 animate-slide-up-fade">
-              <span className="inline-flex px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/70 text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
-                {recap.trend.label}
-              </span>
-              <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 leading-snug">{recap.headline}</p>
-            </div>
+        {/* ③… Párrafos por capas */}
+        <div className="space-y-3 min-w-0">
+          {paragraphs.map((text, i) =>
+            sequence.currentStep >= 2 + i ? (
+              <p key={i} className={`text-sm sm:text-base leading-relaxed animate-slide-up-fade ${
+                text === INTUITION_NOTE ? 'italic font-semibold text-brand-cobalt dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'
+              }`}>
+                {text}
+              </p>
+            ) : null
           )}
-
-          {/* ③… Párrafos por capas */}
-          <div className="space-y-3">
-            {paragraphs.map((text, i) =>
-              sequence.currentStep >= 2 + i ? (
-                <p key={i} className={`text-sm sm:text-base leading-relaxed animate-slide-up-fade ${
-                  text === INTUITION_NOTE ? 'italic font-semibold text-brand-cobalt dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'
-                }`}>
-                  {text}
-                </p>
-              ) : null
-            )}
-          </div>
         </div>
       </div>
 

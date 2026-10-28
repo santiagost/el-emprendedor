@@ -121,7 +121,7 @@ export default function MetricCard({
     barClasses += ' bg-gradient-to-r from-rose-600 to-red-500 shadow-[0_0_12px_rgba(244,63,94,0.9)]';
   } else {
     // Normal
-    cardClasses += ' bg-white dark:bg-night-surface border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-300 dark:hover:border-slate-700';
+    cardClasses += ' bg-white dark:bg-night-surface border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700';
     valueClasses += ` ${variantStyles.text}`;
     barClasses += ` ${variantStyles.bar}`;
   }

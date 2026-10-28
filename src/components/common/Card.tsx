@@ -1,24 +1,28 @@
 import type { HTMLAttributes } from 'react';
 
-const SHADOWS = {
-  flat: 'shadow-sm',
-  raised: 'shadow-sm dark:shadow-xl',
-  hero: 'shadow-md dark:shadow-xl',
+const SURFACES = {
+  /** Ficha o panel: sin sombra. */
+  flat: 'bg-white dark:bg-night-surface rounded-2xl',
+  /** Carta del turno: la única pieza con sombra en pantalla. */
+  raised: 'bg-white dark:bg-night-card rounded-[20px] shadow-carta',
+  /** Carta del resultado final. */
+  hero: 'bg-white dark:bg-night-card rounded-[20px] shadow-carta',
 } as const;
 
 interface CardProps extends HTMLAttributes<HTMLElement> {
   as?: 'div' | 'section' | 'article' | 'aside';
-  shadow?: keyof typeof SHADOWS;
+  shadow?: keyof typeof SURFACES;
 }
 
 /**
- * Tarjeta base: fondo blanco (night-surface en oscuro), borde y radio de tarjeta.
- * `className` suma padding, layout y animación; no debe repetir fondo, borde, radio ni sombra.
+ * Tarjeta base con borde. `flat` es una ficha o panel (night-surface en oscuro, sin sombra); `raised` y `hero`
+ * son la carta (night-card en oscuro, con sombra). `className` suma padding, layout y animación;
+ * no debe repetir fondo, borde, radio ni sombra.
  */
 export default function Card({ as: Tag = 'div', shadow = 'flat', className = '', ...props }: CardProps) {
   return (
     <Tag
-      className={`bg-white dark:bg-night-surface border border-slate-200 dark:border-slate-800 rounded-2xl ${SHADOWS[shadow]} ${className}`}
+      className={`border border-slate-200 dark:border-slate-800 ${SURFACES[shadow]} ${className}`}
       {...props}
     />
   );

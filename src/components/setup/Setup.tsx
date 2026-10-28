@@ -166,8 +166,8 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                     onClick={() => setArquetipo(item)}
                                     className={`flex w-full flex-col rounded-2xl border p-4 sm:p-5 text-left transition-all ${
                                         isSelected
-                                            ? 'border-brand-cobalt bg-blue-50/70 dark:bg-night-selected ring-2 ring-brand-cobalt/50 shadow-md'
-                                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-night-surface hover:border-slate-300 dark:hover:border-slate-700 shadow-sm'
+                                            ? 'border-brand-cobalt bg-blue-50/70 dark:bg-night-selected ring-2 ring-brand-cobalt/50'
+                                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-night-surface hover:border-slate-300 dark:hover:border-slate-700'
                                     }`}
                                 >
                                     <div className="flex items-start justify-between gap-3">
@@ -228,8 +228,8 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                     onClick={() => setFinanciamiento(item)}
                                     className={`flex w-full flex-col rounded-2xl border p-4 sm:p-5 text-left transition-all ${
                                         isSelected
-                                            ? 'border-brand-cobalt bg-blue-50/70 dark:bg-night-selected ring-2 ring-brand-cobalt/50 shadow-md'
-                                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-night-surface hover:border-slate-300 dark:hover:border-slate-700 shadow-sm'
+                                            ? 'border-brand-cobalt bg-blue-50/70 dark:bg-night-selected ring-2 ring-brand-cobalt/50'
+                                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-night-surface hover:border-slate-300 dark:hover:border-slate-700'
                                     }`}
                                 >
                                     <div className="flex items-start justify-between gap-3">

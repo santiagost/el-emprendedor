@@ -86,7 +86,7 @@ export default function EventCard({
 
       {/* Estado de Suspenso / Calculando (A4) */}
       {isRevealing && (
-        <div className="mx-5 sm:mx-7 mb-5 sm:mb-7 p-5 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-indigo-200/60 dark:border-indigo-900/40 flex flex-col items-center justify-center space-y-2.5 py-6 text-center animate-in fade-in duration-200">
+        <div className="mx-5 sm:mx-7 mb-5 sm:mb-7 border-t border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center space-y-2.5 pt-6 pb-1 text-center animate-in fade-in duration-200">
           <div className="w-6 h-6 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" />
           <div className="space-y-0.5">
             <p className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
