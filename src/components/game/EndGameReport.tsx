@@ -7,6 +7,7 @@ import { buildRetrospective } from '../../game/retrospective';
 import { buildCompanyStory } from '../../game/companyStory';
 import { buildEpilogue, buildMetricCurves, buildOutlook, buildTimeline, buildWhyLine } from '../../game/endReport';
 import CompanyStory from './CompanyStory';
+import Vitrina from './Vitrina';
 import EndResultCard from './end/EndResultCard';
 import EndMetricsPanel from './end/EndMetricsPanel';
 import KeyMomentCard from './end/KeyMomentCard';
@@ -24,6 +25,7 @@ const CHAPTERS = [
   { id: 'informe-resumen', label: 'Resumen' },
   { id: 'informe-momento', label: 'Momento clave' },
   { id: 'informe-empresa', label: 'Tu empresa' },
+  { id: 'informe-vitrina', label: 'Vitrina' },
   { id: 'informe-fases', label: 'Fase por fase' },
   { id: 'informe-siguiente', label: 'Siguiente nivel' },
 ] as const;
@@ -101,13 +103,19 @@ export default function EndGameReport({
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-7 pb-8 animate-in fade-in">
-      {(theme || fxEnabled !== undefined) && (
-        <div className="flex justify-end items-center gap-2">
-          <SoundToggle soundEnabled={soundEnabled} onToggle={toggleSound} />
-          {fxEnabled !== undefined && onToggleFx && <EffectsToggle fxEnabled={fxEnabled} onToggle={onToggleFx} />}
-          {theme && onToggleTheme && <ThemeToggle theme={theme} onToggle={onToggleTheme} />}
-        </div>
-      )}
+      {/* Marca a la izquierda, a la altura de las herramientas (no queda fija) */}
+      <div className="flex justify-between items-center gap-2">
+        <span className="font-display text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-slate-100 whitespace-nowrap">
+          El Emprendedor
+        </span>
+        {(theme || fxEnabled !== undefined) && (
+          <div className="flex items-center gap-2">
+            <SoundToggle soundEnabled={soundEnabled} onToggle={toggleSound} />
+            {fxEnabled !== undefined && onToggleFx && <EffectsToggle fxEnabled={fxEnabled} onToggle={onToggleFx} />}
+            {theme && onToggleTheme && <ThemeToggle theme={theme} onToggle={onToggleTheme} />}
+          </div>
+        )}
+      </div>
 
       {/* Índice fijo: capítulos y, en pantallas medianas o más, las acciones */}
       <nav
@@ -160,6 +168,7 @@ export default function EndGameReport({
         <KeyMomentCard retrospective={retrospective} outlook={outlook} lost={status.startsWith('game_over')} />
       </div>
 
+      <div className="space-y-5">
       <div id="informe-empresa" className="scroll-mt-20 grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-5 items-stretch">
         <EndMetricsPanel metrics={metrics} curves={curves} />
 
@@ -183,6 +192,11 @@ export default function EndGameReport({
             </p>
           )}
         </Card>
+      </div>
+
+      <Card as="section" id="informe-vitrina" aria-label="Tu vitrina de reconocimientos" className="scroll-mt-20 p-4 sm:p-6">
+        <Vitrina activeTags={activeTags} variant="final" />
+      </Card>
       </div>
 
       <div id="informe-fases" className="scroll-mt-20">

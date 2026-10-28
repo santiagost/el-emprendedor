@@ -7,6 +7,8 @@ import { intuitionMissMessage } from '../../game/intuition';
 import { EventKindIcon } from '../common/EventKindIcon';
 import { INLINE_ICON_CLASS } from '../common/iconStyles';
 import Card from '../common/Card';
+import { hayCambios, type CambiosVitrina } from '../../game/reconocimientos';
+import { ResultMoments } from './VitrinaMoments';
 
 const METRICS = [
   { key: 'capital', label: 'Capital', up: 'bg-metric-capital/15 text-metric-capital' },
@@ -34,6 +36,8 @@ interface EventCardProps {
   lastDecision: DecisionLogEntry | null | undefined;
   decisionDeltas: MetricDeltas;
   lastPill: string | null | undefined;
+  /** Lo que esta decisión sumó, abrió o cerró en la vitrina de reconocimientos. */
+  vitrinaChanges?: CambiosVitrina;
   /** "Qué podría venir" tras la decisión (siempre en condicional); null si no deja nada pendiente. */
   forecast?: string | null;
   playerName?: string;
@@ -49,6 +53,7 @@ export default function EventCard({
   lastDecision,
   decisionDeltas,
   lastPill,
+  vitrinaChanges,
   forecast,
   playerName,
 }: EventCardProps) {
@@ -164,6 +169,9 @@ export default function EventCard({
               {forecast}
             </p>
           )}
+
+          {/* Reconocimientos y frentes que dejó la decisión */}
+          {layer >= 1 && vitrinaChanges && hayCambios(vitrinaChanges) && <ResultMoments cambios={vitrinaChanges} />}
 
           {/* Paso ③: concepto clave */}
           {layer >= 2 && lastPill && (() => {

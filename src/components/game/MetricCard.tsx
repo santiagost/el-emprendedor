@@ -32,6 +32,9 @@ export default function MetricCard({
   const animatedValue = useCountUp(value, 700, delayMs);
   const isMax = value >= 100;
   const isCritical = value <= 25;
+  const StateIcon = isMax ? CircleStar : AlertTriangle;
+  // Rótulos de estado: en el tile angosto del móvil solo quedan para lectores de pantalla
+  const badgeVisibility = isRow ? '' : 'max-sm:sr-only ';
 
   // Estado para la barra fantasma (trail al recibir reducciones)
   const [ghostValue, setGhostValue] = useState<number>(value);
@@ -145,9 +148,13 @@ export default function MetricCard({
       <div className={isRow ? 'flex-1 min-w-0 space-y-2' : 'contents'}>
       {/* Badge de estado superior */}
       <div className="w-full flex items-center justify-between text-xs font-semibold mb-1">
-        <span className="flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-wider text-xs font-bold">
+        <span className="flex min-w-0 items-center text-slate-500 dark:text-slate-400 uppercase tracking-wider max-sm:tracking-normal text-xs font-bold">
+          {/* En las fichas angostas del móvil no entra el rótulo de estado: el ícono de la métrica pasa a ser el del estado */}
+          {!isRow && (isMax || isCritical) && !isCalculating && (
+            <StateIcon className={`sm:hidden w-3.5 h-3.5 mr-1 shrink-0 ${isMax ? 'text-amber-500 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'}`} />
+          )}
           <Icon
-            className={`w-3.5 h-3.5 mr-1 shrink-0 ${
+            className={`${!isRow && (isMax || isCritical) && !isCalculating ? 'hidden sm:block ' : ''}w-3.5 h-3.5 mr-1 shrink-0 ${
               isCalculating
                 ? 'animate-pulse text-indigo-500 dark:text-indigo-400'
                 : isMax
@@ -161,15 +168,15 @@ export default function MetricCard({
         </span>
 
         {isCalculating ? (
-          <span className="flex items-center gap-1 text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider animate-pulse">
+          <span className={`${badgeVisibility}flex items-center gap-1 text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider animate-pulse`}>
             Calculando…
           </span>
         ) : isMax ? (
-          <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-bold uppercase tracking-wider border border-amber-400/50">
+          <span className={`${badgeVisibility}flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-bold uppercase tracking-wider border border-amber-400/50`}>
             <CircleStar className="w-2.5 h-2.5" /> MÁX
           </span>
         ) : isCritical ? (
-          <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-rose-600/20 dark:bg-rose-600/30 text-rose-700 dark:text-rose-200 text-xs font-extrabold uppercase tracking-wider border border-rose-500 animate-pulse">
+          <span className={`${badgeVisibility}flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-rose-600/20 dark:bg-rose-600/30 text-rose-700 dark:text-rose-200 text-xs font-extrabold uppercase tracking-wider border border-rose-500 animate-pulse`}>
             <AlertTriangle className="w-2.5 h-2.5" /> CRÍTICO
           </span>
         ) : null}

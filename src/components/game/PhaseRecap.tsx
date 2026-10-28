@@ -8,9 +8,16 @@ import { INTUITION_FIRST_PHASE, INTUITION_NOTE } from '../../game/intuition';
 import { useSequence } from '../../hooks/useSequence';
 import Button from '../common/Button';
 import Card from '../common/Card';
+import { buildVitrina, hayCambios, type CambiosVitrina } from '../../game/reconocimientos';
+import type { Tag } from '../../data/tags';
+import { PhaseChanges } from './VitrinaMoments';
 
 interface PhaseRecapProps {
   recap: PhaseRecapData;
+  /** Tags al cerrar la fase, para contar la vitrina. */
+  activeTags?: readonly Tag[];
+  /** Lo que la fase cambió en la vitrina; null si no se sabe (recarga en pleno resumen). */
+  changes?: CambiosVitrina | null;
   /** Recarga en pleno resumen: se muestra todo de una vez, sin animar. */
   initialCompleted?: boolean;
   onContinue: () => void;
@@ -61,7 +68,7 @@ function Sparkline({ values, stroke, label }: { values: number[]; stroke: string
   );
 }
 
-export default function PhaseRecap({ recap, initialCompleted = false, onContinue, disabled = false }: PhaseRecapProps) {
+export default function PhaseRecap({ recap, activeTags = [], changes = null, initialCompleted = false, onContinue, disabled = false }: PhaseRecapProps) {
   const phase = PHASES.find((p) => p.id === recap.phaseId) ?? PHASES[0];
   const nextPhase = PHASES.find((p) => p.id === recap.phaseId + 1);
 
@@ -71,10 +78,18 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
     [recap.paragraphs, recap.phaseId]
   );
 
-  // Pasos: ① fase, sello y titular, ② métricas, ③… cada párrafo
+  // Pasos: ① fase, sello y titular, ② métricas, ③ vitrina (si la fase cambió algo), ④… cada párrafo
+  const vitrina = useMemo(() => buildVitrina(activeTags), [activeTags]);
+  const showVitrina = changes !== null && hayCambios(changes);
+  const paragraphStep = showVitrina ? 3 : 2;
   const steps = useMemo(
-    () => [{ at: 0 }, { at: 600 }, ...paragraphs.map((_, i) => ({ at: 1400 + i * 900 }))],
-    [paragraphs]
+    () => [
+      { at: 0 },
+      { at: 600 },
+      ...(showVitrina ? [{ at: 1300 }] : []),
+      ...paragraphs.map((_, i) => ({ at: (showVitrina ? 2100 : 1400) + i * 900 })),
+    ],
+    [paragraphs, showVitrina]
   );
   const sequence = useSequence(steps, { key: `recap-${recap.phaseId}`, initialCompleted });
 
@@ -110,58 +125,65 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8 items-start">
-        {/* ② Métricas de la fase en filas: nombre, recorrido, valor final y cambio */}
-        {sequence.currentStep >= 1 && (
-          <Card
-            as="section"
-            aria-label="Cómo cambiaron tus métricas en la fase"
-            className="px-4 sm:px-5 py-1.5 animate-slide-up-fade"
-          >
-            {METRICS_UI.map(({ key, label, icon: Icon, stroke, text }, i) => {
-              const delta = recap.deltas?.[key];
-              const showDelta = delta !== undefined && Math.abs(delta) >= 4;
-              return (
-                <div
-                  key={key}
-                  className={`grid grid-cols-[6.5rem_minmax(0,1fr)_3rem_3.5rem] items-center gap-2.5 py-3 ${
-                    i > 0 ? 'border-t border-slate-200 dark:border-slate-800' : ''
-                  }`}
-                >
-                  <span className={`flex items-center gap-1.5 min-w-0 text-sm font-semibold ${text}`}>
-                    <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
-                    <span className="truncate">{label}</span>
-                  </span>
-                  {recap.series ? (
-                    <Sparkline values={recap.series.map((s) => s[key])} stroke={stroke} label={label} />
-                  ) : (
-                    <span />
-                  )}
-                  <span className="font-display text-xl font-extrabold tabular-nums text-right text-slate-900 dark:text-slate-100">
-                    {recap.endMetrics[key]}
-                  </span>
-                  <span
-                    className={`inline-flex items-center justify-end gap-0.5 text-xs font-bold tabular-nums ${
-                      showDelta && (delta as number) > 0 ? text : 'text-metric-peligro'
+        <div className="space-y-5 min-w-0">
+          {/* ② Métricas de la fase en filas: nombre, recorrido, valor final y cambio */}
+          {sequence.currentStep >= 1 && (
+            <Card
+              as="section"
+              aria-label="Cómo cambiaron tus métricas en la fase"
+              className="px-4 sm:px-5 py-1.5 animate-slide-up-fade"
+            >
+              {METRICS_UI.map(({ key, label, icon: Icon, stroke, text }, i) => {
+                const delta = recap.deltas?.[key];
+                const showDelta = delta !== undefined && Math.abs(delta) >= 4;
+                return (
+                  <div
+                    key={key}
+                    className={`grid grid-cols-[6.5rem_minmax(0,1fr)_3rem_3.5rem] items-center gap-2.5 py-3 ${
+                      i > 0 ? 'border-t border-slate-200 dark:border-slate-800' : ''
                     }`}
                   >
-                    {showDelta && (
-                      <>
-                        {(delta as number) > 0 ? <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" /> : <ArrowDownRight className="w-3.5 h-3.5" aria-hidden="true" />}
-                        {(delta as number) > 0 ? '+' : '−'}
-                        {Math.abs(delta as number)}
-                      </>
+                    <span className={`flex items-center gap-1.5 min-w-0 text-sm font-semibold ${text}`}>
+                      <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{label}</span>
+                    </span>
+                    {recap.series ? (
+                      <Sparkline values={recap.series.map((s) => s[key])} stroke={stroke} label={label} />
+                    ) : (
+                      <span />
                     )}
-                  </span>
-                </div>
-              );
-            })}
-          </Card>
-        )}
+                    <span className="font-display text-xl font-extrabold tabular-nums text-right text-slate-900 dark:text-slate-100">
+                      {recap.endMetrics[key]}
+                    </span>
+                    <span
+                      className={`inline-flex items-center justify-end gap-0.5 text-xs font-bold tabular-nums ${
+                        showDelta && (delta as number) > 0 ? text : 'text-metric-peligro'
+                      }`}
+                    >
+                      {showDelta && (
+                        <>
+                          {(delta as number) > 0 ? <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" /> : <ArrowDownRight className="w-3.5 h-3.5" aria-hidden="true" />}
+                          {(delta as number) > 0 ? '+' : '−'}
+                          {Math.abs(delta as number)}
+                        </>
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
+            </Card>
+          )}
 
-        {/* ③… Párrafos por capas */}
+          {/* ③ Lo que la fase sumó, abrió o cerró en la vitrina */}
+          {showVitrina && changes && sequence.currentStep >= 2 && (
+            <PhaseChanges cambios={changes} ganados={vitrina.ganados} total={vitrina.total} />
+          )}
+        </div>
+
+        {/* ④… Párrafos por capas */}
         <div className="space-y-3 min-w-0">
           {paragraphs.map((text, i) =>
-            sequence.currentStep >= 2 + i ? (
+            sequence.currentStep >= paragraphStep + i ? (
               <p key={i} className={`text-sm sm:text-base leading-relaxed animate-slide-up-fade ${
                 text === INTUITION_NOTE ? 'italic font-semibold text-brand-cobalt dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'
               }`}>

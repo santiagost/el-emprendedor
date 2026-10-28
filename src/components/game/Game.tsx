@@ -4,6 +4,8 @@ import { useTheme } from '../../hooks/useTheme';
 import { useSequence } from '../../hooks/useSequence';
 import { useOutcomeReveal } from '../../hooks/useOutcomeReveal';
 import type { Archetype, Financing, Performance } from '../../types/game';
+import type { Tag } from '../../data/tags';
+import { diffVitrina } from '../../game/reconocimientos';
 import EndGameReport from './EndGameReport';
 import PhaseRecap from './PhaseRecap';
 import CompanyStatusCard from './CompanyStatusCard';
@@ -180,6 +182,32 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
     [step, displayEvent, lastDecision]
   );
 
+  // Vitrina: qué tags había antes de decidir y al empezar la fase, para anunciar lo que cambió sin tocar el log.
+  // Recargar en pleno resultado o resumen no lo recupera: ahí simplemente no se muestra el aviso.
+  const { activeTags } = gameState;
+  const [tagSnapshot, setTagSnapshot] = useState<{ before: Tag[]; phaseStart: { phaseId: number; tags: Tag[] } | null }>(() => ({
+    before: activeTags,
+    phaseStart: step === 'phase_recap' ? null : { phaseId, tags: activeTags },
+  }));
+  // Mientras se decide, la foto sigue a los tags; al pasar al resultado o al resumen queda congelada
+  if (
+    step === 'decision' &&
+    (tagSnapshot.before.join() !== activeTags.join() || tagSnapshot.phaseStart?.phaseId !== phaseId)
+  ) {
+    setTagSnapshot({
+      before: activeTags,
+      phaseStart: tagSnapshot.phaseStart?.phaseId === phaseId ? tagSnapshot.phaseStart : { phaseId, tags: activeTags },
+    });
+  }
+  const resultChanges = useMemo(
+    () => diffVitrina(step === 'outcome' ? tagSnapshot.before : activeTags, activeTags),
+    [step, tagSnapshot.before, activeTags]
+  );
+  const phaseChanges = useMemo(() => {
+    const start = tagSnapshot.phaseStart;
+    return step === 'phase_recap' && start?.phaseId === phaseId - 1 ? diffVitrina(start.tags, activeTags) : null;
+  }, [step, phaseId, tagSnapshot.phaseStart, activeTags]);
+
   // B2: resumen de la fase que acaba de cerrarse (el estado ya avanzó a la siguiente)
   const [initialRecapPhaseId] = useState<number | null>(() =>
     step === 'phase_recap' ? ((phaseId - 1) as PhaseId) : null
@@ -346,6 +374,8 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
           <PhaseRecap
             recap={recapOnScreen}
             initialCompleted={initialRecapPhaseId === recapOnScreen.phaseId}
+            activeTags={activeTags}
+            changes={phaseChanges}
             onContinue={continueFromRecap}
             disabled={showExitConfirm || showCompanyDrawer || showGameMenu}
           />
@@ -394,6 +424,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
               lastDecision={lastDecision}
               decisionDeltas={reveal.decisionDeltas}
               lastPill={lastPill}
+              vitrinaChanges={resultChanges}
               forecast={forecast}
               playerName={displayName}
             />

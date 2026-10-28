@@ -53,12 +53,14 @@ Regla de `className`: suma ancho, márgenes, layout, animación o estado `disabl
 - Distribución: en escritorio (`lg`) hay dos columnas, el tablero a la izquierda (`MetricCard` con `layout="row"` y `CompanyStatusCard`, fijos al hacer scroll) y la carta a la derecha. En móvil y tablet las métricas van en el header y "Mi empresa" se abre como drawer.
 - `GameHeader`: turno y fase, herramientas, línea de turnos y métricas (estas solo debajo de `lg`).
 - `MetricCard`: métrica del HUD. `layout`: `tile` (header) o `row` (columna de escritorio, valor grande a la derecha).
-- `CompanyStatusCard`: "Mi empresa": perfil, financiamiento, relato y efectos activos con sus cifras por turno.
+- `CompanyStatusCard`: "Mi empresa": relato del estado, "Tu punto de partida" y la vitrina de reconocimientos (sin cifras ni efectos).
 - `EventCard`: carta del dilema, suspenso "Calculando…" y resultado por capas. Al mostrar el resultado la carta se da vuelta (`card-flip`) y los chips de delta entran de a uno (`delta-chip-in`).
 - `OptionList`: alternativas del dilema. Al elegir, la ficha sube (`is-picked`) y las otras se apagan (`is-dimmed`) durante 150 ms antes de decidir.
 - `OutcomeActions`: "Procesando…", "Saltar animación" o el botón para avanzar.
 - `CompanyDrawer`, `GameMenu` (menú de partida en móvil: sonido, efectos, tema y Reiniciar) y `ExitConfirmModal`: ventanas sobre el juego.
 - `useOutcomeReveal` (hook): suspenso, deltas del HUD, sonido, vibración y confeti de métricas.
+
+Vitrina de reconocimientos: los tags se muestran como trofeos en tres estantes (Negocio, Mercado, Equipo), con lugares bloqueados que no dicen qué falta, y como frentes abiertos (hasta 3 en el panel). La tabla de presentación está en `src/game/reconocimientos.ts` y no toca el motor ni el log: cada tag es trofeo, hito de salida, herencia del perfil o frente. Al tocar un trofeo no pasa nada. Lo nuevo se anuncia comparando los tags antes y después (`diffVitrina`): "Nuevo reconocimiento", "Nuevo frente abierto" y "Frente cerrado" en la carta de resultado, y "Tu vitrina en esta fase" en el resumen de fase. El informe final muestra la vitrina completa y el hito de salida. Componentes: `Vitrina`, `VitrinaMoments`.
 
 Movimiento reducido (preferencia del sistema o efectos apagados): las entradas (carta, chips, sello, cinta y "Para llevarte") pasan a un fundido de 150 ms, sin giro, rebote ni temblor, y la elección no espera.
 

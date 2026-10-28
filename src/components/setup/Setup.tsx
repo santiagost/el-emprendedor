@@ -1,8 +1,8 @@
 import type { Archetype, Financing } from '../../types/game';
 import { ARCHETYPES, FINANCINGS } from '../../data/archetypes';
 import { useState } from 'react';
-import type { LucideIcon } from 'lucide-react';
-import { AlertTriangle, ArrowLeft, ArrowRight, Award, Check, Cpu, DollarSign, Handshake, Heart, Landmark, Megaphone, PiggyBank, UserRound, Wallet } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ArrowRight, Award, Check, DollarSign, Heart, UserRound } from 'lucide-react';
+import { CHOICE_ICONS } from './choiceIcons';
 import ImpactBadges from '../game/ImpactBadges';
 import ThemeToggle from '../common/ThemeToggle';
 import EffectsToggle from '../common/EffectsToggle';
@@ -14,16 +14,6 @@ import { useTheme } from '../../hooks/useTheme';
 import { useEffectsToggle } from '../../lib/motion';
 import { MAX_PLAYER_NAME_LENGTH, sanitizePlayerName } from '../../lib/personalize';
 import { forgetName, loadRememberedName, rememberName } from '../../lib/playerName';
-
-/** Ícono de cada perfil y esquema de financiamiento (C4). */
-const CHOICE_ICONS: Record<string, LucideIcon> = {
-    a1_tecnico: Cpu,
-    a2_comercial: Megaphone,
-    a3_inversionista: PiggyBank,
-    f1_bootstrap: Wallet,
-    f2_prestamo_bancario: Landmark,
-    f3_socio_angel: Handshake,
-};
 
 const VITALS = [
     { key: 'capital', label: 'Capital', icon: DollarSign, hint: 'la caja', color: 'text-metric-capital' },
