@@ -70,6 +70,32 @@ Además de los eventos principales, existen **3 crisis** y **4 imprevistos** que
 | Imprevisto (global) | `imp_viralizacion_inesperada` | **Viralización Inesperada en Redes** | Un referente de tu nicho recomendó espontáneamente tu producto ante 200.000 seguidores. El tráfico y las altas se dispararon un 500% en un día. | 12 | — | — | — | — | — | **O1** Habilitar lista de espera para asegurar que cada nuevo usuario tenga una experiencia impecable. · `C 0 · R +20 · B +5`<br>**O2** Abrir las puertas a todo el tráfico y absorber la mayor cantidad de clientes posible. · `C +25 · R -10 · B -20` |
 | Imprevisto (global) | `imp_inspeccion_sorpresa` | **Inspección Impositiva y Laboral Sorpresiva** | Inspectores del organismo regulador se presentan en tus oficinas para una auditoría sorpresa de encuadre laboral, contratos y facturación. | 12 | — | — | — | — | — | **O1** Acompañar con asesoría contable profesional y presentar libros limpios. · `C -10 · R +15 · B +5`<br>**O2** Solicitar prórroga administrativa para emprolijar inconsistencias con asesor legal. · `C -5 · R -10 · B -15` |
 
+## Sorpresas (la tendencia que a veces falla)
+
+Opciones de fase 3 y 4 con un desenlace alternativo (`surprise`) que contradice su tendencia. Las reglas están en `docs/EVENTOS.md`, sección 8. **17 sorpresas** en 9 eventos (6 mejores que lo esperado, 11 peores); las opciones con minijuego no tienen.
+
+| Evento | Opción | Efectos normales | Efectos con sorpresa | Qué contradice |
+|---|---|---|---|---|
+| `f3_shock_externo` | O1 | `C +10 · R -30 · B -5` | `C -5 · R -30 · B -5` | Capital ↑ → baja |
+| `f3_shock_externo` | O2 | `C -25 · R +25 · B -10` | `C -25 · R -5 · B -10` | Reputación ↑ → baja |
+| `f3_apuesta_crecimiento` | O1 | `C -20 · R +15 · B 0` | `C +10 · R +15 · B 0` | Capital ↓ → sube |
+| `f3_apuesta_crecimiento` | O2 | `C +5 · R +5 · B +5` | `C -5 · R +5 · B +5` | Capital ↑ → baja |
+| `f3_caida_servicio` | O1 | `C -10 · R +15 · B 0` | `C +5 · R +15 · B 0` | Capital ↓ → sube |
+| `f3_caida_servicio` | O2 | `C +15 · R -25 · B -15` | `C -10 · R -25 · B -15` | Capital ↑ → baja |
+| `f4_competidor_gigante` | O1 | `C -30 · R 0 · B -20` | `C -30 · R +10 · B -20` | Reputación → → sube |
+| `f4_competidor_gigante` | O2 | `C -10 · R +25 · B +5` | `C +10 · R +25 · B +5` | Capital ↓ → sube |
+| `f4_intento_compra_hostil` | O2 | `C -35 · R -15 · B -30` | `C -35 · R +10 · B -30` | Reputación ↓ → sube |
+| `f4_legado_sostenible` | O1 | `C +20 · R +15 · B +30` | `C +20 · R -5 · B +30` | Reputación ↑ → baja |
+| `f4_legado_sostenible` | O2 | `C -25 · R +30 · B -15` | `C -25 · R -5 · B -15` | Reputación ↑ → baja |
+| `f4_sucesion_operativa` | O1 | `C -15 · R +10 · B +20` | `C -15 · R +10 · B -10` | Bienestar ↑ → baja |
+| `f4_sucesion_operativa` | O2 | `C +10 · R -5 · B -20` | `C -10 · R -5 · B -20` | Capital ↑ → baja |
+| `f4_propuesta_franquicia` | O1 | `C +20 · R -10 · B -5` | `C -5 · R -10 · B -5` | Capital ↑ → baja |
+| `f4_propuesta_franquicia` | O2 | `C -10 · R +15 · B +5` | `C -10 · R +15 · B -10` | Bienestar ↑ → baja |
+| `f4_alianza_estrategica` | O1 | `C +15 · R +10 · B -10` | `C -10 · R +10 · B -10` | Capital ↑ → baja |
+| `f4_alianza_estrategica` | O2 | `C -10 · R +5 · B +5` | `C +10 · R +5 · B +5` | Capital ↓ → sube |
+
+Sin sorpresa: `f3_ronda_inversion` y `f3_crisis_burnout` (minijuegos), `f3_disputa_socios`, `f4_auditoria_afip` y la opción de vender en `f4_intento_compra_hostil` (O1), además de las crisis y los imprevistos.
+
 ## Tags
 
 Los tags son estado persistente de la partida. Los **modifiers** de todos los tags activos se suman al resolver cada decisión (una vez por turno), después de aplicar los `effects` de la opción y antes de evaluar derrota.

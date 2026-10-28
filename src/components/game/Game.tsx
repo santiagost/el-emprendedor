@@ -381,7 +381,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
               hidden={showIncomingAlert}
               justRevealed={justRevealed}
               disabled={isRevealing}
-              showIntuition={phaseId >= INTUITION_FIRST_PHASE}
+              showIntuition={phaseId >= INTUITION_FIRST_PHASE && displayEvent.kind !== 'crisis' && displayEvent.kind !== 'unforeseen'}
               onPick={(idx) => handleDecide(idx, currentTurn)}
             />
           )}

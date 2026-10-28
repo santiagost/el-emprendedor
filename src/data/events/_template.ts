@@ -63,6 +63,9 @@ export const _templateGatedEvent: GameEvent = defineEvent({
       { capital: -10, reputacion: -5, bienestar: 5 },
       {
         removeTags: ['cliente_dependencia'],
+        // Opcional, solo fases 3 y 4, eventos principales y sin minijuego: desenlace que a veces sale en vez del normal
+        // y contradice la flecha de la opción. Ver docs/EVENTOS.md, sección 8.
+        // surprise: { effects: { capital: 5, reputacion: -5, bienestar: 5 }, outcomeText: 'Texto autosuficiente.' },
         learningPill: 'Poder de Negociación: Cortar servicios a clientes morosos frena la sangría de recursos.',
       }
     ),
