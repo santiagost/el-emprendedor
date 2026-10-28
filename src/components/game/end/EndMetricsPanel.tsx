@@ -1,4 +1,4 @@
-import { Award, DollarSign, Heart } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Award, DollarSign, Heart } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Metrics } from '../../../types/game';
 import type { MetricCurves } from '../../../game/endReport';
@@ -7,9 +7,9 @@ import { METRIC_LABELS, METRIC_ORDER } from './metricLabels';
 import Card from '../../common/Card';
 
 const UI: Record<keyof Metrics, { icon: LucideIcon; stroke: string; text: string }> = {
-  capital: { icon: DollarSign, stroke: '#0F9D58', text: 'text-emerald-700 dark:text-emerald-400' },
-  reputacion: { icon: Award, stroke: '#1B68D2', text: 'text-metric-reputacion dark:text-blue-400' },
-  bienestar: { icon: Heart, stroke: '#FF9800', text: 'text-amber-700 dark:text-amber-400' },
+  capital: { icon: DollarSign, stroke: 'var(--color-metric-capital)', text: 'text-metric-capital' },
+  reputacion: { icon: Award, stroke: 'var(--color-metric-reputacion)', text: 'text-metric-reputacion' },
+  bienestar: { icon: Heart, stroke: 'var(--color-metric-bienestar)', text: 'text-metric-bienestar' },
 };
 
 interface EndMetricsPanelProps {
@@ -45,15 +45,16 @@ export default function EndMetricsPanel({ metrics, curves }: EndMetricsPanelProp
                 <span className="flex items-baseline gap-2">
                   {curve && Math.abs(delta) >= 4 && (
                     <span
-                      className={`text-xs font-bold tabular-nums ${
-                        delta > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
+                      className={`inline-flex items-center gap-0.5 self-center text-xs font-bold tabular-nums ${
+                        delta > 0 ? text : 'text-metric-peligro'
                       }`}
                     >
-                      {delta > 0 ? '+' : ''}
-                      {delta}
+                      {delta > 0 ? <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" /> : <ArrowDownRight className="w-3.5 h-3.5" aria-hidden="true" />}
+                      {delta > 0 ? '+' : '−'}
+                      {Math.abs(delta)}
                     </span>
                   )}
-                  <span className="text-lg font-black tabular-nums text-slate-900 dark:text-slate-100">{metrics[key]}%</span>
+                  <span className="font-display text-lg font-black tabular-nums text-slate-900 dark:text-slate-100">{metrics[key]}%</span>
                 </span>
               </div>
               {curve && <Sparkline values={curve.series} stroke={stroke} label={METRIC_LABELS[key]} breaks={curves?.breaks} />}
@@ -63,7 +64,7 @@ export default function EndMetricsPanel({ metrics, curves }: EndMetricsPanelProp
       </div>
 
       {curves && (
-        <div className="relative h-4 text-2xs font-semibold text-slate-500 dark:text-slate-400" aria-hidden="true">
+        <div className="relative h-4 text-xs font-semibold text-slate-500 dark:text-slate-400" aria-hidden="true">
           {labels.map((l) => (
             <span key={l.phaseId} className="absolute -translate-x-1/2" style={{ left: `${l.left}%` }}>
               F{l.phaseId}

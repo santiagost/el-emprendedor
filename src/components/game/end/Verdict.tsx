@@ -20,7 +20,7 @@ const VERDICT_STYLES: Record<Verdict, { Icon: LucideIcon; badge: string }> = {
 export function VerdictBadge({ verdict }: { verdict: Verdict }) {
   const style = VERDICT_STYLES[verdict];
   return (
-    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-3xs font-bold ${style.badge}`}>
+    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-xs font-bold ${style.badge}`}>
       <style.Icon className={INLINE_ICON_CLASS} aria-hidden="true" />
       {VERDICT_LABELS[verdict]}
     </span>

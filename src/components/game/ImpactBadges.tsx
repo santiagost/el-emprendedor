@@ -4,6 +4,8 @@ import { DollarSign, Award, Heart } from 'lucide-react';
 interface ImpactBadgesProps {
   impactPreview: ImpactPreview;
   size?: 'sm' | 'md';
+  /** Dice el impacto con palabras ("Capital baja") en lugar de solo ícono y flecha (Setup, A4). */
+  withWords?: boolean;
 }
 
 const renderArrow = (direction: ImpactDirection) => {
@@ -12,51 +14,58 @@ const renderArrow = (direction: ImpactDirection) => {
   return '→';
 };
 
-const getColorClass = (direction: ImpactDirection, activeColor: string) => {
-  if (direction === 'up') return activeColor;
-  if (direction === 'down') return 'text-rose-600 dark:text-rose-400';
-  return 'text-slate-400 dark:text-slate-500';
+const DIRECTION_WORDS: Record<ImpactDirection, string> = {
+  up: 'sube',
+  down: 'baja',
+  neutral: 'se mantiene',
 };
 
-export default function ImpactBadges({ impactPreview, size = 'sm' }: ImpactBadgesProps) {
-  const isSm = size === 'sm';
-  const textClass = isSm ? 'text-3xs' : 'text-xs';
-  const iconClass = isSm ? 'w-3 h-3' : 'w-3.5 h-3.5';
+const getColorClass = (direction: ImpactDirection, activeColor: string) => {
+  if (direction === 'up') return activeColor;
+  if (direction === 'down') return 'text-metric-peligro';
+  return 'text-slate-500 dark:text-slate-400';
+};
+
+const METRICS = [
+  { key: 'capital', label: 'Capital', icon: DollarSign, color: 'text-metric-capital' },
+  { key: 'reputacion', label: 'Reputación', icon: Award, color: 'text-metric-reputacion' },
+  { key: 'bienestar', label: 'Bienestar', icon: Heart, color: 'text-metric-bienestar' },
+] as const;
+
+export default function ImpactBadges({ impactPreview, size = 'sm', withWords = false }: ImpactBadgesProps) {
+  const iconClass = size === 'sm' ? 'w-3 h-3' : 'w-3.5 h-3.5';
+
+  if (withWords) {
+    return (
+      <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+        {METRICS.map(({ key, label, icon: Icon, color }) => {
+          const direction = impactPreview[key];
+          return (
+            <span
+              key={key}
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${direction === 'down' ? 'border-dashed border-current' : 'border-current/30'} ${getColorClass(direction, color)}`}
+            >
+              <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+              {label} {DIRECTION_WORDS[direction]}
+            </span>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
-    <div className={`flex items-center gap-2 ${textClass} font-semibold font-mono`}>
-      <span
-        title={`Capital: ${impactPreview.capital}`}
-        className={`inline-flex items-center gap-0.5 ${getColorClass(
-          impactPreview.capital,
-          'text-emerald-600 dark:text-emerald-400'
-        )}`}
-      >
-        <DollarSign className={iconClass} />
-        {renderArrow(impactPreview.capital)}
-      </span>
-
-      <span
-        title={`Reputación: ${impactPreview.reputacion}`}
-        className={`inline-flex items-center gap-0.5 ${getColorClass(
-          impactPreview.reputacion,
-          'text-metric-reputacion dark:text-blue-400'
-        )}`}
-      >
-        <Award className={iconClass} />
-        {renderArrow(impactPreview.reputacion)}
-      </span>
-
-      <span
-        title={`Bienestar: ${impactPreview.bienestar}`}
-        className={`inline-flex items-center gap-0.5 ${getColorClass(
-          impactPreview.bienestar,
-          'text-amber-500 dark:text-amber-400'
-        )}`}
-      >
-        <Heart className={iconClass} />
-        {renderArrow(impactPreview.bienestar)}
-      </span>
+    <div className="flex items-center gap-2 text-xs font-semibold font-mono">
+      {METRICS.map(({ key, label, icon: Icon, color }) => (
+        <span
+          key={key}
+          title={`${label}: ${impactPreview[key]}`}
+          className={`inline-flex items-center gap-0.5 ${getColorClass(impactPreview[key], color)}`}
+        >
+          <Icon className={iconClass} />
+          {renderArrow(impactPreview[key])}
+        </span>
+      ))}
     </div>
   );
 }

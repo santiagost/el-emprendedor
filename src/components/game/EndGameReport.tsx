@@ -138,7 +138,7 @@ export default function EndGameReport({
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed text-left">
               En este segundo juego por equipos, gestionarás variables reales de mercado: estructura de costos fijos y variables, estrategia de precios elásticos y conquista de segmentos de mercado.
             </p>
-            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-400 text-left">
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 text-left">
               <Pin className={INLINE_ICON_CLASS} aria-hidden="true" /> <strong>Disponible en la plataforma TID:</strong> consultá con tu facilitador o docente para participar de la próxima simulación en vivo.
             </div>
             <Button size="sm" onClick={() => setShowCtaModal(false)} className="w-full">

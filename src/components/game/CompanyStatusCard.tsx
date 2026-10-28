@@ -49,7 +49,7 @@ export default function CompanyStatusCard({
         </div>
         <div className={`${iconBox} relative`} title={`${activeTags.length} efectos pasivos activos`}>
           <Layers className="w-4 h-4" />
-          <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-brand-cobalt text-white text-[9px] font-bold flex items-center justify-center tabular-nums">
+          <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-brand-cobalt text-white text-xs font-bold flex items-center justify-center tabular-nums">
             {activeTags.length}
           </span>
         </div>
@@ -68,7 +68,7 @@ export default function CompanyStatusCard({
             <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
               Mi empresa
             </h3>
-            <p className="text-3xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               ADN y rasgos pasivos
             </p>
           </div>
@@ -91,7 +91,7 @@ export default function CompanyStatusCard({
       {/* Perfil y Financiamiento */}
       <div className="grid grid-cols-1 gap-2 text-left">
         <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/70 space-y-0.5">
-          <span className="text-[9px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500">
+          <span className="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">
             Perfil de Fundador
           </span>
           <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
@@ -100,7 +100,7 @@ export default function CompanyStatusCard({
         </div>
 
         <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/70 space-y-0.5">
-          <span className="text-[9px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500">
+          <span className="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">
             Financiamiento
           </span>
           <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
@@ -112,7 +112,7 @@ export default function CompanyStatusCard({
       {/* Relato del estado actual */}
       {story.length > 0 && (
         <div className="space-y-1 pt-1 border-t border-slate-100 dark:border-slate-800/60">
-          <span className="text-3xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Cómo está tu empresa
           </span>
           <CompanyStory segments={story} className="text-xs" />
@@ -121,7 +121,7 @@ export default function CompanyStatusCard({
 
       {/* Rasgos y Tags Activos */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between gap-2 text-3xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/60">
+        <div className="flex items-center justify-between gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/60">
           <span className="flex items-center gap-1">
             <Layers className="w-3 h-3 text-slate-400" />
             Efectos pasivos ({activeTags.length})
@@ -132,7 +132,7 @@ export default function CompanyStatusCard({
         </div>
 
         {activeTags.length === 0 ? (
-          <p className="text-xs text-slate-400 dark:text-slate-500 italic py-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 italic py-1">
             No acumulaste rasgos pasivos aún. Se desbloquearán según tus elecciones.
           </p>
         ) : (
@@ -153,7 +153,7 @@ export default function CompanyStatusCard({
                 <div
                   key={tag}
                   title={tagConfig.description}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-2xs font-medium border ${
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border ${
                     isHarmful
                       ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-300'
                       : hasMod
@@ -164,7 +164,7 @@ export default function CompanyStatusCard({
                   <TagIcon className="w-2.5 h-2.5 opacity-70" />
                   <span>{tagConfig.label}</span>
                   {hasMod && (
-                    <span className="text-3xs opacity-80 font-bold ml-0.5">
+                    <span className="text-xs opacity-80 font-bold ml-0.5">
                       {mods.capital ? `${mods.capital > 0 ? '+' : ''}${mods.capital} Cap ` : ''}
                       {mods.bienestar ? `${mods.bienestar > 0 ? '+' : ''}${mods.bienestar} Bien ` : ''}
                       {mods.reputacion ? `${mods.reputacion > 0 ? '+' : ''}${mods.reputacion} Rep ` : ''}

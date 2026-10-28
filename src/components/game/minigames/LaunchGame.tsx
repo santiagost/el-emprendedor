@@ -208,7 +208,7 @@ function LaunchBoard({
             })}
           </ul>
           {reasons.length > 0 && (
-            <p className="text-2xs leading-snug text-slate-500 dark:text-slate-400">
+            <p className="text-xs leading-snug text-slate-500 dark:text-slate-400">
               Tus decisiones pesan:{' '}
               {reasons.map((r, i) => (
                 <span key={r.label}>

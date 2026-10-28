@@ -1,4 +1,4 @@
-import { AlertTriangle, Zap, Lightbulb } from 'lucide-react';
+import { AlertTriangle, Zap, Lightbulb, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import type { DecisionLogEntry, GameEvent } from '../../types/game';
 import type { MetricDeltas } from '../../game/ui';
 import { PERFORMANCE_HINT, PERFORMANCE_LABEL } from '../../game/minigames/performance';
@@ -9,9 +9,9 @@ import { INLINE_ICON_CLASS } from '../common/iconStyles';
 import Card from '../common/Card';
 
 const METRICS = [
-  { key: 'capital', label: 'Capital' },
-  { key: 'reputacion', label: 'Reputación' },
-  { key: 'bienestar', label: 'Bienestar' },
+  { key: 'capital', label: 'Capital', up: 'bg-metric-capital/15 text-metric-capital' },
+  { key: 'reputacion', label: 'Reputación', up: 'bg-metric-reputacion/15 text-metric-reputacion' },
+  { key: 'bienestar', label: 'Bienestar', up: 'bg-metric-bienestar/15 text-metric-bienestar' },
 ] as const;
 
 /** Las píldoras didácticas vienen como "Título: texto": se separan para no anidar tres textos. */
@@ -92,7 +92,7 @@ export default function EventCard({
             <p className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
               {isInterruption ? 'Analizando impacto de la crisis…' : 'Calculando consecuencias…'}
             </p>
-            <p className="text-2xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Simulando reacción de mercado y métricas vitales
             </p>
           </div>
@@ -106,7 +106,7 @@ export default function EventCard({
           {layer >= 0 && lastDecision && (
             <div className="animate-in fade-in duration-200">
               <div className="px-5 sm:px-7 py-5 bg-blue-50 dark:bg-indigo-950/40 border-b border-slate-200 dark:border-slate-800">
-                <p className="text-2xs font-extrabold uppercase tracking-widest text-brand-cobalt dark:text-indigo-300">Elegiste</p>
+                <p className="text-xs font-extrabold uppercase tracking-widest text-brand-cobalt dark:text-indigo-300">Elegiste</p>
                 <p className="mt-1 text-lg sm:text-2xl font-bold leading-snug text-brand-navy dark:text-slate-100">
                   “{personalize(lastDecision.optionText, playerName)}”
                 </p>
@@ -118,22 +118,26 @@ export default function EventCard({
                 )}
               </div>
 
-              <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-2.5 px-5 sm:px-7 pt-4">
-                {METRICS.map(({ key, label }) => {
+              {/* Deltas en una fila de chips (A2): el color es el de la métrica; flecha y signo marcan la dirección y las bajas van en coral punteado (B1) */}
+              <div className="flex flex-wrap gap-2 px-5 sm:px-7 pt-4">
+                {METRICS.map(({ key, label, up }) => {
                   const value = decisionDeltas[key];
                   if (!value) return null;
                   const after = lastDecision.metricsAfter?.[key];
                   const before = after !== undefined ? after - value : undefined;
+                  const DeltaIcon = value > 0 ? ArrowUpRight : ArrowDownRight;
                   return (
-                    <div key={key} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 p-3">
-                      <p className="text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
-                      <p className={`text-2xl font-extrabold tabular-nums ${value > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                    <span
+                      key={key}
+                      title={after !== undefined && before !== undefined ? `${label}: ${before}% → ${after}%` : undefined}
+                      className={`inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full ${value > 0 ? up : 'border-[1.5px] border-dashed border-metric-peligro text-metric-peligro'}`}
+                    >
+                      <DeltaIcon className="w-4 h-4" aria-hidden="true" />
+                      <span className="font-display text-base font-extrabold tabular-nums">
                         {value > 0 ? '+' : '−'}{Math.abs(value)}
-                      </p>
-                      {after !== undefined && before !== undefined && (
-                        <p className="text-2xs text-slate-500 dark:text-slate-400 tabular-nums">{before}% → {after}%</p>
-                      )}
-                    </div>
+                      </span>
+                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{label}</span>
+                    </span>
                   );
                 })}
               </div>

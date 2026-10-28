@@ -40,12 +40,12 @@ export default function Sparkline({ values, stroke, label, breaks = [], classNam
           vectorEffect="non-scaling-stroke"
         />
       ))}
-      <polygon points={`0,${H} ${line} ${end[0]},${H}`} fill={stroke} opacity={0.1} />
-      <polyline points={line} fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      <polygon points={`0,${H} ${line} ${end[0]},${H}`} style={{ fill: stroke }} opacity={0.1} />
+      <polyline points={line} fill="none" style={{ stroke }} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
       <polyline
         points={`${end[0]},${end[1]} ${end[0]},${end[1]}`}
         fill="none"
-        stroke={stroke}
+        style={{ stroke }}
         strokeWidth={6}
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"

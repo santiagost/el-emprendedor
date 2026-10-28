@@ -21,11 +21,14 @@ No escribas colores en hex dentro de las clases (`bg-[#0052CC]`): usá el token.
 | `night-raised-hover` / `-press` | `#14304D` / `#18395B` | Hover y presionado de `night-raised` |
 | `night-selected` | `#0E2C52` | Tarjeta elegida en Setup, en oscuro |
 | `night-sunken` | `#0A1B2E` | Fondos hundidos (laboratorio de minijuegos) |
-| `metric-capital` / `-reputacion` / `-bienestar` | `#0F9D58` / `#1B68D2` / `#FF9800` | Color de cada métrica en claro |
+| `metric-capital` / `-reputacion` / `-bienestar` | claro `#0B8A5C` / `#6D4FD6` / `#A86200`; oscuro `#3DDC97` / `#A78BFA` / `#FFB547` | Color de cada métrica. Un color, un significado: Reputación es violeta y el azul queda para la acción. Las subidas usan el color de su métrica con flecha y signo |
+| `metric-peligro` | claro `#C8372C`; oscuro `#FF6B5E` | Bajas de métricas (coral, con borde punteado en los chips) |
 
-Textos chicos: `text-2xs` (11 px) y `text-3xs` (10 px). Desde 12 px se usa la escala de Tailwind (`text-xs`, `text-sm`…). Los textos de 8 y 9 px del HUD quedan como valores sueltos hasta el rediseño de esa pantalla.
+Tipografía: `font-sans` es Figtree (texto) y `font-display` es Bricolage Grotesque (títulos `h1`–`h3`, cifras del HUD y sellos). Las cifras llevan `tabular-nums`.
 
-Fuera de las clases quedan algunos hex en código: el trazo de las curvas de métricas (`PhaseRecap`, `EndMetricsPanel`), los colores del confeti (`lib/fx.ts`) y los patrones SVG de la ruleta. Si cambia un color de métrica, cambialo también ahí.
+Tamaño mínimo: 12 px (`text-xs`). No hay tamaños más chicos. Los textos de ayuda usan `text-slate-500` en claro y `dark:text-slate-400` en oscuro para pasar AA.
+
+Los tokens `metric-*` cambian solos entre claro y oscuro (se redefinen en `.dark`). Las curvas de métricas (`PhaseRecap`, `EndMetricsPanel`) los toman con `var(--color-metric-…)`. Fuera de las clases quedan algunos hex en código: los colores del confeti (`lib/fx.ts`) y los patrones SVG de la ruleta. Si cambia un color de métrica, cambialo también ahí.
 
 ---
 
@@ -50,7 +53,7 @@ Regla de `className`: suma ancho, márgenes, layout, animación o estado `disabl
 - `EventCard`: carta del dilema, suspenso "Calculando…" y resultado por capas.
 - `OptionList`: alternativas del dilema.
 - `OutcomeActions`: "Procesando…", "Saltar animación" o el botón para avanzar.
-- `CompanyDrawer` y `ExitConfirmModal`: ventanas sobre el juego.
+- `CompanyDrawer`, `GameMenu` (menú de partida en móvil: sonido, efectos, tema y Reiniciar) y `ExitConfirmModal`: ventanas sobre el juego.
 - `useOutcomeReveal` (hook): suspenso, deltas del HUD, sonido, vibración y confeti de métricas.
 
 ---

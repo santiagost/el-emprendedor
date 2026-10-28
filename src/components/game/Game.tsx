@@ -9,6 +9,7 @@ import EndGameReport from './EndGameReport';
 import PhaseRecap from './PhaseRecap';
 import CompanyStatusCard from './CompanyStatusCard';
 import CompanyDrawer from './CompanyDrawer';
+import GameMenu from './GameMenu';
 import ExitConfirmModal from './ExitConfirmModal';
 import GameHeader from './GameHeader';
 import EventCard from './EventCard';
@@ -18,7 +19,7 @@ import OutcomeActions from './OutcomeActions';
 import InterruptionStage from './InterruptionStage';
 import MinigameStage from './minigames/MinigameStage';
 import { useEffectsToggle } from '../../lib/motion';
-import type { PhaseId } from '../../game/phases';
+import { PHASES, type PhaseId } from '../../game/phases';
 import { buildPhaseRecap } from '../../game/recap';
 import { INTUITION_FIRST_PHASE } from '../../game/intuition';
 import { stageFor } from '../../game/stage';
@@ -52,6 +53,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
   // A7: panel lateral "Mi empresa" (colapsable en escritorio, drawer en pantallas chicas)
   const [companyCollapsed, setCompanyCollapsed] = useStoredFlag('el_emprendedor_company_panel_collapsed', false);
   const [showCompanyDrawer, setShowCompanyDrawer] = useState(false);
+  const [showGameMenu, setShowGameMenu] = useState(false);
 
   const {
     gameState,
@@ -215,7 +217,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
   // Atajos de teclado en Desktop (1, 2, 3 para elegir opción; Espacio/Enter para avanzar o saltar)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (showExitConfirm || showCompanyDrawer || showIncomingAlert || isRevealing || pendingMinigame) return;
+      if (showExitConfirm || showCompanyDrawer || showGameMenu || showIncomingAlert || isRevealing || pendingMinigame) return;
 
       if (step === 'decision' && currentEvent && status === 'playing') {
         if (e.key === '1' && currentEvent.options[0]) {
@@ -239,7 +241,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [step, currentEvent, status, currentTurn, showExitConfirm, showCompanyDrawer, showIncomingAlert, advance, outcomeSequence, isRevealing, pendingMinigame, handleDecide]);
+  }, [step, currentEvent, status, currentTurn, showExitConfirm, showCompanyDrawer, showGameMenu, showIncomingAlert, advance, outcomeSequence, isRevealing, pendingMinigame, handleDecide]);
 
   // Si la partida terminó y estamos en el paso final
   if (step === 'ended') {
@@ -280,6 +282,8 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
           key={currentEvent.id}
           event={displayEvent}
           stage={interruptionStage}
+          turnLabel={`Turno ${currentTurn} de ${maxTurns} · ${PHASES.find((p) => p.id === phaseId)?.label ?? ''}`}
+          metrics={displayMetrics}
           onDone={() => {
             setSeenAlertForEventId(currentEvent.id);
             setRevealedEventId(currentEvent.id);
@@ -305,6 +309,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
         soundEnabled={soundEnabled}
         onToggleSound={toggleSound}
         onOpenCompany={() => setShowCompanyDrawer(true)}
+        onOpenMenu={() => setShowGameMenu(true)}
         onExit={() => setShowExitConfirm(true)}
       />
 
@@ -315,7 +320,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
             recap={recapOnScreen}
             initialCompleted={initialRecapPhaseId === recapOnScreen.phaseId}
             onContinue={continueFromRecap}
-            disabled={showExitConfirm || showCompanyDrawer}
+            disabled={showExitConfirm || showCompanyDrawer || showGameMenu}
           />
         </div>
       ) : (
@@ -355,7 +360,7 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
           {/* Minijuego de la opción elegida (Sprint 3) */}
           {status === 'playing' && displayEvent && step === 'decision' && pendingMinigame && (
             <div className="space-y-2">
-              <p className="px-1 text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <p className="px-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Elegiste: <span className="normal-case font-medium text-slate-800 dark:text-slate-200">"{displayEvent.options[pendingMinigame.optionIndex].text}"</span>
               </p>
               <MinigameStage
@@ -410,6 +415,20 @@ export default function Game({ arquetipo, financiamiento, playerName, onResetToS
           financiamiento={financiamiento}
           activeTags={gameState.activeTags}
           onClose={() => setShowCompanyDrawer(false)}
+        />
+      )}
+
+      {/* Menú de partida en móvil (A5) */}
+      {showGameMenu && (
+        <GameMenu
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          fxEnabled={fxEnabled}
+          onToggleFx={toggleFx}
+          soundEnabled={soundEnabled}
+          onToggleSound={toggleSound}
+          onExit={() => setShowExitConfirm(true)}
+          onClose={() => setShowGameMenu(false)}
         />
       )}
 

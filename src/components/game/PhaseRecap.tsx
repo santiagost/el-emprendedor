@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { ArrowRight, Award, DollarSign, Flag, Heart } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, ArrowUpRight, Award, DollarSign, Flag, Heart } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Metrics } from '../../types/game';
 import type { PhaseRecap as PhaseRecapData } from '../../game/recap';
@@ -18,9 +18,9 @@ interface PhaseRecapProps {
 }
 
 const METRICS_UI: { key: keyof Metrics; label: string; icon: LucideIcon; stroke: string; text: string }[] = [
-  { key: 'capital', label: 'Capital', icon: DollarSign, stroke: '#0F9D58', text: 'text-emerald-600 dark:text-emerald-400' },
-  { key: 'reputacion', label: 'Reputación', icon: Award, stroke: '#1B68D2', text: 'text-metric-reputacion dark:text-blue-400' },
-  { key: 'bienestar', label: 'Bienestar', icon: Heart, stroke: '#FF9800', text: 'text-amber-600 dark:text-amber-400' },
+  { key: 'capital', label: 'Capital', icon: DollarSign, stroke: 'var(--color-metric-capital)', text: 'text-metric-capital' },
+  { key: 'reputacion', label: 'Reputación', icon: Award, stroke: 'var(--color-metric-reputacion)', text: 'text-metric-reputacion' },
+  { key: 'bienestar', label: 'Bienestar', icon: Heart, stroke: 'var(--color-metric-bienestar)', text: 'text-metric-bienestar' },
 ];
 
 const SPARK_W = 100;
@@ -42,7 +42,7 @@ function Sparkline({ values, stroke, label }: { values: number[]; stroke: string
       <polyline
         points={points.map(([x, y]) => `${x},${y}`).join(' ')}
         fill="none"
-        stroke={stroke}
+        style={{ stroke }}
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -52,7 +52,7 @@ function Sparkline({ values, stroke, label }: { values: number[]; stroke: string
       <polyline
         points={`${last[0]},${last[1]} ${last[0]},${last[1]}`}
         fill="none"
-        stroke={stroke}
+        style={{ stroke }}
         strokeWidth={6}
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
@@ -98,7 +98,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
   return (
     <section aria-label={`Resumen de la fase ${phase.id}`} className="w-full max-w-5xl mx-auto space-y-5">
       <div className="space-y-1.5 animate-slide-up-fade">
-        <p className="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-widest text-brand-cobalt dark:text-indigo-400">
+        <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-brand-cobalt dark:text-indigo-400">
           <Flag className="w-3.5 h-3.5" /> Fin de la Fase {phase.id}
         </p>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight">{phase.label}</h2>
@@ -118,7 +118,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
               return (
                 <div key={key} className="space-y-1.5 min-w-0">
                   <div className="flex items-center justify-between gap-1">
-                    <span className={`flex items-center gap-1 text-3xs sm:text-2xs font-bold uppercase tracking-wider ${text}`}>
+                    <span className={`flex items-center gap-1 text-xs font-bold uppercase tracking-wider ${text}`}>
                       <Icon className="w-3.5 h-3.5 shrink-0" />
                       <span className="truncate">{label}</span>
                     </span>
@@ -129,17 +129,18 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
                     <div className="h-9 lg:h-12" />
                   )}
                   <div className="flex items-baseline justify-between">
-                    <span className="text-sm sm:text-base font-black tabular-nums text-slate-900 dark:text-slate-100">
+                    <span className="font-display text-sm sm:text-base font-black tabular-nums text-slate-900 dark:text-slate-100">
                       {recap.endMetrics[key]}%
                     </span>
                     {showDelta && (
                       <span
-                        className={`text-2xs font-bold tabular-nums ${
-                          (delta as number) > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                        className={`inline-flex items-center gap-0.5 text-xs font-bold tabular-nums ${
+                          (delta as number) > 0 ? text : 'text-metric-peligro'
                         }`}
                       >
-                        {(delta as number) > 0 ? '+' : ''}
-                        {delta}
+                        {(delta as number) > 0 ? <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" /> : <ArrowDownRight className="w-3.5 h-3.5" aria-hidden="true" />}
+                        {(delta as number) > 0 ? '+' : '−'}
+                        {Math.abs(delta as number)}
                       </span>
                     )}
                   </div>
@@ -153,7 +154,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
           {/* ② Perfil de la fase y titular */}
           {sequence.currentStep >= 1 && (
             <div className="space-y-2 animate-slide-up-fade">
-              <span className="inline-flex px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/70 text-2xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+              <span className="inline-flex px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/70 text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
                 {recap.trend.label}
               </span>
               <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 leading-snug">{recap.headline}</p>
@@ -188,7 +189,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
               <span>{nextPhase ? `Empezar Fase ${nextPhase.id}: ${nextPhase.label}` : 'Continuar'}</span>
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <p className="text-center text-2xs text-slate-400 dark:text-slate-500 hidden sm:block">
+            <p className="text-center text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
               Presioná{' '}
               <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Espacio</kbd> o{' '}
               <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">Enter</kbd> para continuar
@@ -202,7 +203,7 @@ export default function PhaseRecap({ recap, initialCompleted = false, onContinue
             className="w-full py-3.5 px-4 text-xs sm:text-sm rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span>Saltar animación</span>
-            <span className="text-3xs text-slate-400 font-mono hidden sm:inline">(Espacio)</span>
+            <span className="text-xs text-slate-500 font-mono hidden sm:inline">(Espacio)</span>
           </Button>
         )}
       </div>

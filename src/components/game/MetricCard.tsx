@@ -76,29 +76,29 @@ export default function MetricCard({
     };
   }, [deltaKey, delta, delayMs]);
 
-  // Variantes temáticas (Stitch: Capital Esmeralda, Reputación Cobalto, Bienestar Ámbar)
+  // Un color por métrica (tokens metric-*, que ya cambian entre claro y oscuro)
   const variantStyles = {
     capital: {
-      text: 'text-emerald-600 dark:text-emerald-400',
-      bar: 'bg-metric-capital dark:bg-emerald-500',
-      iconText: 'text-metric-capital dark:text-emerald-400',
+      text: 'text-metric-capital',
+      bar: 'bg-metric-capital',
+      iconText: 'text-metric-capital',
     },
     reputacion: {
-      text: 'text-metric-reputacion dark:text-blue-400',
-      bar: 'bg-metric-reputacion dark:bg-blue-500',
-      iconText: 'text-metric-reputacion dark:text-blue-400',
+      text: 'text-metric-reputacion',
+      bar: 'bg-metric-reputacion',
+      iconText: 'text-metric-reputacion',
     },
     bienestar: {
-      text: 'text-amber-600 dark:text-amber-400',
-      bar: 'bg-metric-bienestar dark:bg-amber-400',
-      iconText: 'text-metric-bienestar dark:text-amber-400',
+      text: 'text-metric-bienestar',
+      bar: 'bg-metric-bienestar',
+      iconText: 'text-metric-bienestar',
     },
   }[variant];
 
   // Configuración de estado especial
   let cardClasses =
     'relative flex flex-col items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all duration-300';
-  let valueClasses = 'text-xs sm:text-sm font-extrabold flex items-center justify-center tabular-nums';
+  let valueClasses = 'font-display text-xs sm:text-sm font-extrabold flex items-center justify-center tabular-nums';
   let barClasses = 'h-full rounded-full';
 
   if (pulse === 'positive') {
@@ -111,13 +111,13 @@ export default function MetricCard({
     // Estado Dorado al Máximo (100%)
     cardClasses +=
       ' metric-max-glow scale-[1.03] z-10 bg-gradient-to-b from-amber-50 to-amber-100/50 dark:from-amber-950/60 dark:via-slate-900 dark:to-slate-950 border-amber-400 text-amber-700 dark:text-amber-300 shadow-md shadow-amber-500/20';
-    valueClasses = 'text-xs sm:text-sm font-black text-amber-600 dark:text-amber-300 tracking-tight flex items-center gap-0.5 tabular-nums';
+    valueClasses = 'font-display text-xs sm:text-sm font-black text-amber-600 dark:text-amber-300 tracking-tight flex items-center gap-0.5 tabular-nums';
     barClasses += ' bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.8)]';
   } else if (isCritical) {
     // Estado Crítico / Alerta Peligro (<= 25%)
     cardClasses +=
       ' metric-danger-blink bg-rose-50 dark:bg-rose-950/90 border-rose-500 text-rose-700 dark:text-rose-300 shadow-lg shadow-rose-950/30 dark:shadow-rose-950/70 z-10';
-    valueClasses = 'text-xs sm:text-sm font-black text-rose-600 dark:text-rose-400 tracking-tight flex items-center gap-1 tabular-nums';
+    valueClasses = 'font-display text-xs sm:text-sm font-black text-rose-600 dark:text-rose-400 tracking-tight flex items-center gap-1 tabular-nums';
     barClasses += ' bg-gradient-to-r from-rose-600 to-red-500 shadow-[0_0_12px_rgba(244,63,94,0.9)]';
   } else {
     // Normal
@@ -133,11 +133,11 @@ export default function MetricCard({
   return (
     <div className={cardClasses}>
       {/* Delta flotante animado con su respectivo stagger */}
-      <FloatingDelta key={deltaKey} delta={delta} delayMs={delayMs} />
+      <FloatingDelta key={deltaKey} delta={delta} upClassName={variantStyles.text} delayMs={delayMs} />
 
       {/* Badge de estado superior */}
-      <div className="w-full flex items-center justify-between text-3xs font-semibold mb-1">
-        <span className="flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[9px] sm:text-[10px] font-bold">
+      <div className="w-full flex items-center justify-between text-xs font-semibold mb-1">
+        <span className="flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-wider text-xs font-bold">
           <Icon
             className={`w-3.5 h-3.5 mr-1 shrink-0 ${
               isCalculating
@@ -153,15 +153,15 @@ export default function MetricCard({
         </span>
 
         {isCalculating ? (
-          <span className="flex items-center gap-1 text-[8px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider animate-pulse">
+          <span className="flex items-center gap-1 text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider animate-pulse">
             Calculando…
           </span>
         ) : isMax ? (
-          <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[8px] font-bold uppercase tracking-wider border border-amber-400/50">
+          <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-bold uppercase tracking-wider border border-amber-400/50">
             <CircleStar className="w-2.5 h-2.5" /> MÁX
           </span>
         ) : isCritical ? (
-          <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-rose-600/20 dark:bg-rose-600/30 text-rose-700 dark:text-rose-200 text-[8px] font-extrabold uppercase tracking-wider border border-rose-500 animate-pulse">
+          <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-rose-600/20 dark:bg-rose-600/30 text-rose-700 dark:text-rose-200 text-xs font-extrabold uppercase tracking-wider border border-rose-500 animate-pulse">
             <AlertTriangle className="w-2.5 h-2.5" /> CRÍTICO
           </span>
         ) : null}

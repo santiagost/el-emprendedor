@@ -1,4 +1,4 @@
-import { DollarSign, Award, Heart, RotateCcw, Building2 } from 'lucide-react';
+import { DollarSign, Award, Heart, RotateCcw, Building2, Ellipsis } from 'lucide-react';
 import type { Archetype, Financing, Metrics } from '../../types/game';
 import type { Theme } from '../../hooks/useTheme';
 import type { HudDeltas } from '../../hooks/useOutcomeReveal';
@@ -31,6 +31,8 @@ interface GameHeaderProps {
   soundEnabled: boolean;
   onToggleSound: () => void;
   onOpenCompany: () => void;
+  /** Abre el menú de partida (solo móvil): sonido, efectos, tema y Reiniciar. */
+  onOpenMenu: () => void;
   onExit: () => void;
 }
 
@@ -53,6 +55,7 @@ export default function GameHeader({
   soundEnabled,
   onToggleSound,
   onOpenCompany,
+  onOpenMenu,
   onExit,
 }: GameHeaderProps) {
   const currentPhase = PHASES.find((p) => p.id === phaseId) ?? PHASES[0];
@@ -62,7 +65,7 @@ export default function GameHeader({
       <div className="flex justify-between items-center text-xs font-semibold text-slate-500 dark:text-slate-400">
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {recapPhaseId ? (
-            <span className="uppercase tracking-widest text-amber-600 dark:text-amber-300 font-bold text-2xs sm:text-xs">
+            <span className="uppercase tracking-widest text-amber-600 dark:text-amber-300 font-bold text-xs">
               Fase {recapPhaseId} completada
             </span>
           ) : (
@@ -71,7 +74,7 @@ export default function GameHeader({
                 TURNO {currentTurn} / {maxTurns}
               </span>
               <span className="text-slate-300 dark:text-slate-700">•</span>
-              <span className="uppercase tracking-widest text-brand-cobalt dark:text-indigo-400 font-bold text-2xs sm:text-xs">
+              <span className="uppercase tracking-widest text-brand-cobalt dark:text-indigo-400 font-bold text-xs">
                 Fase {phaseId}<span className="hidden sm:inline">: {currentPhase.label}</span>
               </span>
             </>
@@ -82,29 +85,40 @@ export default function GameHeader({
           </span>
         </div>
 
-        {/* Botones de acción del header: Mi empresa (pantallas chicas), sonido, efectos, tema y Reiniciar */}
+        {/* Botones de acción del header. Móvil: Mi empresa y menú. Desde sm: Mi empresa (hasta lg), sonido, efectos, tema y Reiniciar */}
         <div className="flex items-center gap-2">
           <Button
             variant="toolbar"
             onClick={onOpenCompany}
             title="Mi empresa"
             aria-label="Abrir panel Mi empresa"
-            className="lg:hidden"
+            className="lg:hidden min-h-11 min-w-11 sm:min-h-0 sm:min-w-0"
           >
             <Building2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
             <span className="hidden min-[420px]:inline">Mi empresa</span>
           </Button>
-          <SoundToggle soundEnabled={soundEnabled} onToggle={onToggleSound} />
-          <EffectsToggle fxEnabled={fxEnabled} onToggle={onToggleFx} />
-          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
           <Button
             variant="toolbar"
-            onClick={onExit}
-            title="Cambiar estrategia / Volver al inicio"
+            onClick={onOpenMenu}
+            title="Opciones de partida"
+            aria-label="Opciones de partida"
+            className="sm:hidden min-h-11 min-w-11"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-            <span className="hidden sm:inline">Reiniciar</span>
+            <Ellipsis className="w-4 h-4 text-slate-500 dark:text-slate-400" />
           </Button>
+          <div className="hidden sm:flex items-center gap-2">
+            <SoundToggle soundEnabled={soundEnabled} onToggle={onToggleSound} />
+            <EffectsToggle fxEnabled={fxEnabled} onToggle={onToggleFx} />
+            <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+            <Button
+              variant="toolbar"
+              onClick={onExit}
+              title="Cambiar estrategia / Volver al inicio"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+              <span className="hidden sm:inline">Reiniciar</span>
+            </Button>
+          </div>
         </div>
       </div>
 

@@ -4,7 +4,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Figtree', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Títulos, cifras y sellos. */
+  --font-display: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif;
 
   /* Marca */
   --color-brand-navy: #0A2540;
@@ -23,14 +25,12 @@
   --color-night-raised-press: #18395B;
   --color-night-selected: #0E2C52;
 
-  /* Color propio de cada métrica (en oscuro cada componente usa el tono emerald, blue o amber de Tailwind). */
-  --color-metric-capital: #0F9D58;
-  --color-metric-reputacion: #1B68D2;
-  --color-metric-bienestar: #FF9800;
-
-  /* Textos chicos: etiquetas, chips y ayudas. Por encima de 11 px se usa la escala de Tailwind (text-xs = 12 px). */
-  --text-2xs: 11px;
-  --text-3xs: 10px;
+  /* Un color, un significado: cada métrica tiene el suyo y peligro marca las bajas. Valores del modo claro
+     (pasan 4,5:1 sobre blanco); el modo oscuro los redefine en .dark. */
+  --color-metric-capital: #0B8A5C;
+  --color-metric-reputacion: #6D4FD6;
+  --color-metric-bienestar: #A86200;
+  --color-metric-peligro: #C8372C;
 }
 
 :root {
@@ -40,9 +40,19 @@
 }
 
 .dark {
+  --color-metric-capital: #3DDC97;
+  --color-metric-reputacion: #A78BFA;
+  --color-metric-bienestar: #FFB547;
+  --color-metric-peligro: #FF6B5E;
   --danger-bg-start: rgba(15, 23, 42, 0.95);
   --danger-bg-mid: rgba(88, 5, 25, 0.9);
   --danger-glow: rgba(244, 63, 94, 0.75);
+}
+
+@layer base {
+  h1, h2, h3 {
+    font-family: var(--font-display);
+  }
 }
 
 body {

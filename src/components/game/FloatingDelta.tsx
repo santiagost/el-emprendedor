@@ -3,11 +3,13 @@ import { useReducedMotion } from '../../lib/motion';
 
 interface FloatingDeltaProps {
   delta?: number;
+  /** Clases de color de la métrica para las subidas; las bajas van en coral punteado. */
+  upClassName?: string;
   delayMs?: number;
   onComplete?: () => void;
 }
 
-export default function FloatingDelta({ delta, delayMs = 0, onComplete }: FloatingDeltaProps) {
+export default function FloatingDelta({ delta, upClassName = '', delayMs = 0, onComplete }: FloatingDeltaProps) {
   const isReducedMotion = useReducedMotion();
   const [visible, setVisible] = useState(true);
 
@@ -23,8 +25,8 @@ export default function FloatingDelta({ delta, delayMs = 0, onComplete }: Floati
   const isPositive = delta > 0;
   const sign = isPositive ? '+' : '';
   const colorClasses = isPositive
-    ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-50/90 dark:bg-emerald-950/80 shadow-emerald-500/20'
-    : 'text-rose-600 dark:text-rose-400 border-rose-500/30 bg-rose-50/90 dark:bg-rose-950/80 shadow-rose-500/20';
+    ? `bg-white/95 dark:bg-night-surface/95 border-current/40 ${upClassName}`
+    : 'text-metric-peligro border-dashed border-metric-peligro bg-white/95 dark:bg-night-surface/95';
 
   return (
     <div
