@@ -265,7 +265,7 @@ export default function Game({ arquetipo, financiamiento, playerName, maxTurns: 
   );
 
   // Chequeo de alerta animada para interrupciones (Crisis o Imprevistos)
-  const isInterruption = currentEvent?.kind === 'crisis' || currentEvent?.kind === 'unforeseen';
+  const isInterruption = currentEvent?.kind === 'crisis' || currentEvent?.kind === 'unforeseen' || currentEvent?.kind === 'rescue';
   const interruptionStage = stageFor(currentEvent);
   const showIncomingAlert = Boolean(
     interruptionStage &&
@@ -462,7 +462,7 @@ export default function Game({ arquetipo, financiamiento, playerName, maxTurns: 
               hidden={showIncomingAlert}
               justRevealed={justRevealed}
               disabled={isRevealing}
-              showIntuition={phaseId >= INTUITION_FIRST_PHASE && displayEvent.kind !== 'crisis' && displayEvent.kind !== 'unforeseen'}
+              showIntuition={phaseId >= INTUITION_FIRST_PHASE && displayEvent.kind !== 'crisis' && displayEvent.kind !== 'unforeseen' && displayEvent.kind !== 'rescue'}
               pickedIndex={pickedIndex}
               onPick={(idx) => pickOption(idx, currentTurn)}
             />
@@ -476,6 +476,8 @@ export default function Game({ arquetipo, financiamiento, playerName, maxTurns: 
               nextLabel={
                 isGameOverOrVictory
                   ? 'Ver Desenlace Final'
+                  : gameState.rescuePending
+                  ? 'Continuar'
                   : isInterruption
                   ? 'Continuar al Siguiente Turno'
                   : 'Siguiente Turno'

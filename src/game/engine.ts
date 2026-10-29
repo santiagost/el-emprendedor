@@ -1,5 +1,5 @@
 import type { Performance, GameEvent, GameState, GameStep, Archetype, Financing, PendingEvent, Metrics, GameStatus, GameOption, GameEventKind } from '../types/game';
-import { GAME_EVENTS, MAIN_EVENTS, CRISIS_EVENTS, UNFORESEEN_EVENTS } from '../data/events/index';
+import { GAME_EVENTS, MAIN_EVENTS, CRISIS_EVENTS, UNFORESEEN_EVENTS, RESCUE_EVENTS } from '../data/events/index';
 import { MAX_TURNS, phaseForTurn, PHASES, type PhaseId } from './phases';
 import type { RNG } from './rng';
 import { TAGS, type Tag } from '../data/tags';
@@ -327,6 +327,15 @@ export function scaleEffects(effects: Partial<Metrics>, performance: Performance
 
 const isGameOver = (status: GameStatus): boolean => status.startsWith('game_over');
 
+/** Si dos métricas tocan 0 a la vez, el rescate atiende primero a la primera de esta lista. */
+const RESCUE_METRIC_ORDER: (keyof Metrics)[] = ['capital', 'bienestar', 'reputacion'];
+
+/** El evento de rescate que toca jugar ahora, o null si no hay un rescate pendiente. */
+export function selectRescueEvent(state: GameState): GameEvent | null {
+  if (state.status !== 'playing' || !state.rescuePending) return null;
+  return RESCUE_EVENTS.find((ev) => ev.id === `rescate_${state.rescuePending}`) ?? null;
+}
+
 /** Primera fase donde se muestra la tendencia y puede fallar; desde la última se corrige si salieron pocas. */
 const SURPRISE_FIRST_PHASE: PhaseId = 3;
 const SURPRISE_LAST_PHASE: PhaseId = 4;
@@ -427,8 +436,12 @@ export function applyDecision(
     });
   }
 
-  const status = evaluateGameStatus(nextMetrics, state.currentTurn, state.maxTurns);
-  const resolvedKind = eventKind ?? (eventId.startsWith('crisis_') ? 'crisis' : eventId.startsWith('imp_') ? 'unforeseen' : 'main');
+  // La primera vez que una métrica toca 0 no se pierde: queda pendiente su evento de rescate
+  const rescued = !state.rescueUsed && isGameOver(evaluateGameStatus(nextMetrics, state.currentTurn, state.maxTurns))
+    ? RESCUE_METRIC_ORDER.find((key) => nextMetrics[key] <= 0)
+    : undefined;
+  const status = rescued ? 'playing' : evaluateGameStatus(nextMetrics, state.currentTurn, state.maxTurns);
+  const resolvedKind = eventKind ?? (eventId.startsWith('crisis_') ? 'crisis' : eventId.startsWith('imp_') ? 'unforeseen' : eventId.startsWith('rescate_') ? 'rescue' : 'main');
 
   const logEntry = {
     turn: state.currentTurn,
@@ -457,6 +470,8 @@ export function applyDecision(
     lastDecision: logEntry,
     unforeseenEventsPlayed: (state.unforeseenEventsPlayed ?? 0) + (resolvedKind === 'unforeseen' ? 1 : 0),
     surprisesPlayed: (state.surprisesPlayed ?? 0) + (resolved.surprised ? 1 : 0),
+    ...(state.rescueUsed || rescued ? { rescueUsed: true } : {}),
+    rescuePending: rescued,
     status,
   };
 }

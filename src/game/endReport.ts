@@ -125,12 +125,13 @@ export function buildWhyLine(state: GameState): WhyLine {
   const { metrics, status, maxTurns } = state;
   const turn = lastTurnOf(state);
   const summary = METRIC_KEYS.map((k) => `${METRIC_LOWER[k]} ${metrics[k]}%`);
+  const rescued = state.decisionLog.some((e) => e.kind === 'rescue');
 
   if (status === 'victory') {
     const floor = Math.floor(Math.min(...METRIC_KEYS.map((k) => metrics[k])) / 5) * 5;
     return {
       strong: floor >= 60 ? `Las tres métricas cerraron arriba de ${floor}.` : 'Llegaste al final con las tres métricas en pie.',
-      rest: `Llegaste al turno ${turn} con ${summary[0]}, ${summary[1]} y ${summary[2]}.`,
+      rest: `Llegaste al turno ${turn} con ${summary[0]}, ${summary[1]} y ${summary[2]}.${rescued ? ' Para llegar usaste tu único rescate.' : ''}`,
     };
   }
 
@@ -139,7 +140,7 @@ export function buildWhyLine(state: GameState): WhyLine {
     const others = METRIC_KEYS.filter((k) => k !== failed);
     return {
       strong: `${METRIC_SUBJECT[failed]} llegó a ${metrics[failed]}% en el turno ${turn} de ${maxTurns}.`,
-      rest: `Las otras dos métricas cerraron así: ${METRIC_LOWER[others[0]]} ${metrics[others[0]]}% y ${METRIC_LOWER[others[1]]} ${metrics[others[1]]}%.`,
+      rest: `Las otras dos métricas cerraron así: ${METRIC_LOWER[others[0]]} ${metrics[others[0]]}% y ${METRIC_LOWER[others[1]]} ${metrics[others[1]]}%.${rescued ? ' Ya habías usado tu único rescate.' : ''}`,
     };
   }
 

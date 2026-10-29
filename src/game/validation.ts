@@ -7,7 +7,7 @@ export const validateEventIds = (events: GameEvent[]): string[] => {
     const errores: string[] = [];
 
     events.forEach((ev) => {
-        const isSpecial = ev.kind === 'crisis' || ev.kind === 'unforeseen' || ev.id.startsWith('crisis_') || ev.id.startsWith('imp_');
+        const isSpecial = ev.kind === 'crisis' || ev.kind === 'unforeseen' || ev.kind === 'rescue' || ev.id.startsWith('crisis_') || ev.id.startsWith('imp_') || ev.id.startsWith('rescate_');
         if (!isSpecial && !ev.id.startsWith(`f${ev.phaseId}_`)) {
             errores.push(
                 `El evento "${ev.id}" está mal nombrado. Debería comenzar con "f${ev.phaseId}_".`
@@ -130,8 +130,8 @@ export const validatePhasePacing = (events: GameEvent[], phases: readonly Phase[
         rubros.forEach((rubro) => {
             // Eventos base: pertenecen a la fase, son de tipo principal y no tienen requerimientos previos de tags
             const baseEvents = events.filter((ev) => {
-                if (ev.kind === 'crisis' || ev.kind === 'unforeseen') return false;
-                if (ev.id.startsWith('crisis_') || ev.id.startsWith('imp_')) return false;
+                if (ev.kind === 'crisis' || ev.kind === 'unforeseen' || ev.kind === 'rescue') return false;
+                if (ev.id.startsWith('crisis_') || ev.id.startsWith('imp_') || ev.id.startsWith('rescate_')) return false;
                 if (ev.phaseId !== phase.id) return false;
                 const hasRequired =
                     (ev.requiredTags && ev.requiredTags.length > 0) ||

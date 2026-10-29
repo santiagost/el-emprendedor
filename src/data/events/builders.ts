@@ -32,7 +32,7 @@ export const defineOption = (
 })
 
 export const defineEvent = (e: {
-    id: `${'f1' | 'f2' | 'f3' | 'f4' | 'crisis' | 'imp'}_${string}`;
+    id: `${'f1' | 'f2' | 'f3' | 'f4' | 'crisis' | 'imp' | 'rescate'}_${string}`;
     phaseId?: PhaseId;
     phase?: PhaseId;
     kind?: GameEventKind;
@@ -42,7 +42,7 @@ export const defineEvent = (e: {
     when?: EventConditions;
     options: [GameOption, GameOption] | [GameOption, GameOption, GameOption];
 }): GameEvent => {
-    const kind = e.kind ?? (e.id.startsWith('crisis_') ? 'crisis' : e.id.startsWith('imp_') ? 'unforeseen' : 'main');
+    const kind = e.kind ?? (e.id.startsWith('crisis_') ? 'crisis' : e.id.startsWith('imp_') ? 'unforeseen' : e.id.startsWith('rescate_') ? 'rescue' : 'main');
     const phaseId = e.phaseId ?? e.phase ?? 1;
 
     if (import.meta.env?.DEV) {

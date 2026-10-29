@@ -1,4 +1,4 @@
-import { AlertTriangle, Zap, Lightbulb, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { AlertTriangle, LifeBuoy, Zap, Lightbulb, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import type { DecisionLogEntry, GameEvent } from '../../types/game';
 import type { MetricDeltas } from '../../game/ui';
 import { PERFORMANCE_HINT, PERFORMANCE_LABEL } from '../../game/minigames/performance';
@@ -57,7 +57,7 @@ export default function EventCard({
   forecast,
   playerName,
 }: EventCardProps) {
-  const isInterruption = event.kind === 'crisis' || event.kind === 'unforeseen';
+  const isInterruption = event.kind === 'crisis' || event.kind === 'unforeseen' || event.kind === 'rescue';
   const showOutcome = outcomeStep !== null && !isRevealing;
   const layer = outcomeStep ?? -1;
 
@@ -71,6 +71,11 @@ export default function EventCard({
       {event.kind === 'crisis' && (
         <div className="flex items-center gap-2 px-5 sm:px-7 py-2 bg-rose-600 text-white text-xs font-extrabold uppercase tracking-widest">
           <AlertTriangle className="w-4 h-4" aria-hidden="true" /> Crisis
+        </div>
+      )}
+      {event.kind === 'rescue' && (
+        <div className="flex items-center gap-2 px-5 sm:px-7 py-2 bg-rose-700 text-white text-xs font-extrabold uppercase tracking-widest">
+          <LifeBuoy className="w-4 h-4" aria-hidden="true" /> Última oportunidad
         </div>
       )}
       {event.kind === 'unforeseen' && (

@@ -149,7 +149,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                         </p>
                     </div>
 
-                    {/* Lo que hay que cuidar: las tres métricas y la regla del 0% */}
+                    {/* Lo que hay que cuidar: las tres métricas y la regla del 0% (un solo rescate) */}
                     <Card className="p-4 space-y-2.5">
                         <span className="block text-sm font-semibold text-slate-600 dark:text-slate-300">Lo que tenés que cuidar</span>
                         <ul className="space-y-2 text-sm">
@@ -163,7 +163,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                         </ul>
                         <p className="flex items-center gap-2 pt-2.5 border-t border-slate-200 dark:border-slate-800 text-sm font-semibold text-metric-peligro">
                             <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
-                            Si cualquiera llega a 0%, perdés al instante.
+                            Si una llega a 0% tenés un solo rescate; si vuelve a pasar, perdés.
                         </p>
                     </Card>
 
@@ -317,7 +317,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                             ¿Qué querés lograr?
                         </h1>
                         <p className="max-w-2xl text-base text-slate-600 dark:text-slate-400">
-                            Elegí tu objetivo. No cambia las situaciones que te tocan, pero al final te decimos si lo cumpliste. Eso sí: si alguna métrica llega a 0%, igual perdés.
+                            Elegí tu objetivo. No cambia las situaciones que te tocan, pero al final te decimos si lo cumpliste. Si perdés la empresa, el objetivo queda sin cumplir.
                         </p>
                     </div>
 

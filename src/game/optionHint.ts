@@ -194,7 +194,7 @@ export function buildOptionHint(event: GameEvent, optionIndex: number): string {
   }
 
   // La apertura de etapa va en la mitad de las opciones, para que no arranquen todas igual
-  const stage = event.kind === 'crisis' || event.kind === 'unforeseen' ? event.kind : String(event.phaseId);
+  const stage = event.kind === 'crisis' || event.kind === 'unforeseen' ? event.kind : event.kind === 'rescue' ? 'crisis' : String(event.phaseId);
   const opener = (seed >>> 1) % 2 === 0 ? pick(OPENERS[stage as keyof typeof OPENERS], seed >>> 2) : '';
   const sentence = body ? (opener ? `${opener}${body}.` : `${capitalize(body)}.`) : '';
 

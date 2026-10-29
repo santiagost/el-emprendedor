@@ -25,14 +25,14 @@ export function computeMetricDeltas(prev: Metrics, next: Metrics): MetricDeltas 
 /**
  * Determina el tiempo de suspenso (en ms) antes de revelar las consecuencias de una decisión.
  * - Modo reduced-motion: 0 ms (salto instantáneo).
- * - Crisis o imprevistos: 1000 ms.
+ * - Crisis, imprevistos o rescate: 1000 ms.
  * - Eventos normales: 350 ms.
  */
 export function getRevealingDuration(kind?: string, isReducedMotion?: boolean): number {
   if (isReducedMotion) {
     return 0;
   }
-  if (kind === 'crisis' || kind === 'unforeseen') {
+  if (kind === 'crisis' || kind === 'unforeseen' || kind === 'rescue') {
     return 1000;
   }
   return 350;

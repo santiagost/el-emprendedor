@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { GAME_EVENTS } from '../data/events';
+import { GAME_EVENTS, MAIN_EVENTS } from '../data/events';
 import { phasesFor } from './phases';
 import { _templateBaseEvent, _templateGatedEvent } from '../data/events/_template';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
@@ -187,5 +187,30 @@ describe('Balance de Contenido (warnings informativos)', () => {
       warnings.forEach((w) => console.log(`  - ${w}`));
     }
     expect(warnings).toBeDefined();
+  });
+});
+
+describe('Eventos de rescate', () => {
+  const rescue = GAME_EVENTS.filter((ev) => ev.kind === 'rescue');
+
+  it('hay uno por métrica, con id rescate_<métrica>, y las opciones suben esa métrica', () => {
+    expect(rescue.map((ev) => ev.id).sort()).toEqual(['rescate_bienestar', 'rescate_capital', 'rescate_reputacion']);
+    for (const ev of rescue) {
+      const metric = ev.id.replace('rescate_', '') as 'capital' | 'bienestar' | 'reputacion';
+      for (const option of ev.options) expect(option.effects[metric] ?? 0, `${ev.id}: ${option.text}`).toBeGreaterThanOrEqual(25);
+    }
+  });
+
+  it('los costos inmediatos son chicos: el rescate no mata a la empresa por otro lado', () => {
+    for (const ev of rescue) {
+      for (const option of ev.options) {
+        const costs = Object.values(option.effects).filter((v) => v < 0);
+        for (const cost of costs) expect(cost, `${ev.id}: ${option.text}`).toBeGreaterThanOrEqual(-5);
+      }
+    }
+  });
+
+  it('no entran al sorteo de eventos principales ni de fase', () => {
+    expect(MAIN_EVENTS.some((ev) => ev.kind === 'rescue')).toBe(false);
   });
 });

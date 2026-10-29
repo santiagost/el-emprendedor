@@ -15,7 +15,7 @@ export interface ImpactPreview {
     reputacion: ImpactDirection;
 }
 
-export type GameEventKind = 'main' | 'crisis' | 'unforeseen';
+export type GameEventKind = 'main' | 'crisis' | 'unforeseen' | 'rescue';
 
 export type MinigameKind = 'timing' | 'tapping' | 'balance' | 'roulette';
 
@@ -142,6 +142,10 @@ export interface GameState {
     financingId?: string;
     /** Rubro de la empresa elegido en Setup; las partidas guardadas antes de que existiera no lo tienen. */
     rubroId?: string;
+    /** Ya se usó el rescate de la partida: una métrica puede tocar 0 una vez sin perder; la segunda vez termina. */
+    rescueUsed?: boolean;
+    /** Métrica que tocó 0 y espera su evento de rescate; se limpia al resolverlo. */
+    rescuePending?: keyof Metrics;
     /** Objetivo que el jugador eligió en Setup; las partidas guardadas antes de que existiera no lo tienen. */
     objetivoId?: string;
     /** Nombre opcional del jugador; resuelve el token {nombre} de los textos en el render. */

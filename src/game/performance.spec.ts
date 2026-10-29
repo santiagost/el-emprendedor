@@ -75,7 +75,7 @@ describe('applyDecision con minijuego', () => {
 
   it("un 'poor' nunca provoca un game over que 'good' no provoca", () => {
     const risky = defineOption('Apostar.', { bienestar: -9 }, { learningPill: 'x', minigame: { kind: 'tapping' } });
-    const state = { ...baseState(), metrics: { capital: 50, reputacion: 50, bienestar: 10 } };
+    const state = { ...baseState(), rescueUsed: true, metrics: { capital: 50, reputacion: 50, bienestar: 10 } };
     const poor = applyDecision(state, risky, 'f2_z', undefined, 0, undefined, 'poor');
     expect(poor.status).toBe('playing');
     expect(poor.lastDecision?.performance).toBe('good');
@@ -83,7 +83,7 @@ describe('applyDecision con minijuego', () => {
 
   it("un 'poor' no impide el game over si 'good' ya lo provocaba", () => {
     const fatal = defineOption('Apostar.', { bienestar: -20 }, { learningPill: 'x', minigame: { kind: 'tapping' } });
-    const state = { ...baseState(), metrics: { capital: 50, reputacion: 50, bienestar: 10 } };
+    const state = { ...baseState(), rescueUsed: true, metrics: { capital: 50, reputacion: 50, bienestar: 10 } };
     const poor = applyDecision(state, fatal, 'f2_z', undefined, 0, undefined, 'poor');
     expect(poor.status).toBe('game_over_bienestar');
   });

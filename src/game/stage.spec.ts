@@ -12,6 +12,7 @@ describe('stageFor', () => {
   it('falls back to the style of its kind for events without a variant', () => {
     expect(stageFor({ id: 'crisis_nueva', kind: 'crisis' })).toMatchObject({ tone: 'crisis', stamp: 'CRISIS' });
     expect(stageFor({ id: 'imp_nuevo', kind: 'unforeseen' })).toMatchObject({ tone: 'unforeseen', stamp: 'IMPREVISTO' });
+    expect(stageFor({ id: 'rescate_capital', kind: 'rescue' })).toMatchObject({ tone: 'crisis', stamp: 'AL LÍMITE', ribbon: 'Última oportunidad' });
   });
 
   it('applies the per-event variant over the default', () => {
@@ -21,8 +22,8 @@ describe('stageFor', () => {
     expect(quiebra).toMatchObject({ tone: 'crisis', stamp: 'QUIEBRA', ribbon: 'Último momento' });
   });
 
-  it('gives every crisis and unforeseen event in the catalog a stage with a short stamp and a ticker', () => {
-    GAME_EVENTS.filter((e) => e.kind === 'crisis' || e.kind === 'unforeseen').forEach((e) => {
+  it('gives every crisis, unforeseen and rescue event in the catalog a stage with a short stamp and a ticker', () => {
+    GAME_EVENTS.filter((e) => e.kind === 'crisis' || e.kind === 'unforeseen' || e.kind === 'rescue').forEach((e) => {
       const stage = stageFor(e);
       expect(stage, e.id).not.toBeNull();
       expect(stage!.stamp.length, e.id).toBeLessThanOrEqual(14);

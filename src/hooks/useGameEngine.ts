@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Performance, GameState, GameEvent, Archetype, Financing, GameStep } from '../types/game';
-import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, canDecide, checkTurnInterruption, rollSurprise } from '../game/engine'
+import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, canDecide, checkTurnInterruption, selectRescueEvent, rollSurprise } from '../game/engine'
 import { type RNG, createRng } from '../game/rng';
 import { SAVED_GAME_STORAGE_KEY } from '../game/savedSession';
 
@@ -127,8 +127,15 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, p
       return;
     }
 
+    // Una métrica tocó 0 por primera vez: antes de seguir sale su evento de rescate, en el mismo turno
+    const rescue = selectRescueEvent(gameState);
+    if (rescue) {
+      updateStateAndPersist(gameState, rescue, 'decision');
+      return;
+    }
+
     // Si el evento actual fue un evento principal, chequeamos si hay interrupción en este turno
-    const isInterruption = currentEvent?.kind === 'crisis' || currentEvent?.kind === 'unforeseen';
+    const isInterruption = currentEvent?.kind === 'crisis' || currentEvent?.kind === 'unforeseen' || currentEvent?.kind === 'rescue';
 
     if (!isInterruption) {
       const interruption = checkTurnInterruption(gameState, activeRng);

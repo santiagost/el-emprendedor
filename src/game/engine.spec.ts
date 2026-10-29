@@ -15,6 +15,7 @@ import {
   surpriseChance,
   rollSurprise,
   getInitialEvent,
+  selectRescueEvent,
 } from './engine';
 import { createRng } from './rng';
 import { MAX_TURNS, phasesFor } from './phases';
@@ -212,7 +213,7 @@ describe('Motor de Juego (Engine Spec)', () => {
         addTags: [],
       };
 
-      const nextState = applyDecision(baseState, fatalOption, 'f1_mvp_calidad');
+      const nextState = applyDecision({ ...baseState, rescueUsed: true }, fatalOption, 'f1_mvp_calidad');
 
       expect(nextState.status).toBe('game_over_capital');
       expect(nextState.currentTurn).toBe(1);
@@ -551,7 +552,7 @@ describe('Motor de Juego (Engine Spec)', () => {
         learningPill: 'Píldora',
       };
 
-      const nextState = applyDecision(state, neutralOption, 'f1_test');
+      const nextState = applyDecision({ ...state, rescueUsed: true }, neutralOption, 'f1_test');
 
       expect(nextState.status).toBe('game_over_capital');
       expect(nextState.metrics.capital).toBe(0);
@@ -750,5 +751,67 @@ describe('Motor de Juego (Engine Spec)', () => {
       expect(next.metrics.capital).toBe(25);
       expect(next.surprisesPlayed).toBe(0);
     });
+  });
+});
+describe('rescate (una vez por partida)', () => {
+  const base: GameState = { ...startGame(ARCHETYPES[0], FINANCINGS[0], MAX_TURNS, 'r1_tecnologia'), metrics: { capital: 10, bienestar: 50, reputacion: 50 } };
+  const fatal = defineOption('Gastar de más.', { capital: -30 }, { learningPill: 'x' });
+  const heal = defineOption('Rescate.', { capital: 30 }, { learningPill: 'x' });
+
+  it('la primera vez que una métrica toca 0 no se pierde: queda el rescate pendiente', () => {
+    const next = applyDecision(base, fatal, 'f1_evento');
+    expect(next.metrics.capital).toBe(0);
+    expect(next.status).toBe('playing');
+    expect(next.rescueUsed).toBe(true);
+    expect(next.rescuePending).toBe('capital');
+    expect(next.currentTurn).toBe(1);
+  });
+
+  it('selectRescueEvent da el evento de la métrica y nada si no hay rescate pendiente', () => {
+    expect(selectRescueEvent(base)).toBeNull();
+    const pending = applyDecision(base, fatal, 'f1_evento');
+    expect(selectRescueEvent(pending)).toMatchObject({ id: 'rescate_capital', kind: 'rescue' });
+    expect(selectRescueEvent({ ...pending, rescuePending: 'bienestar' })?.id).toBe('rescate_bienestar');
+    expect(selectRescueEvent({ ...pending, rescuePending: 'reputacion' })?.id).toBe('rescate_reputacion');
+    expect(selectRescueEvent({ ...pending, status: 'victory' })).toBeNull();
+  });
+
+  it('resolver el rescate limpia el pendiente y sigue la partida', () => {
+    const pending = applyDecision(base, fatal, 'f1_evento');
+    const rescued = applyDecision(pending, heal, 'rescate_capital', undefined, 0, 'rescue');
+    expect(rescued.metrics.capital).toBeGreaterThanOrEqual(25);
+    expect(rescued.status).toBe('playing');
+    expect(rescued.rescuePending).toBeUndefined();
+    expect(rescued.rescueUsed).toBe(true);
+    expect(rescued.decisionLog[rescued.decisionLog.length - 1].kind).toBe('rescue');
+  });
+
+  it('la segunda vez que una métrica toca 0, termina', () => {
+    const rescued = applyDecision(applyDecision(base, fatal, 'f1_evento'), heal, 'rescate_capital', undefined, 0, 'rescue');
+    const again = applyDecision({ ...rescued, metrics: { ...rescued.metrics, bienestar: 5 } }, defineOption('Cansar.', { bienestar: -20 }, { learningPill: 'x' }), 'f1_otro');
+    expect(again.status).toBe('game_over_bienestar');
+    expect(again.rescuePending).toBeUndefined();
+  });
+
+  it('si toca 0 en el último turno, el rescate va antes de la victoria', () => {
+    const last: GameState = { ...base, currentTurn: MAX_TURNS, phaseId: 4 };
+    const pending = applyDecision(last, fatal, 'f4_evento');
+    expect(pending.status).toBe('playing');
+    const done = applyDecision(pending, heal, 'rescate_capital', undefined, 0, 'rescue');
+    expect(done.status).toBe('victory');
+  });
+
+  it('si dos métricas tocan 0 a la vez, atiende primero a la caja y la otra termina la partida después', () => {
+    const both = applyDecision({ ...base, metrics: { capital: 10, bienestar: 10, reputacion: 50 } }, defineOption('Todo mal.', { capital: -30, bienestar: -30 }, { learningPill: 'x' }), 'f1_evento');
+    expect(both.rescuePending).toBe('capital');
+    const after = applyDecision(both, heal, 'rescate_capital', undefined, 0, 'rescue');
+    expect(after.status).toBe('game_over_bienestar');
+  });
+
+  it('un guardado sin los campos de rescate se comporta como una partida sin rescate usado', () => {
+    const { rescueUsed, rescuePending, ...legacy } = applyDecision(base, defineOption('Nada.', {}, { learningPill: 'x' }), 'f1_evento');
+    expect(rescueUsed).toBeUndefined();
+    expect(rescuePending).toBeUndefined();
+    expect(applyDecision({ ...legacy, metrics: { capital: 5, bienestar: 50, reputacion: 50 } } as GameState, fatal, 'f1_x').status).toBe('playing');
   });
 });

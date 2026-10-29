@@ -1,7 +1,7 @@
 import type { GameEvent } from '../types/game';
 
 /**
- * Puesta en escena de las interrupciones (crisis e imprevistos): sello, cintilla y ritmo de la coreografía.
+ * Puesta en escena de las interrupciones (crisis, imprevistos y rescate): sello, cintilla y ritmo de la coreografía.
  * Solo capa visual: el motor no la usa. Un evento sin entrada en STAGE_BY_EVENT usa el estilo de su tipo.
  */
 export type StageTone = 'crisis' | 'unforeseen' | 'opportunity';
@@ -16,9 +16,10 @@ export interface EventStage {
   ticker: string[];
 }
 
-const DEFAULT_STAGE: Record<'crisis' | 'unforeseen', EventStage> = {
+const DEFAULT_STAGE: Record<'crisis' | 'unforeseen' | 'rescue', EventStage> = {
   crisis: { tone: 'crisis', stamp: 'CRISIS', ribbon: 'Último momento', ticker: ['Noticia en desarrollo', 'Alerta en la empresa'] },
   unforeseen: { tone: 'unforeseen', stamp: 'IMPREVISTO', ribbon: 'Último momento', ticker: ['Noticia en desarrollo', 'Cambio de planes'] },
+  rescue: { tone: 'crisis', stamp: 'AL LÍMITE', ribbon: 'Última oportunidad', ticker: ['Una sola salida', 'La empresa está al límite'] },
 };
 
 /** Variantes por evento. Para un evento nuevo alcanza con agregar su id acá (ver docs/EVENTOS.md). */
@@ -42,7 +43,7 @@ export const STAGE_BY_EVENT: Record<string, Partial<EventStage>> = {
 
 /** Escena de un evento, o null si es un dilema normal (no lleva coreografía). */
 export function stageFor(event: Pick<GameEvent, 'id' | 'kind'> | null | undefined): EventStage | null {
-  if (!event || (event.kind !== 'crisis' && event.kind !== 'unforeseen')) return null;
+  if (!event || (event.kind !== 'crisis' && event.kind !== 'unforeseen' && event.kind !== 'rescue')) return null;
   return { ...DEFAULT_STAGE[event.kind], ...STAGE_BY_EVENT[event.id] };
 }
 
