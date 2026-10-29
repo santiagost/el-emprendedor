@@ -3,6 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { Archetype, Financing, Metrics } from '../../../types/game';
 import type { Epilogue, EpilogueTone, MetricCurves, WhyLine } from '../../../game/endReport';
 import type { Retrospective } from '../../../game/retrospective';
+import type { ObjectiveResult } from '../../../game/objectives';
 import { METRIC_LABELS, METRIC_ORDER } from './metricLabels';
 import Button from '../../common/Button';
 import Card from '../../common/Card';
@@ -64,13 +65,15 @@ interface EndResultCardProps {
   curves: MetricCurves | null;
   totals: Retrospective['totals'];
   why: WhyLine;
+  /** Si cumplió el objetivo que eligió; null en partidas sin objetivo (guardados viejos). */
+  objective?: ObjectiveResult | null;
   arquetipo: Archetype;
   financiamiento: Financing;
   onRestart: () => void;
   onResetToSetup: () => void;
 }
 
-export default function EndResultCard({ epilogue, metrics, curves, totals, why, arquetipo, financiamiento, onRestart, onResetToSetup }: EndResultCardProps) {
+export default function EndResultCard({ epilogue, metrics, curves, totals, why, objective, arquetipo, financiamiento, onRestart, onResetToSetup }: EndResultCardProps) {
   const tone = TONES[epilogue.tone];
   const Icon = tone.icon;
 
@@ -97,6 +100,27 @@ export default function EndResultCard({ epilogue, metrics, curves, totals, why, 
               <strong className="font-extrabold">{why.strong}</strong> {why.rest}
             </p>
           </div>
+          {objective && (
+            <div
+              className={`flex items-start gap-3 max-w-2xl p-3.5 rounded-xl ${
+                objective.met
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100'
+                  : 'bg-slate-100 dark:bg-slate-800/60 text-slate-800 dark:text-slate-200'
+              }`}
+            >
+              {objective.met ? (
+                <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" />
+              ) : (
+                <XCircle className="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" />
+              )}
+              <p className="text-sm sm:text-base leading-snug">
+                <strong className="font-extrabold">
+                  {objective.met ? 'Objetivo cumplido' : 'Objetivo sin cumplir'}: {objective.objetivo.titulo}.
+                </strong>{' '}
+                {objective.detail}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* En móvil van acá, lado a lado; desde md las lleva el índice fijo del informe */}

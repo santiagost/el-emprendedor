@@ -16,11 +16,13 @@ export default function App() {
   // Duración elegida en Setup; una partida retomada trae la suya en el guardado
   const [maxTurns, setMaxTurns] = useState<number | undefined>(undefined);
   const [rubroId, setRubroId] = useState<string | undefined>(undefined);
+  const [objetivoId, setObjetivoId] = useState<string | undefined>(undefined);
 
-  const handleSetupComplete = (selectedArquetipo: Archetype, selectedFinanciamiento: Financing, name?: string, turns?: number, rubro?: string) => {
+  const handleSetupComplete = (selectedArquetipo: Archetype, selectedFinanciamiento: Financing, name?: string, turns?: number, rubro?: string, objetivo?: string) => {
     setPlayerName(name);
     setMaxTurns(turns);
     setRubroId(rubro);
+    setObjetivoId(objetivo);
     setArquetipo(selectedArquetipo);
     setFinanciamiento(selectedFinanciamiento);
     setSetupComplete(true);
@@ -49,6 +51,7 @@ export default function App() {
       playerName={playerName}
       maxTurns={maxTurns}
       rubroId={rubroId}
+      objetivoId={objetivoId}
       onResetToSetup={handleResetToSetup}
     />
   );

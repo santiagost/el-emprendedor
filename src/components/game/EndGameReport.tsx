@@ -5,6 +5,7 @@ import type { GameState, Archetype, Financing } from '../../types/game';
 import { buildJourney } from '../../game/recap';
 import { buildRetrospective } from '../../game/retrospective';
 import { buildCompanyStory } from '../../game/companyStory';
+import { evaluateObjective } from '../../game/objectives';
 import { buildEpilogue, buildMetricCurves, buildOutlook, buildTimeline, buildWhyLine } from '../../game/endReport';
 import CompanyStory from './CompanyStory';
 import Vitrina from './Vitrina';
@@ -85,6 +86,7 @@ export default function EndGameReport({
   const curves = useMemo(() => buildMetricCurves(gameState), [gameState]);
   const epilogue = useMemo(() => buildEpilogue(status, activeTags), [status, activeTags]);
   const why = useMemo(() => buildWhyLine(gameState), [gameState]);
+  const objective = useMemo(() => evaluateObjective(gameState), [gameState]);
   const outlook = useMemo(() => buildOutlook(gameState, retrospective), [gameState, retrospective]);
   const storySegments = useMemo(() => buildCompanyStory(activeTags, 5, 'past'), [activeTags]);
 
@@ -157,6 +159,7 @@ export default function EndGameReport({
         curves={curves}
         totals={retrospective.totals}
         why={why}
+        objective={objective}
         arquetipo={arquetipo}
         financiamiento={financiamiento}
         onRestart={onRestart}

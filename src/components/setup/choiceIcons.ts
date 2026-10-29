@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
-import { Briefcase, Cpu, Factory, Handshake, Landmark, Laptop, Megaphone, PiggyBank, Store, Wallet } from 'lucide-react';
+import { Award, Banknote, Briefcase, Cpu, Factory, Handshake, HeartPulse, Landmark, Laptop, Megaphone, PiggyBank, Rocket, Store, Trophy, Wallet } from 'lucide-react';
 
-/** Ícono de cada perfil, esquema de financiamiento (C4) y rubro; también el "punto de partida" de la vitrina. */
+/** Ícono de cada perfil, esquema de financiamiento (C4), rubro y objetivo; también el "punto de partida" de la vitrina. */
 export const CHOICE_ICONS: Record<string, LucideIcon> = {
   a1_tecnico: Cpu,
   a2_comercial: Megaphone,
@@ -13,4 +13,9 @@ export const CHOICE_ICONS: Record<string, LucideIcon> = {
   r2_comercio: Store,
   r3_servicios: Briefcase,
   r4_produccion: Factory,
+  o1_caja: Banknote,
+  o2_marca: Award,
+  o3_sana: HeartPulse,
+  o4_salida: Rocket,
+  o5_modelo: Trophy,
 };

@@ -142,6 +142,8 @@ export interface GameState {
     financingId?: string;
     /** Rubro de la empresa elegido en Setup; las partidas guardadas antes de que existiera no lo tienen. */
     rubroId?: string;
+    /** Objetivo que el jugador eligió en Setup; las partidas guardadas antes de que existiera no lo tienen. */
+    objetivoId?: string;
     /** Nombre opcional del jugador; resuelve el token {nombre} de los textos en el render. */
     playerName?: string;
 }
@@ -159,6 +161,20 @@ export interface Rubro {
     id: string;
     titulo: string;
     descripcion: string;
+}
+
+/** Cuándo se cumple un objetivo, evaluado al cerrar una partida que no se perdió. */
+export type ObjetivoCriterio =
+    | { tipo: 'metrica'; metrica: keyof Metrics; minimo: number }
+    | { tipo: 'todas'; minimo: number }
+    | { tipo: 'salida' };
+
+export interface Objetivo {
+    id: string;
+    titulo: string;
+    /** Planteo en primera persona del objetivo: qué priorizás y qué dejás de lado. */
+    descripcion: string;
+    criterio: ObjetivoCriterio;
 }
 
 export interface Financing {

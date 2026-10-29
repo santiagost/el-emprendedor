@@ -1,6 +1,7 @@
-import type { Archetype, Financing, Rubro } from '../../types/game';
+import type { Archetype, Financing, Objetivo, Rubro } from '../../types/game';
 import { ARCHETYPES, FINANCINGS } from '../../data/archetypes';
 import { RUBROS } from '../../data/rubros';
+import { OBJETIVOS } from '../../data/objetivos';
 import { useState } from 'react';
 import { AlertTriangle, ArrowLeft, ArrowRight, Award, Check, DollarSign, Heart, UserRound } from 'lucide-react';
 import { GAME_DURATIONS, MAX_TURNS } from '../../game/phases';
@@ -23,12 +24,15 @@ const VITALS = [
     { key: 'bienestar', label: 'Bienestar', icon: Heart, hint: 'la energía del equipo', color: 'text-metric-bienestar' },
 ] as const;
 
-/** Pasos del setup: Tu empresa, perfil y financiamiento. */
-const TOTAL_STEPS = 3;
-type SetupStep = 1 | 2 | 3;
+/** Pasos del setup: Tu empresa, perfil, financiamiento y objetivo. */
+const TOTAL_STEPS = 4;
+type SetupStep = 1 | 2 | 3 | 4;
+
+/** Objetivo marcado como el más difícil: lleva una etiqueta en su tarjeta. */
+const HARDEST_OBJETIVO_ID = 'o5_modelo';
 
 interface SetupProps {
-    onComplete: (arquetipo: Archetype, financiamiento: Financing, nombre?: string, maxTurns?: number, rubroId?: string) => void;
+    onComplete: (arquetipo: Archetype, financiamiento: Financing, nombre?: string, maxTurns?: number, rubroId?: string, objetivoId?: string) => void;
     /** Nombre de la sesión actual (al volver a Setup desde una partida), si no hay uno recordado. */
     initialName?: string;
 }
@@ -42,6 +46,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
     const [step, setStep] = useState<SetupStep>(1);
     const [maxTurns, setMaxTurns] = useState<number>(MAX_TURNS);
     const [rubro, setRubro] = useState<Rubro | null>(null);
+    const [objetivo, setObjetivo] = useState<Objetivo | null>(null);
     // Nombre opcional: se precarga el recordado (casilla tildada) o el de la sesión actual
     const [remembered] = useState(() => loadRememberedName());
     const [nombre, setNombre] = useState(() => remembered ?? initialName ?? '');
@@ -53,7 +58,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
     };
 
     const handleStart = () => {
-        if (!arquetipo || !financiamiento) return;
+        if (!arquetipo || !financiamiento || !objetivo) return;
         const cleanName = sanitizePlayerName(nombre);
         if (cleanName && recordar) {
             rememberName(cleanName);
@@ -62,7 +67,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
             forgetName();
         }
         // Sin nombre: no se toca lo recordado (jugar anónimo una vez no lo borra)
-        onComplete(arquetipo, financiamiento, cleanName, maxTurns, rubro?.id);
+        onComplete(arquetipo, financiamiento, cleanName, maxTurns, rubro?.id, objetivo.id);
     };
 
     // Tarjeta de perfil o financiamiento: una ficha que se toca, con ícono, descripción e impacto inicial (C4)
@@ -305,6 +310,61 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                 </section>
             )}
 
+            {step === 4 && (
+                <section className="flex flex-1 flex-col gap-6">
+                    <div className="space-y-2">
+                        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.05] text-slate-900 dark:text-slate-100">
+                            ¿Qué querés lograr?
+                        </h1>
+                        <p className="max-w-2xl text-base text-slate-600 dark:text-slate-400">
+                            Elegí tu objetivo. No cambia las situaciones que te tocan, pero al final te decimos si lo cumpliste. Eso sí: si alguna métrica llega a 0%, igual perdés.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                        {OBJETIVOS.map((item) => {
+                            const isSelected = objetivo?.id === item.id;
+                            const Icon = CHOICE_ICONS[item.id] ?? UserRound;
+                            return (
+                                <button
+                                    key={item.id}
+                                    type="button"
+                                    aria-pressed={isSelected}
+                                    onClick={() => setObjetivo(item)}
+                                    className={`relative flex flex-col gap-3 rounded-2xl border p-4 sm:p-5 text-left transition-all ${
+                                        isSelected
+                                            ? 'border-brand-cobalt bg-blue-50/70 dark:bg-night-selected ring-2 ring-brand-cobalt/50'
+                                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-night-surface hover:border-slate-300 dark:hover:border-slate-700'
+                                    }`}
+                                >
+                                    <span className={`absolute top-4 right-4 flex h-6 w-6 items-center justify-center rounded-full border transition-colors ${
+                                        isSelected
+                                            ? 'border-brand-cobalt bg-brand-cobalt text-white'
+                                            : 'border-slate-300 dark:border-slate-700 text-transparent'
+                                    }`}>
+                                        <Check className="h-3.5 w-3.5" />
+                                    </span>
+                                    <span className="flex items-center gap-3 pr-8">
+                                        <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+                                            isSelected ? 'bg-brand-cobalt text-white' : 'bg-slate-100 text-slate-600 dark:bg-night-canvas dark:text-slate-300'
+                                        }`}>
+                                            <Icon className="h-5 w-5" aria-hidden="true" />
+                                        </span>
+                                        <span className="text-lg sm:text-xl font-extrabold leading-tight text-slate-900 dark:text-slate-100">{item.titulo}</span>
+                                    </span>
+                                    <span className="flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{item.descripcion}</span>
+                                    {item.id === HARDEST_OBJETIVO_ID && (
+                                        <span className="self-start rounded-md border border-amber-200 dark:border-amber-800/70 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                                            Muy difícil
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </section>
+            )}
+
             {/* Acciones: fijas abajo en móvil, en la zona del pulgar; debajo de las tarjetas desde sm */}
             <div className="fixed inset-x-0 bottom-0 z-20 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] bg-brand-canvas/95 dark:bg-night-canvas/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 sm:static sm:z-auto sm:mt-6 sm:p-0 sm:bg-transparent sm:dark:bg-transparent sm:backdrop-blur-none sm:border-0">
                 {step === 1 && (
@@ -351,16 +411,37 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                         </Button>
                         <Button
                             size="md"
-                            onClick={handleStart}
+                            onClick={() => setStep(4)}
                             disabled={!financiamiento}
                             className="flex-1 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 dark:disabled:bg-slate-800 dark:disabled:text-slate-400"
                         >
                             {financiamiento ? (
                                 <>
+                                    Seguir: tu objetivo <ArrowRight className="h-4 w-4" />
+                                </>
+                            ) : (
+                                'Elegí cómo financiarte para seguir'
+                            )}
+                        </Button>
+                    </div>
+                )}
+                {step === 4 && (
+                    <div className="flex gap-3">
+                        <Button variant="secondary" size="md" onClick={() => setStep(3)}>
+                            <ArrowLeft className="h-4 w-4" /> Volver
+                        </Button>
+                        <Button
+                            size="md"
+                            onClick={handleStart}
+                            disabled={!objetivo}
+                            className="flex-1 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 dark:disabled:bg-slate-800 dark:disabled:text-slate-400"
+                        >
+                            {objetivo ? (
+                                <>
                                     Comenzar simulación <ArrowRight className="h-4 w-4" />
                                 </>
                             ) : (
-                                'Elegí cómo financiarte para empezar'
+                                'Elegí un objetivo para empezar'
                             )}
                         </Button>
                     </div>
