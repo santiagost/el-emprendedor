@@ -13,9 +13,12 @@ export default function App() {
   const [financiamiento, setFinanciamiento] = useState<Financing | null>(savedProfile?.financiamiento ?? null);
   // Nombre de la sesión: se usa para la partida nueva y para precargar Setup al volver
   const [playerName, setPlayerName] = useState<string | undefined>(undefined);
+  // Duración elegida en Setup; una partida retomada trae la suya en el guardado
+  const [maxTurns, setMaxTurns] = useState<number | undefined>(undefined);
 
-  const handleSetupComplete = (selectedArquetipo: Archetype, selectedFinanciamiento: Financing, name?: string) => {
+  const handleSetupComplete = (selectedArquetipo: Archetype, selectedFinanciamiento: Financing, name?: string, turns?: number) => {
     setPlayerName(name);
+    setMaxTurns(turns);
     setArquetipo(selectedArquetipo);
     setFinanciamiento(selectedFinanciamiento);
     setSetupComplete(true);
@@ -42,6 +45,7 @@ export default function App() {
       arquetipo={arquetipo}
       financiamiento={financiamiento}
       playerName={playerName}
+      maxTurns={maxTurns}
       onResetToSetup={handleResetToSetup}
     />
   );

@@ -52,12 +52,12 @@ function pickOption(
 }
 
 // Corre una partida completa hasta su desenlace
-function simulateGame(strategy: Strategy, seed: number): { status: GameState['status']; surprises: number } {
+function simulateGame(strategy: Strategy, seed: number, maxTurns: number): { status: GameState['status']; surprises: number } {
   const rng = createRng(seed);
   const arquetipo = ARCHETYPES[0];
   const financiamiento = FINANCINGS[0];
 
-  let state = startGame(arquetipo, financiamiento);
+  let state = startGame(arquetipo, financiamiento, maxTurns);
   let currentEvent: GameEvent | null = getInitialEvent(rng);
 
   while (state.status === 'playing' && currentEvent) {
@@ -94,7 +94,7 @@ function simulateGame(strategy: Strategy, seed: number): { status: GameState['st
 }
 
 // Ejecuta N corridas para una estrategia
-function runBatch(strategy: Strategy, runs = 10000): SimResult {
+function runBatch(strategy: Strategy, maxTurns: number, runs = 10000): SimResult {
   const tally: SimResult = {
     victory: 0,
     game_over_capital: 0,
@@ -105,7 +105,7 @@ function runBatch(strategy: Strategy, runs = 10000): SimResult {
   };
 
   for (let i = 0; i < runs; i++) {
-    const { status, surprises } = simulateGame(strategy, 1000 + i);
+    const { status, surprises } = simulateGame(strategy, 1000 + i, maxTurns);
     if (status !== 'victory' && status in tally) {
       (tally[status as Exclude<keyof SimResult, 'surprisesInVictories' | 'victory'>])++;
     }
@@ -118,7 +118,7 @@ function runBatch(strategy: Strategy, runs = 10000): SimResult {
   return tally;
 }
 
-describe('Simulación de Completabilidad (Monte Carlo)', () => {
+describe.each([10, 15])('Simulación de Completabilidad (Monte Carlo) · partida de %i turnos', (maxTurns) => {
   const STRATEGIES: Strategy[] = ['random', 'maxSum', 'maxMin'];
 
   beforeEach(() => {
@@ -133,9 +133,9 @@ describe('Simulación de Completabilidad (Monte Carlo)', () => {
     'estrategia "%s" no produce softlocks (0 ended_early) y permite victoria (> 0%)',
     (strategy) => {
       const runs = 2000; // 2.000 por estrategia en test suite mantiene ejecución rápida
-      const results = runBatch(strategy, runs);
+      const results = runBatch(strategy, maxTurns, runs);
 
-      console.log(`\nDistribución [${strategy}] (${runs} partidas):`);
+      console.log(`\nDistribución [${strategy}] (${runs} partidas de ${maxTurns} turnos):`);
       const { surprisesInVictories, ...outcomes } = results;
       console.table(outcomes);
       const wins = results.victory;

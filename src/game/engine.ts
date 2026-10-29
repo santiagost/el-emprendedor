@@ -36,7 +36,7 @@ export const validateInitialMetrics = (initialMetric: number, archetypeEffect = 
   return clamp(total);
 };
 
-export const startGame = (archetype: Archetype, financing: Financing): GameState => {
+export const startGame = (archetype: Archetype, financing: Financing, maxTurns: number = MAX_TURNS): GameState => {
   const metrics: Metrics = {
     capital: validateInitialMetrics(INITIAL_STATE.metrics.capital, archetype.effects.capital, financing.effects.capital),
     bienestar: validateInitialMetrics(INITIAL_STATE.metrics.bienestar, archetype.effects.bienestar, financing.effects.bienestar),
@@ -44,6 +44,7 @@ export const startGame = (archetype: Archetype, financing: Financing): GameState
   };
   return {
     ...INITIAL_STATE,
+    maxTurns,
     metrics,
     initialMetrics: { ...metrics },
     activeTags: [...(archetype.tags || []), ...(financing.tags || [])],

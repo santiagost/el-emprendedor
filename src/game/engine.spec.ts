@@ -240,6 +240,11 @@ describe('Motor de Juego (Engine Spec)', () => {
       expect(state.financingId).toBe('f2_prestamo_bancario');
       expect(state.activeTags).toEqual(['calidad_producto', 'deuda_riesgosa']);
     });
+
+    it('arranca con la duración elegida y, sin elegir, con la completa', () => {
+      expect(startGame(ARCHETYPES[0], FINANCINGS[0], 10).maxTurns).toBe(10);
+      expect(startGame(ARCHETYPES[0], FINANCINGS[0]).maxTurns).toBe(MAX_TURNS);
+    });
   });
 
   describe('passesWhenCondition (condiciones ricas)', () => {

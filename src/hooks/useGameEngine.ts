@@ -57,7 +57,7 @@ const saveSession = (data: SavedSession | null) => {
   }
 };
 
-export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, playerName?: string, rng?: RNG) => {
+export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, playerName?: string, rng?: RNG, maxTurns?: number) => {
   // Todo lo que consume el RNG inicial se arma en un único inicializador: en StrictMode React lo ejecuta dos veces,
   // y así cada ejecución tiene su propio RNG (si no, el primer evento se sortea dos veces y la semilla cambia en dev).
   const [initial] = useState(() => {
@@ -74,7 +74,7 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, p
   const { seed: initialSeed, rng: activeRng, saved } = initial;
 
 
-  const [gameState, setGameState] = useState<GameState>(() => saved?.gameState ?? { ...startGame(arquetipo, financiamiento), playerName });
+  const [gameState, setGameState] = useState<GameState>(() => saved?.gameState ?? { ...startGame(arquetipo, financiamiento, maxTurns), playerName });
   const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(() => initial.event);
   const [step, setStep] = useState<GameStep>(() => saved?.step ?? 'decision');
 
@@ -160,8 +160,8 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, p
   const restartGame = () => {
     saveSession(null);
     const freshRng = rng ?? createRng(getInitialSeed());
-    // Volver a jugar conserva el nombre de la partida anterior
-    const initialState: GameState = { ...startGame(arquetipo, financiamiento), playerName: gameState.playerName };
+    // Volver a jugar conserva el nombre y la duración de la partida anterior
+    const initialState: GameState = { ...startGame(arquetipo, financiamiento, gameState.maxTurns), playerName: gameState.playerName };
     setGameState(initialState);
     setCurrentEvent(getInitialEvent(freshRng));
     setStep('decision');
