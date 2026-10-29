@@ -14,6 +14,7 @@ import {
   checkTurnInterruption,
   surpriseChance,
   rollSurprise,
+  getInitialEvent,
 } from './engine';
 import { createRng } from './rng';
 import { MAX_TURNS, phasesFor } from './phases';
@@ -22,6 +23,7 @@ import type { Tag } from '../data/tags';
 import { TAGS } from '../data/tags';
 import { defineEvent, defineOption } from '../data/events/builders';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
+import { RUBROS } from '../data/rubros';
 
 describe('Motor de Juego (Engine Spec)', () => {
   describe('clamp', () => {
@@ -249,6 +251,17 @@ describe('Motor de Juego (Engine Spec)', () => {
     it('arranca con la duración elegida y, sin elegir, con la completa', () => {
       expect(startGame(ARCHETYPES[0], FINANCINGS[0], 10).maxTurns).toBe(10);
       expect(startGame(ARCHETYPES[0], FINANCINGS[0]).maxTurns).toBe(MAX_TURNS);
+    });
+  });
+
+  describe('getInitialEvent', () => {
+    it.each(RUBROS.map((r) => r.id))('el primer evento de una partida de %s es de la fase 1 y de su rubro', (rubroId) => {
+      const state = startGame(ARCHETYPES[0], FINANCINGS[0], MAX_TURNS, rubroId);
+      for (let seed = 1; seed <= 200; seed++) {
+        const event = getInitialEvent(createRng(seed), state);
+        expect(event.phaseId).toBe(1);
+        expect(passesWhenCondition(event, state), `${event.id} con semilla ${seed}`).toBe(true);
+      }
     });
   });
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Moon, Bug, Heart } from 'lucide-react';
+import { Moon, AlertTriangle, Heart } from 'lucide-react';
 import MinigameShell from './MinigameShell';
 import { playSound } from '../../../lib/sound';
 import { vibrate } from '../../../lib/fx';
@@ -29,18 +29,18 @@ const RESULT_HOLD_MS = 1200;
 const RESULT_TEXT: Record<Performance, string> = {
   perfect: 'Casi no se te escapó ninguno.',
   good: 'Apagaste la mayoría de los incendios.',
-  poor: 'Se te acumularon los bugs.',
+  poor: 'Se te acumularon los problemas.',
 };
 
 /**
- * Crunch nocturno: aparecen bugs en la entrega, duran poco y hay que tocarlos. Cada vez salen más seguidos.
+ * Crunch nocturno: aparecen problemas en la entrega, duran poco y hay que tocarlos. Cada vez salen más seguidos.
  * El estado vive en un ref; React solo re-renderiza cuando aparece o se va un bicho.
  */
 export default function CrunchGame({ seed, title, rule, onResolve, onSkip }: CrunchGameProps) {
   return (
     <MinigameShell
       title={title ?? 'Crunch nocturno'}
-      rule={rule ?? 'Salen bugs en la entrega y se van solos en poco tiempo: tocá (o hacé clic en) cada uno para eliminarlo. Cuantos más elimines, mejor sale.'}
+      rule={rule ?? 'Salen problemas en la entrega y se van solos en poco tiempo: tocá (o hacé clic en) cada uno para resolverlo. Cuantos más elimines, mejor sale.'}
       icon={<Moon className="w-4 h-4" aria-hidden="true" />}
       onSkip={onSkip}
     >
@@ -138,7 +138,7 @@ function CrunchBoard({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400">
           <span>
-            Bugs eliminados · <span className="tabular-nums">{counts.squashed} de {counts.appeared} aparecidos</span>
+            Problemas resueltos · <span className="tabular-nums">{counts.squashed} de {counts.appeared} aparecidos</span>
           </span>
           <span aria-hidden="true" className="inline-flex items-center gap-1">
             <span ref={heartRef} className="inline-block transition-transform duration-100 text-rose-500">
@@ -163,11 +163,11 @@ function CrunchBoard({
               e.stopPropagation();
               squash(b.id);
             }}
-            aria-label="Eliminar el bug"
+            aria-label="Resolver el problema"
             className="absolute -translate-x-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950/70 border-2 border-rose-500 text-rose-700 dark:text-rose-300 shadow-md cursor-pointer touch-manipulation select-none stage-stamp"
             style={{ left: `${b.x * 100}%`, top: `${b.y * 100}%` }}
           >
-            <Bug className="w-5 h-5" aria-hidden="true" />
+            <AlertTriangle className="w-5 h-5" aria-hidden="true" />
           </button>
         ))}
         {bugs.length === 0 && !performance && (
@@ -183,7 +183,7 @@ function CrunchBoard({
             {PERFORMANCE_LABEL[performance]} · <span className="font-medium">{RESULT_TEXT[performance]}</span>
           </span>
         ) : (
-          <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">{running ? 'Tocá los bugs antes de que se vayan' : ' '}</span>
+          <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">{running ? 'Tocá los problemas antes de que se vayan' : ' '}</span>
         )}
       </p>
     </div>

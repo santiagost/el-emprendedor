@@ -116,32 +116,38 @@ export const validateTagsIntegrity = (events: GameEvent[]): string[] => {
 }
 
 
-export const validatePhasePacing = (events: GameEvent[], phases: readonly Phase[]): string[] => {
+/**
+ * Cada fase necesita al menos tantos eventos base como turnos tiene, para cualquier rubro que se elija:
+ * cuentan los eventos principales sin condiciones de tags, perfil o financiamiento, y sin rubro o con el del jugador.
+ */
+export const validatePhasePacing = (events: GameEvent[], phases: readonly Phase[], rubros: { id: string }[]): string[] => {
     const errores: string[] = [];
 
     phases.forEach((phase) => {
         // Cantidad de turnos que abarca la fase actual
         const turnsInPhase = phase.toTurn - phase.fromTurn + 1;
 
-        // Eventos base: pertenecen a la fase, son de tipo principal y no tienen requerimientos previos de tags
-        const baseEvents = events.filter((ev) => {
-            if (ev.kind === 'crisis' || ev.kind === 'unforeseen') return false;
-            if (ev.id.startsWith('crisis_') || ev.id.startsWith('imp_')) return false;
-            if (ev.phaseId !== phase.id) return false;
-            const hasRequired =
-                (ev.requiredTags && ev.requiredTags.length > 0) ||
-                (ev.when?.tags && ev.when.tags.length > 0) ||
-                (ev.when?.archetype && ev.when.archetype.length > 0) ||
-                (ev.when?.financing && ev.when.financing.length > 0) ||
-                (ev.when?.rubro && ev.when.rubro.length > 0);
-            return !hasRequired;
-        });
+        rubros.forEach((rubro) => {
+            // Eventos base: pertenecen a la fase, son de tipo principal y no tienen requerimientos previos de tags
+            const baseEvents = events.filter((ev) => {
+                if (ev.kind === 'crisis' || ev.kind === 'unforeseen') return false;
+                if (ev.id.startsWith('crisis_') || ev.id.startsWith('imp_')) return false;
+                if (ev.phaseId !== phase.id) return false;
+                const hasRequired =
+                    (ev.requiredTags && ev.requiredTags.length > 0) ||
+                    (ev.when?.tags && ev.when.tags.length > 0) ||
+                    (ev.when?.archetype && ev.when.archetype.length > 0) ||
+                    (ev.when?.financing && ev.when.financing.length > 0);
+                if (hasRequired) return false;
+                return !ev.when?.rubro?.length || ev.when.rubro.includes(rubro.id);
+            });
 
-        if (baseEvents.length < turnsInPhase) {
-            errores.push(
-                `Fase ${phase.id} ("${phase.label}"): tiene ${baseEvents.length} eventos base pero dura ${turnsInPhase} turnos. Requiere al menos ${turnsInPhase} para garantizar que no haya softlocks.`
-            );
-        }
+            if (baseEvents.length < turnsInPhase) {
+                errores.push(
+                    `Fase ${phase.id} ("${phase.label}") con rubro ${rubro.id}: tiene ${baseEvents.length} eventos base pero dura ${turnsInPhase} turnos. Requiere al menos ${turnsInPhase} para garantizar que no haya softlocks.`
+                );
+            }
+        });
     });
 
     return errores;

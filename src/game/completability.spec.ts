@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, checkTurnInterruption, rollSurprise, SURPRISE_MAX } from './engine';
 import { createRng } from './rng';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
+import { RUBROS } from '../data/rubros';
 import type { GameState, GameEvent, GameOption } from '../types/game';
 
 type Strategy = 'random' | 'maxSum' | 'maxMin';
@@ -57,8 +58,9 @@ function simulateGame(strategy: Strategy, seed: number, maxTurns: number): { sta
   const arquetipo = ARCHETYPES[0];
   const financiamiento = FINANCINGS[0];
 
-  let state = startGame(arquetipo, financiamiento, maxTurns);
-  let currentEvent: GameEvent | null = getInitialEvent(rng);
+  // El rubro rota con la semilla: las partidas de cada rubro tienen que poder completarse
+  let state = startGame(arquetipo, financiamiento, maxTurns, RUBROS[seed % RUBROS.length].id);
+  let currentEvent: GameEvent | null = getInitialEvent(rng, state);
 
   while (state.status === 'playing' && currentEvent) {
     const option = pickOption(currentEvent, state, strategy, rng);

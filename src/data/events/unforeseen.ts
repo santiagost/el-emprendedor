@@ -39,6 +39,7 @@ export const unforeseenEvents = [
     description:
       'Una falla técnica imprevista en la nube dejó tus sistemas caídos durante 6 horas en pleno horario de mayor demanda. Clientes molestos inundan soporte.',
     weight: 15,
+    when: { rubro: ['r1_tecnologia'] },
     options: [
       defineOption(
         'Invertir en infraestructura redundante y soporte enterprise 24/7.',
@@ -58,6 +59,103 @@ export const unforeseenEvents = [
             'Compensación al Cliente: Reconocer fallas operativas con bonificaciones concretas transforma una mala experiencia en lealtad a largo plazo.',
           outcomeText:
             'El equipo técnico pasó la noche en vela para restaurar la base. Las bonificaciones calmaron los ánimos de los usuarios clave.',
+        }
+      ),
+    ],
+  }),
+
+  // Variantes de imp_caida_servidores para los rubros que no son Tecnología: mismas cifras, otro contexto.
+  defineEvent({
+    id: 'imp_corte_cobros',
+    title: 'Corte de Cobros en Horario Pico',
+    kind: 'unforeseen',
+    description:
+      'Una falla imprevista dejó caído tu sistema de cobros durante 6 horas, en pleno horario de mayor demanda. Clientes molestos se acumulan en las cajas.',
+    weight: 15,
+    when: { rubro: ['r2_comercio'] },
+    options: [
+      defineOption(
+        'Invertir en un sistema de cobros con respaldo y soporte técnico 24/7.',
+        { capital: -15, reputacion: 15, bienestar: 5 },
+        {
+          learningPill:
+            'Continuidad Operativa: Invertir en respaldo cuesta dinero, pero cada caída del sistema de cobros erosiona la confianza del cliente y acelera las ventas perdidas.',
+          outcomeText:
+            'Instalaste un sistema de cobros con respaldo. El costo fue alto, pero nunca más sufriste una caída prolongada en las cajas.',
+        }
+      ),
+      defineOption(
+        'Cobrar a mano con lo que haya y bonificar la compra a los afectados.',
+        { capital: -10, reputacion: 5, bienestar: -10 },
+        {
+          learningPill:
+            'Compensación al Cliente: Reconocer las fallas con bonificaciones concretas transforma una mala experiencia en lealtad a largo plazo.',
+          outcomeText:
+            'El equipo cobró a mano toda la tarde y concilió las cuentas de noche. Las bonificaciones calmaron los ánimos de los clientes que más esperaron.',
+        }
+      ),
+    ],
+  }),
+
+  defineEvent({
+    id: 'imp_caida_agenda',
+    title: 'Caída de la Agenda y las Herramientas',
+    kind: 'unforeseen',
+    description:
+      'Una falla imprevista dejó fuera de servicio durante 6 horas la agenda y las herramientas con las que trabajás, en pleno horario de mayor demanda. Clientes molestos llaman sin parar.',
+    weight: 15,
+    when: { rubro: ['r3_servicios'] },
+    options: [
+      defineOption(
+        'Invertir en herramientas con respaldo y soporte técnico 24/7.',
+        { capital: -15, reputacion: 15, bienestar: 5 },
+        {
+          learningPill:
+            'Continuidad del Servicio: Invertir en respaldo cuesta dinero, pero cada caída del servicio erosiona la confianza del cliente y acelera las cancelaciones.',
+          outcomeText:
+            'Pasaste la agenda y las herramientas a una plataforma con respaldo. El costo fue alto, pero nunca más sufriste una caída prolongada.',
+        }
+      ),
+      defineOption(
+        'Reconstruir la agenda a mano y bonificar el próximo servicio a los afectados.',
+        { capital: -10, reputacion: 5, bienestar: -10 },
+        {
+          learningPill:
+            'Compensación al Cliente: Reconocer las fallas con bonificaciones concretas transforma una mala experiencia en lealtad a largo plazo.',
+          outcomeText:
+            'El equipo pasó la noche en vela reconstruyendo agenda y pedidos. Las bonificaciones calmaron los ánimos de los clientes clave.',
+        }
+      ),
+    ],
+  }),
+
+  defineEvent({
+    id: 'imp_corte_energia',
+    title: 'Corte de Energía en la Planta',
+    kind: 'unforeseen',
+    description:
+      'Un corte de energía imprevisto frenó tu planta durante 6 horas, en pleno horario de mayor demanda. Los pedidos se atrasan y los clientes reclaman.',
+    weight: 15,
+    when: { rubro: ['r4_produccion'] },
+    options: [
+      defineOption(
+        'Invertir en un generador propio y en mantenimiento preventivo permanente.',
+        { capital: -15, reputacion: 15, bienestar: 5 },
+        {
+          learningPill:
+            'Continuidad Operativa: Invertir en respaldo cuesta dinero, pero cada parada de la planta erosiona la confianza del cliente y acelera las cancelaciones.',
+          outcomeText:
+            'Instalaste un generador y un plan de mantenimiento. El costo fue alto, pero nunca más sufriste una parada prolongada.',
+        }
+      ),
+      defineOption(
+        'Reprogramar la producción con turnos extra y bonificar a los clientes afectados.',
+        { capital: -10, reputacion: 5, bienestar: -10 },
+        {
+          learningPill:
+            'Compensación al Cliente: Reconocer las fallas con bonificaciones concretas transforma una mala experiencia en lealtad a largo plazo.',
+          outcomeText:
+            'El equipo hizo turnos extra durante días para recuperar el atraso. Las bonificaciones calmaron los ánimos de los clientes con pedidos demorados.',
         }
       ),
     ],

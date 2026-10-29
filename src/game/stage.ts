@@ -28,6 +28,9 @@ export const STAGE_BY_EVENT: Record<string, Partial<EventStage>> = {
   crisis_reputacion_fuga: { stamp: 'DESCONFIANZA', ticker: ['El mercado habla de vos', 'Alerta de reputación'] },
   imp_salto_inflacionario: { stamp: 'INFLACIÓN', ticker: ['Mercados en alerta', 'Los precios se mueven'] },
   imp_caida_servidores: { stamp: 'CAÍDA', ticker: ['Fallas reportadas', 'Sistemas fuera de línea'] },
+  imp_corte_cobros: { stamp: 'CORTE', ticker: ['Cajas detenidas', 'Sistema fuera de línea'] },
+  imp_caida_agenda: { stamp: 'CAÍDA', ticker: ['Herramientas fuera de línea', 'Clientes esperando'] },
+  imp_corte_energia: { stamp: 'APAGÓN', ticker: ['Planta detenida', 'Pedidos en espera'] },
   imp_inspeccion_sorpresa: { stamp: 'INSPECCIÓN', ticker: ['Visita oficial', 'Revisión en curso'] },
   imp_viralizacion_inesperada: {
     tone: 'opportunity',

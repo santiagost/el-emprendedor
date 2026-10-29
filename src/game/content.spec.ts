@@ -45,17 +45,20 @@ describe('Integridad de Contenido (Content Spec)', () => {
   });
 
   it.each([10, 15])('cada fase tiene suficientes eventos base para sus turnos (partida de %i turnos)', (maxTurns) => {
-    const errors = validatePhasePacing(GAME_EVENTS, phasesFor(maxTurns));
+    const errors = validatePhasePacing(GAME_EVENTS, phasesFor(maxTurns), RUBROS);
     expect(errors).toEqual([]);
   });
 
   it('las sorpresas solo están en eventos principales de fase 3 y 4, sin minijuego, y contradicen su tendencia', () => {
     const errors: string[] = [];
-    let total = 0;
+    // Cada rubro ve 17 sorpresas: las versiones por rubro de un mismo evento no se suman
+    const totalByRubro = Object.fromEntries(RUBROS.map((r) => [r.id, 0]));
     for (const ev of GAME_EVENTS) {
       ev.options.forEach((op, i) => {
         if (!op.surprise) return;
-        total++;
+        for (const r of RUBROS) {
+          if (!ev.when?.rubro?.length || ev.when.rubro.includes(r.id)) totalByRubro[r.id]++;
+        }
         const where = `${ev.id} opción ${i + 1}`;
         if (ev.kind !== 'main' || ev.phaseId < 3) errors.push(`${where}: solo eventos principales de fase 3 o 4`);
         if (op.minigame) errors.push(`${where}: tiene minijuego`);
@@ -64,7 +67,7 @@ describe('Integridad de Contenido (Content Spec)', () => {
       });
     }
     expect(errors).toEqual([]);
-    expect(total).toBe(17);
+    expect(Object.values(totalByRubro)).toEqual(RUBROS.map(() => 17));
   });
 
   it('el template de autoría produce eventos válidos', () => {
@@ -83,12 +86,29 @@ describe('Integridad de Contenido (Content Spec)', () => {
     expect(validateConditionIds([withRubro('r2_comercio')], ARCHETYPES, FINANCINGS, RUBROS)).toEqual([]);
   });
 
-  it('los eventos de un solo rubro no cuentan como eventos base de la fase', () => {
+  it('un evento de un solo rubro cuenta como base solo para ese rubro', () => {
     const phase = phasesFor(15)[0];
     const base = { ..._templateBaseEvent, id: 'f1_base', phaseId: 1 as const };
     const gated = { ..._templateBaseEvent, id: 'f1_solo_comercio', phaseId: 1 as const, when: { rubro: ['r2_comercio'] } };
-    expect(validatePhasePacing([base, base, base], [phase])).toEqual([]);
-    expect(validatePhasePacing([base, base, gated], [phase])).toHaveLength(1);
+    const rubros = RUBROS.slice(0, 2); // tecnología y comercio
+    expect(validatePhasePacing([base, base, base], [phase], rubros)).toEqual([]);
+    // Con dos eventos para todos y uno solo de comercio, tecnología se queda sin el tercero
+    const errors = validatePhasePacing([base, base, gated], [phase], rubros);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain('r1_tecnologia');
+  });
+
+  it('cada rubro ve una versión de los eventos de software y las mismas cifras en todas', () => {
+    const family = (prefix: string) => GAME_EVENTS.filter((ev) => ev.id === prefix || ev.id.startsWith(`${prefix}_`));
+    const effectsOf = (ev: (typeof GAME_EVENTS)[number]) => ev.options.map((o) => JSON.stringify(o.effects));
+    for (const prefix of ['f1_mvp_calidad', 'f3_caida_servicio']) {
+      const versions = family(prefix);
+      expect(versions.map((ev) => ev.when?.rubro).sort()).toEqual(RUBROS.map((r) => [r.id]).sort());
+      versions.forEach((ev) => expect(effectsOf(ev), ev.id).toEqual(effectsOf(versions[0])));
+    }
+    const imprevistos = GAME_EVENTS.filter((ev) => ev.id === 'imp_caida_servidores' || ['imp_corte_cobros', 'imp_caida_agenda', 'imp_corte_energia'].includes(ev.id));
+    expect(imprevistos.map((ev) => ev.when?.rubro?.[0]).sort()).toEqual(RUBROS.map((r) => r.id).sort());
+    imprevistos.forEach((ev) => expect(effectsOf(ev), ev.id).toEqual(effectsOf(imprevistos[0])));
   });
 });
 
@@ -117,10 +137,15 @@ describe('Personalización con {nombre}', () => {
     expect(unknown).toEqual([]);
   });
 
-  it('hay entre 8 y 10 eventos de ejemplo con el token', () => {
+  it('cada rubro ve entre 8 y 10 eventos de ejemplo con el token', () => {
     const eventsWithToken = new Set(withToken.map((t) => t.where.split('.')[0]));
-    expect(eventsWithToken.size).toBeGreaterThanOrEqual(8);
-    expect(eventsWithToken.size).toBeLessThanOrEqual(10);
+    for (const rubro of RUBROS) {
+      const seen = GAME_EVENTS.filter(
+        (ev) => eventsWithToken.has(ev.id) && (!ev.when?.rubro?.length || ev.when.rubro.includes(rubro.id))
+      );
+      expect(seen.length, rubro.id).toBeGreaterThanOrEqual(8);
+      expect(seen.length, rubro.id).toBeLessThanOrEqual(10);
+    }
   });
 
   it('sin nombre, ningún texto queda con llaves, dobles espacios, espacios antes de puntuación ni minúscula inicial', () => {

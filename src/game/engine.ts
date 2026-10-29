@@ -25,9 +25,10 @@ export const getRandomWeightedEvent = (events: readonly GameEvent[], rng: RNG): 
   return rng.pickWeighted(events, (ev) => ev.weight ?? 10)
 };
 
-export const getInitialEvent = (rng: RNG): GameEvent => {
+/** Primer evento de la partida: de la fase 1, sin tags requeridos y que cumpla las condiciones del estado inicial (rubro, perfil). */
+export const getInitialEvent = (rng: RNG, state: GameState): GameEvent => {
   const phaseOneEvents = MAIN_EVENTS.filter(
-    (ev) => ev.phaseId === 1 && (!ev.requiredTags || ev.requiredTags.length === 0));
+    (ev) => ev.phaseId === 1 && (!ev.requiredTags || ev.requiredTags.length === 0) && passesWhenCondition(ev, state));
   return getRandomWeightedEvent(phaseOneEvents, rng);
 }
 

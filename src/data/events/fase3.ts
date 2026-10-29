@@ -128,7 +128,7 @@ export const fase3Events = [
                     minigame: {
                         kind: 'tapping',
                         title: 'Crunch nocturno',
-                        rule: 'Salen bugs en la entrega y se van solos en poco tiempo: tocá (o hacé clic en) cada uno para eliminarlo. Cuantos más elimines, mejor sale; cada vez aparecen más seguidos.',
+                        rule: 'Salen problemas en la entrega y se van solos en poco tiempo: tocá (o hacé clic en) cada uno para resolverlo. Cuantos más elimines, mejor sale; cada vez aparecen más seguidos.',
                         outcomeTextByPerformance: {
                             perfect: 'Te pusiste la empresa al hombro y lo sacaste adelante: entregas impecables y un cliente que lo notó. Pero trabajaste de madrugada durante semanas y quedaste al borde del colapso físico y mental.',
                             poor: 'Quisiste cubrir todo y no llegaste: las entregas se cayeron y perdiste a un cliente. A cambio, te rendiste a tiempo, dormiste y tu salud quedó casi intacta.',
@@ -204,6 +204,7 @@ export const fase3Events = [
         phaseId: 3,
         title: 'Caída del Servicio en Pleno Pico',
         weight: 12,
+        when: { rubro: ['r1_tecnologia'] },
         description: 'En el mejor momento de demanda, la plataforma se cae. Los clientes están furiosos y cada hora cuenta.',
         options: [
             defineOption(
@@ -230,6 +231,118 @@ export const fase3Events = [
                     addTags: ['equipo_sobrecargado'],
                     learningPill: 'Costo de la Improvisación: El parche rápido sostiene la facturación hoy y factura el cansancio del equipo mañana.',
                     outcomeText: 'Pusiste un parche rápido y seguiste vendiendo. Salvaguardaste la caja de la semana, pero el equipo vive con el temor constante de que el sistema explote en cualquier momento.',
+                }
+            )
+        ]
+    }),
+
+    // Variantes de f3_caida_servicio para los rubros que no son Tecnología: mismas cifras y etiquetas, otro contexto.
+    defineEvent({
+        id: 'f3_caida_servicio_comercio',
+        phaseId: 3,
+        title: 'Falla de Stock en Pleno Pico',
+        weight: 12,
+        when: { rubro: ['r2_comercio'] },
+        description: 'En el mejor momento de ventas, el sistema de cobros y stock falla. Hay colas en las cajas, los clientes están furiosos y cada hora cuenta.',
+        options: [
+            defineOption(
+                'Frenar las ventas nuevas hasta ordenar el sistema de stock y cobros.',
+                { capital: -10, reputacion: +15 },
+                {
+                    surprise: {
+                        effects: { capital: +5, reputacion: +15 },
+                        outcomeText: 'Pausaste las ventas para ordenar el stock y los cobros. Los clientes esperaron sin irse y, al reabrir, compraron todo lo que tenían pendiente: la pausa terminó dejando caja.',
+                    },
+                    addTags: ['procesos_solidos'],
+                    learningPill: 'Deuda Operativa: Frenar para ordenar duele en el corto plazo, pero vender sobre un sistema desordenado duele siempre.',
+                    outcomeText: 'Pausaste las ventas para ordenar el stock y rehacer el sistema de cobros. Dejaste de facturar unos días, pero ahora el negocio resiste los picos de venta sin pestañear.',
+                }
+            ),
+            defineOption(
+                'Aplicar un parche rápido y seguir vendiendo a toda máquina.',
+                { capital: +15, reputacion: -25, bienestar: -15 },
+                {
+                    surprise: {
+                        effects: { capital: -10, reputacion: -25, bienestar: -15 },
+                        outcomeText: 'Pusiste un parche rápido y seguiste vendiendo, pero el sistema falló en el peor momento: hubo que devolver ventas y pagar ayuda de urgencia. Perdiste caja, reputación y la paz del equipo.',
+                    },
+                    addTags: ['equipo_sobrecargado'],
+                    learningPill: 'Costo de la Improvisación: El parche rápido sostiene la facturación hoy y factura el cansancio del equipo mañana.',
+                    outcomeText: 'Pusiste un parche rápido y seguiste vendiendo. Salvaguardaste la caja de la semana, pero el equipo vive con el temor constante de que el sistema falle otra vez.',
+                }
+            )
+        ]
+    }),
+
+    defineEvent({
+        id: 'f3_caida_servicio_servicios',
+        phaseId: 3,
+        title: 'Agenda Desbordada en Pleno Pico',
+        weight: 12,
+        when: { rubro: ['r3_servicios'] },
+        description: 'En el mejor momento de demanda, la agenda se desordena: turnos duplicados, entregas atrasadas y clientes furiosos. Cada hora cuenta.',
+        options: [
+            defineOption(
+                'Frenar la toma de nuevos clientes hasta reordenar la operación.',
+                { capital: -10, reputacion: +15 },
+                {
+                    surprise: {
+                        effects: { capital: +5, reputacion: +15 },
+                        outcomeText: 'Pausaste la toma de nuevos clientes para reordenar la operación. Los clientes esperaron sin irse y, al reanudar, contrataron todo lo que tenían pendiente: la pausa terminó dejando caja.',
+                    },
+                    addTags: ['procesos_solidos'],
+                    learningPill: 'Deuda Operativa: Frenar para reordenar duele en el corto plazo, pero trabajar sobre una operación desordenada duele siempre.',
+                    outcomeText: 'Pausaste la toma de nuevos clientes para reordenar la agenda y los procesos. Dejaste de facturar unos días, pero ahora la operación resiste los picos de demanda sin pestañear.',
+                }
+            ),
+            defineOption(
+                'Improvisar sobre la marcha y seguir tomando trabajo a toda máquina.',
+                { capital: +15, reputacion: -25, bienestar: -15 },
+                {
+                    surprise: {
+                        effects: { capital: -10, reputacion: -25, bienestar: -15 },
+                        outcomeText: 'Improvisaste y seguiste tomando trabajo, pero la agenda se desbordó en el peor momento: hubo que devolver adelantos y compensar a los clientes. Perdiste caja, reputación y la paz del equipo.',
+                    },
+                    addTags: ['equipo_sobrecargado'],
+                    learningPill: 'Costo de la Improvisación: Improvisar sostiene la facturación hoy y factura el cansancio del equipo mañana.',
+                    outcomeText: 'Improvisaste y seguiste tomando trabajo. Salvaguardaste la facturación de la semana, pero el equipo vive con el temor constante de que la agenda vuelva a desbordarse.',
+                }
+            )
+        ]
+    }),
+
+    defineEvent({
+        id: 'f3_caida_servicio_produccion',
+        phaseId: 3,
+        title: 'Línea Detenida en Pleno Pico',
+        weight: 12,
+        when: { rubro: ['r4_produccion'] },
+        description: 'En el mejor momento de pedidos, una máquina clave se rompe y la línea se frena. Los clientes están furiosos y cada hora cuenta.',
+        options: [
+            defineOption(
+                'Frenar los pedidos nuevos hasta reparar y revisar toda la línea.',
+                { capital: -10, reputacion: +15 },
+                {
+                    surprise: {
+                        effects: { capital: +5, reputacion: +15 },
+                        outcomeText: 'Pausaste los pedidos para reparar y revisar toda la línea. Los clientes esperaron sin cancelar y, al retomar, compraron todo lo que tenían pendiente: la pausa terminó dejando caja.',
+                    },
+                    addTags: ['procesos_solidos'],
+                    learningPill: 'Mantenimiento Preventivo: Frenar para reparar duele en el corto plazo, pero producir con una línea averiada duele siempre.',
+                    outcomeText: 'Pausaste los pedidos para reparar y revisar toda la línea. Dejaste de despachar unos días, pero ahora la producción resiste los picos de demanda sin pestañear.',
+                }
+            ),
+            defineOption(
+                'Hacer una reparación provisoria y seguir produciendo a toda máquina.',
+                { capital: +15, reputacion: -25, bienestar: -15 },
+                {
+                    surprise: {
+                        effects: { capital: -10, reputacion: -25, bienestar: -15 },
+                        outcomeText: 'Hiciste una reparación provisoria y seguiste produciendo, pero la máquina volvió a fallar en el peor momento: hubo que rehacer pedidos y pagar un técnico de urgencia. Perdiste caja, reputación y la paz del equipo.',
+                    },
+                    addTags: ['equipo_sobrecargado'],
+                    learningPill: 'Costo de la Improvisación: Una reparación provisoria sostiene la producción hoy y factura el cansancio del equipo mañana.',
+                    outcomeText: 'Hiciste una reparación provisoria y seguiste produciendo. Salvaguardaste los despachos de la semana, pero el equipo vive con el temor constante de que la máquina falle otra vez.',
                 }
             )
         ]

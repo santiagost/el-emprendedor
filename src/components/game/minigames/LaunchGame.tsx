@@ -33,7 +33,7 @@ const RESULT_HOLD_MS = 1300;
 
 const OUTCOME_META: Record<RouletteOutcome, { label: string; text: string; fill: string; Icon: typeof CheckCircle2 }> = {
   success: { label: 'Éxito', text: 'Salió limpio.', fill: 'url(#seg-success)', Icon: CheckCircle2 },
-  minor: { label: 'Bug leve', text: 'Salió con algún bug.', fill: 'url(#seg-minor)', Icon: AlertTriangle },
+  minor: { label: 'Falla leve', text: 'Salió con alguna falla.', fill: 'url(#seg-minor)', Icon: AlertTriangle },
   critical: { label: 'Fallo crítico', text: 'Salió con un fallo serio.', fill: 'url(#seg-critical)', Icon: XOctagon },
 };
 

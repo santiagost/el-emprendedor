@@ -64,17 +64,19 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, p
     const seed = getInitialSeed();
     const seededRng = rng ?? createRng(seed);
     const savedSession = loadSavedSession(arquetipo.id, financiamiento.id);
+    const state: GameState = savedSession?.gameState ?? { ...startGame(arquetipo, financiamiento, maxTurns, rubroId), playerName };
     return {
       seed,
       rng: seededRng,
       saved: savedSession,
-      event: savedSession?.currentEvent ?? getInitialEvent(seededRng),
+      state,
+      event: savedSession?.currentEvent ?? getInitialEvent(seededRng, state),
     };
   });
   const { seed: initialSeed, rng: activeRng, saved } = initial;
 
 
-  const [gameState, setGameState] = useState<GameState>(() => saved?.gameState ?? { ...startGame(arquetipo, financiamiento, maxTurns, rubroId), playerName });
+  const [gameState, setGameState] = useState<GameState>(() => initial.state);
   const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(() => initial.event);
   const [step, setStep] = useState<GameStep>(() => saved?.step ?? 'decision');
 
@@ -163,7 +165,7 @@ export const useGameEngine = (arquetipo: Archetype, financiamiento: Financing, p
     // Volver a jugar conserva el nombre, la duración y el rubro de la partida anterior
     const initialState: GameState = { ...startGame(arquetipo, financiamiento, gameState.maxTurns, gameState.rubroId), playerName: gameState.playerName };
     setGameState(initialState);
-    setCurrentEvent(getInitialEvent(freshRng));
+    setCurrentEvent(getInitialEvent(freshRng, initialState));
     setStep('decision');
   };
 
