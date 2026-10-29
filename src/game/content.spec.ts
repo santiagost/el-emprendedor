@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { GAME_EVENTS } from '../data/events';
-import { PHASES } from './phases';
+import { phasesFor } from './phases';
 import { _templateBaseEvent, _templateGatedEvent } from '../data/events/_template';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
 import { intuitionMissMessage } from './intuition';
@@ -43,8 +43,8 @@ describe('Integridad de Contenido (Content Spec)', () => {
     expect(errors).toEqual([]);
   });
 
-  it('cada fase tiene suficientes eventos base para sus turnos', () => {
-    const errors = validatePhasePacing(GAME_EVENTS, PHASES);
+  it.each([10, 15])('cada fase tiene suficientes eventos base para sus turnos (partida de %i turnos)', (maxTurns) => {
+    const errors = validatePhasePacing(GAME_EVENTS, phasesFor(maxTurns));
     expect(errors).toEqual([]);
   });
 

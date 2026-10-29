@@ -1,6 +1,6 @@
 import type { DecisionLogEntry, GameState, GameStatus, Metrics } from '../types/game';
 import type { Tag } from '../data/tags';
-import { PHASES, type PhaseId } from './phases';
+import { phasesFor, type PhaseId } from './phases';
 import type { PhaseRecap } from './recap';
 import { METRIC_NAMES, type PivotMoment, type Retrospective, type Verdict } from './retrospective';
 import { personalize } from '../lib/personalize';
@@ -183,7 +183,7 @@ export function buildMetricCurves(state: GameState): MetricCurves | null {
     return { key, series, start: series[0], end: series[series.length - 1], delta: series[series.length - 1] - series[0] };
   });
 
-  const slots: PhaseSlot[] = PHASES.map((p) => ({
+  const slots: PhaseSlot[] = phasesFor(state.maxTurns).map((p) => ({
     phaseId: p.id,
     count: decisionLog.filter((e) => e.turn >= p.fromTurn && e.turn <= p.toTurn).length,
   })).filter((s) => s.count > 0);
@@ -235,10 +235,11 @@ export function buildTimeline(
   playerName?: string
 ): TimelinePhase[] {
   const gameOver = state.status.startsWith('game_over');
-  const reached = PHASES.filter((p) => journey.some((j) => j.phaseId === p.id));
+  const phases = phasesFor(state.maxTurns);
+  const reached = phases.filter((p) => journey.some((j) => j.phaseId === p.id));
   const lastReachedId = reached[reached.length - 1]?.id;
 
-  return PHASES.map((phase) => {
+  return phases.map((phase) => {
     const recap = journey.find((j) => j.phaseId === phase.id) ?? null;
     const decisions: TimelineDecision[] = [];
     state.decisionLog.forEach((entry, logIndex) => {

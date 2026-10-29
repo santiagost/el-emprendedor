@@ -16,7 +16,7 @@ import {
   rollSurprise,
 } from './engine';
 import { createRng } from './rng';
-import { MAX_TURNS } from './phases';
+import { MAX_TURNS, phasesFor } from './phases';
 import type { GameState, GameEvent, GameOption, Metrics } from '../types/game';
 import type { Tag } from '../data/tags';
 import { TAGS } from '../data/tags';
@@ -119,6 +119,31 @@ describe('Motor de Juego (Engine Spec)', () => {
       const result = advanceTurn(MAX_TURNS, MAX_TURNS);
       expect(result.nextTurn).toBe(MAX_TURNS);
       expect(result.nextPhaseId).toBe(4);
+    });
+
+    it('en la partida corta las fases son 2 · 2 · 3 · 3', () => {
+      expect(advanceTurn(2, 10)).toEqual({ nextTurn: 3, nextPhaseId: 2 });
+      expect(advanceTurn(4, 10)).toEqual({ nextTurn: 5, nextPhaseId: 3 });
+      expect(advanceTurn(7, 10)).toEqual({ nextTurn: 8, nextPhaseId: 4 });
+      expect(advanceTurn(10, 10)).toEqual({ nextTurn: 10, nextPhaseId: 4 });
+    });
+  });
+
+  describe('phasesFor', () => {
+    it.each([10, 15])('las fases de %i turnos son contiguas, empiezan en 1 y terminan en el último turno', (maxTurns) => {
+      const phases = phasesFor(maxTurns);
+      expect(phases.map((p) => p.id)).toEqual([1, 2, 3, 4]);
+      expect(phases[0].fromTurn).toBe(1);
+      expect(phases[phases.length - 1].toTurn).toBe(maxTurns);
+      phases.slice(1).forEach((p, i) => expect(p.fromTurn).toBe(phases[i].toTurn + 1));
+    });
+
+    it('la partida completa mantiene 3 · 3 · 4 · 5', () => {
+      expect(phasesFor(15).map((p) => p.toTurn - p.fromTurn + 1)).toEqual([3, 3, 4, 5]);
+    });
+
+    it('rechaza una duración sin fases definidas', () => {
+      expect(() => phasesFor(12)).toThrow(RangeError);
     });
   });
 

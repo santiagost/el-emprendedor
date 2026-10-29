@@ -1,4 +1,4 @@
-import { PHASES } from '../../game/phases';
+import { phasesFor } from '../../game/phases';
 
 interface TimelineBarProps {
   currentTurn: number;
@@ -8,12 +8,13 @@ interface TimelineBarProps {
 }
 
 export default function TimelineBar({ currentTurn, maxTurns, milestonePhaseId }: TimelineBarProps) {
-  const milestone = PHASES.find((p) => p.id === milestonePhaseId);
+  const phases = phasesFor(maxTurns);
+  const milestone = phases.find((p) => p.id === milestonePhaseId);
 
   return (
     <div className="w-full flex gap-2 sm:gap-3 py-0.5 sm:py-1">
-      {/* Turnos agrupados por fase (3 · 3 · 4 · 5): cada bloque muestra cuánto falta para el próximo resumen */}
-      {PHASES.map((phase) => {
+      {/* Turnos agrupados por fase (3 · 3 · 4 · 5 en la partida completa): cada bloque muestra cuánto falta para el próximo resumen */}
+      {phases.map((phase) => {
         const isPhaseActive = !milestone && currentTurn >= phase.fromTurn && currentTurn <= phase.toTurn;
         const isPhaseCompleted = currentTurn > phase.toTurn;
         const turnsInPhase = phase.toTurn - phase.fromTurn + 1;

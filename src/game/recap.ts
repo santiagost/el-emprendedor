@@ -1,5 +1,5 @@
 import type { DecisionLogEntry, GameState, Metrics } from '../types/game';
-import { PHASES, type PhaseId } from './phases';
+import { PHASES, phasesFor, type PhaseId } from './phases';
 import { personalize } from '../lib/personalize';
 
 export type TrendId =
@@ -207,7 +207,7 @@ const buildSeries = (state: GameState, phaseId: PhaseId, entries: DecisionLogEnt
 };
 
 const entriesOfPhase = (state: GameState, phaseId: PhaseId): DecisionLogEntry[] => {
-  const phase = PHASES.find((p) => p.id === phaseId);
+  const phase = phasesFor(state.maxTurns).find((p) => p.id === phaseId);
   if (!phase) return [];
   return state.decisionLog.filter((e) => e.turn >= phase.fromTurn && e.turn <= phase.toTurn);
 };
@@ -217,7 +217,8 @@ const entriesOfPhase = (state: GameState, phaseId: PhaseId): DecisionLogEntry[] 
  * Funciona con la partida en curso o terminada, con o sin nombre, y con fases sin decisiones.
  */
 export function buildPhaseRecap(state: GameState, phaseId: PhaseId, playerName?: string): PhaseRecap {
-  const phase = PHASES.find((p) => p.id === phaseId) ?? PHASES[0];
+  const phases = phasesFor(state.maxTurns);
+  const phase = phases.find((p) => p.id === phaseId) ?? phases[0];
   const entries = entriesOfPhase(state, phaseId);
   const last = entries[entries.length - 1];
   const endMetrics: Metrics = last?.metricsAfter ?? state.metrics;

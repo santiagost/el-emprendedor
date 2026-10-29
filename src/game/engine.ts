@@ -206,7 +206,7 @@ export function advanceTurn(
 ): { nextTurn: number, nextPhaseId: PhaseId } {
   const nextTurn = currentTurn + 1;
   const boundedTurn = Math.min(nextTurn, maxTurns);
-  const phase = phaseForTurn(boundedTurn);
+  const phase = phaseForTurn(boundedTurn, maxTurns);
   if (!phase) {
     throw new RangeError(`No hay una fase definida para el turno ${boundedTurn}`);
   }
