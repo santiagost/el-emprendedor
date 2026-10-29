@@ -50,10 +50,12 @@ interface GameProps {
   playerName?: string;
   /** Duración elegida en Setup; en una partida retomada se usa la guardada. */
   maxTurns?: number;
+  /** Rubro elegido en Setup; en una partida retomada se usa el guardado. */
+  rubroId?: string;
   onResetToSetup?: (currentName?: string) => void;
 }
 
-export default function Game({ arquetipo, financiamiento, playerName, maxTurns: chosenMaxTurns, onResetToSetup }: GameProps) {
+export default function Game({ arquetipo, financiamiento, playerName, maxTurns: chosenMaxTurns, rubroId, onResetToSetup }: GameProps) {
   const { theme, toggleTheme } = useTheme();
   const { fxEnabled, toggleFx } = useEffectsToggle();
   const { soundEnabled, toggleSound } = useSoundToggle();
@@ -70,7 +72,7 @@ export default function Game({ arquetipo, financiamiento, playerName, maxTurns: 
     advance,
     continueFromRecap,
     restartGame,
-  } = useGameEngine(arquetipo, financiamiento, playerName, undefined, chosenMaxTurns);
+  } = useGameEngine(arquetipo, financiamiento, playerName, undefined, chosenMaxTurns, rubroId);
 
   // Coreografía de interrupciones (Sprint 2 · A1). Recargar en medio de ella no la repite: la carta queda revelada.
   const [seenAlertForEventId, setSeenAlertForEventId] = useState<string | null>(() =>

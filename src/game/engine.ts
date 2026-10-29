@@ -36,7 +36,7 @@ export const validateInitialMetrics = (initialMetric: number, archetypeEffect = 
   return clamp(total);
 };
 
-export const startGame = (archetype: Archetype, financing: Financing, maxTurns: number = MAX_TURNS): GameState => {
+export const startGame = (archetype: Archetype, financing: Financing, maxTurns: number = MAX_TURNS, rubroId?: string): GameState => {
   const metrics: Metrics = {
     capital: validateInitialMetrics(INITIAL_STATE.metrics.capital, archetype.effects.capital, financing.effects.capital),
     bienestar: validateInitialMetrics(INITIAL_STATE.metrics.bienestar, archetype.effects.bienestar, financing.effects.bienestar),
@@ -49,7 +49,8 @@ export const startGame = (archetype: Archetype, financing: Financing, maxTurns: 
     initialMetrics: { ...metrics },
     activeTags: [...(archetype.tags || []), ...(financing.tags || [])],
     archetypeId: archetype.id,
-    financingId: financing.id
+    financingId: financing.id,
+    ...(rubroId ? { rubroId } : {}),
   };
 };
 
@@ -80,6 +81,12 @@ export const passesWhenCondition = (event: GameEvent, state: GameState): boolean
 
   if (when?.financing && when.financing.length > 0) {
     if (!state.financingId || !when.financing.includes(state.financingId)) {
+      return false;
+    }
+  }
+
+  if (when?.rubro && when.rubro.length > 0) {
+    if (!state.rubroId || !when.rubro.includes(state.rubroId)) {
       return false;
     }
   }

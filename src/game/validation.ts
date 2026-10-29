@@ -132,7 +132,8 @@ export const validatePhasePacing = (events: GameEvent[], phases: readonly Phase[
                 (ev.requiredTags && ev.requiredTags.length > 0) ||
                 (ev.when?.tags && ev.when.tags.length > 0) ||
                 (ev.when?.archetype && ev.when.archetype.length > 0) ||
-                (ev.when?.financing && ev.when.financing.length > 0);
+                (ev.when?.financing && ev.when.financing.length > 0) ||
+                (ev.when?.rubro && ev.when.rubro.length > 0);
             return !hasRequired;
         });
 
@@ -232,10 +233,12 @@ export const validateConditionIds = (
   events: GameEvent[],
   archetypes: { id: string }[],
   financings: { id: string }[],
+  rubros: { id: string }[],
 ): string[] => {
   const errores: string[] = [];
   const archetypeIds = new Set(archetypes.map((a) => a.id));
   const financingIds = new Set(financings.map((f) => f.id));
+  const rubroIds = new Set(rubros.map((r) => r.id));
   const eventIds = new Set(events.map((e) => e.id));
 
   events.forEach((ev) => {
@@ -248,6 +251,12 @@ export const validateConditionIds = (
     ev.when?.financing?.forEach((id) => {
       if (!financingIds.has(id)) {
         errores.push(`El evento "${ev.id}" referencia un financiamiento inexistente: "${id}".`);
+      }
+    });
+
+    ev.when?.rubro?.forEach((id) => {
+      if (!rubroIds.has(id)) {
+        errores.push(`El evento "${ev.id}" referencia un rubro inexistente: "${id}".`);
       }
     });
 

@@ -1,5 +1,6 @@
-import type { Archetype, Financing } from '../../types/game';
+import type { Archetype, Financing, Rubro } from '../../types/game';
 import { ARCHETYPES, FINANCINGS } from '../../data/archetypes';
+import { RUBROS } from '../../data/rubros';
 import { useState } from 'react';
 import { AlertTriangle, ArrowLeft, ArrowRight, Award, Check, DollarSign, Heart, UserRound } from 'lucide-react';
 import { GAME_DURATIONS, MAX_TURNS } from '../../game/phases';
@@ -27,7 +28,7 @@ const TOTAL_STEPS = 3;
 type SetupStep = 1 | 2 | 3;
 
 interface SetupProps {
-    onComplete: (arquetipo: Archetype, financiamiento: Financing, nombre?: string, maxTurns?: number) => void;
+    onComplete: (arquetipo: Archetype, financiamiento: Financing, nombre?: string, maxTurns?: number, rubroId?: string) => void;
     /** Nombre de la sesión actual (al volver a Setup desde una partida), si no hay uno recordado. */
     initialName?: string;
 }
@@ -40,6 +41,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
     const [financiamiento, setFinanciamiento] = useState<Financing | null>(null);
     const [step, setStep] = useState<SetupStep>(1);
     const [maxTurns, setMaxTurns] = useState<number>(MAX_TURNS);
+    const [rubro, setRubro] = useState<Rubro | null>(null);
     // Nombre opcional: se precarga el recordado (casilla tildada) o el de la sesión actual
     const [remembered] = useState(() => loadRememberedName());
     const [nombre, setNombre] = useState(() => remembered ?? initialName ?? '');
@@ -60,7 +62,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
             forgetName();
         }
         // Sin nombre: no se toca lo recordado (jugar anónimo una vez no lo borra)
-        onComplete(arquetipo, financiamiento, cleanName, maxTurns);
+        onComplete(arquetipo, financiamiento, cleanName, maxTurns, rubro?.id);
     };
 
     // Tarjeta de perfil o financiamiento: una ficha que se toca, con ícono, descripción e impacto inicial (C4)
@@ -159,6 +161,47 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                             Si cualquiera llega a 0%, perdés al instante.
                         </p>
                     </Card>
+
+                    {/* Rubro: de qué trata la empresa; hay que elegirlo, no viene marcado */}
+                    <fieldset className="space-y-2">
+                        <legend className="text-sm font-semibold text-slate-700 dark:text-slate-300">¿A qué rubro pertenece tu empresa?</legend>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            {RUBROS.map((item) => {
+                                const isSelected = rubro?.id === item.id;
+                                const Icon = CHOICE_ICONS[item.id] ?? UserRound;
+                                return (
+                                    <button
+                                        key={item.id}
+                                        type="button"
+                                        aria-pressed={isSelected}
+                                        onClick={() => setRubro(item)}
+                                        className={`relative flex flex-col gap-2 rounded-2xl border p-4 text-left transition-all ${
+                                            isSelected
+                                                ? 'border-brand-cobalt bg-blue-50/70 dark:bg-night-selected ring-2 ring-brand-cobalt/50'
+                                                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-night-surface hover:border-slate-300 dark:hover:border-slate-700'
+                                        }`}
+                                    >
+                                        <span className={`absolute top-4 right-4 flex h-6 w-6 items-center justify-center rounded-full border transition-colors ${
+                                            isSelected
+                                                ? 'border-brand-cobalt bg-brand-cobalt text-white'
+                                                : 'border-slate-300 dark:border-slate-700 text-transparent'
+                                        }`}>
+                                            <Check className="h-3.5 w-3.5" />
+                                        </span>
+                                        <span className="flex items-center gap-3 pr-8">
+                                            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                                                isSelected ? 'bg-brand-cobalt text-white' : 'bg-slate-100 text-slate-600 dark:bg-night-canvas dark:text-slate-300'
+                                            }`}>
+                                                <Icon className="h-5 w-5" aria-hidden="true" />
+                                            </span>
+                                            <span className="text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-100">{item.titulo}</span>
+                                        </span>
+                                        <span className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">{item.descripcion}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </fieldset>
 
                     {/* Duración: dos opciones, con la completa elegida de entrada */}
                     <fieldset className="space-y-2">
@@ -265,8 +308,19 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
             {/* Acciones: fijas abajo en móvil, en la zona del pulgar; debajo de las tarjetas desde sm */}
             <div className="fixed inset-x-0 bottom-0 z-20 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] bg-brand-canvas/95 dark:bg-night-canvas/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 sm:static sm:z-auto sm:mt-6 sm:p-0 sm:bg-transparent sm:dark:bg-transparent sm:backdrop-blur-none sm:border-0">
                 {step === 1 && (
-                    <Button size="md" onClick={() => setStep(2)} className="w-full">
-                        Seguir: tu perfil <ArrowRight className="h-4 w-4" />
+                    <Button
+                        size="md"
+                        onClick={() => setStep(2)}
+                        disabled={!rubro}
+                        className="w-full disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 dark:disabled:bg-slate-800 dark:disabled:text-slate-400"
+                    >
+                        {rubro ? (
+                            <>
+                                Seguir: tu perfil <ArrowRight className="h-4 w-4" />
+                            </>
+                        ) : (
+                            'Elegí un rubro para seguir'
+                        )}
                     </Button>
                 )}
                 {step === 2 && (

@@ -241,6 +241,11 @@ describe('Motor de Juego (Engine Spec)', () => {
       expect(state.activeTags).toEqual(['calidad_producto', 'deuda_riesgosa']);
     });
 
+    it('guarda el rubro elegido y no inventa uno cuando no hay', () => {
+      expect(startGame(ARCHETYPES[0], FINANCINGS[0], 15, 'r2_comercio').rubroId).toBe('r2_comercio');
+      expect(startGame(ARCHETYPES[0], FINANCINGS[0]).rubroId).toBeUndefined();
+    });
+
     it('arranca con la duración elegida y, sin elegir, con la completa', () => {
       expect(startGame(ARCHETYPES[0], FINANCINGS[0], 10).maxTurns).toBe(10);
       expect(startGame(ARCHETYPES[0], FINANCINGS[0]).maxTurns).toBe(MAX_TURNS);
@@ -316,6 +321,15 @@ describe('Motor de Juego (Engine Spec)', () => {
 
       expect(passesWhenCondition(gated, stateWith({ financingId: 'f1_bootstrap' }))).toBe(true);
       expect(passesWhenCondition(gated, stateWith({ financingId: 'f2_prestamo_bancario' }))).toBe(false);
+    });
+
+    it('when.rubro: filtra por el rubro de la empresa y no pasa en partidas sin rubro', () => {
+      const gated: GameEvent = { ...baseEvent, when: { rubro: ['r2_comercio', 'r4_produccion'] } };
+
+      expect(passesWhenCondition(gated, stateWith({ rubroId: 'r2_comercio' }))).toBe(true);
+      expect(passesWhenCondition(gated, stateWith({ rubroId: 'r4_produccion' }))).toBe(true);
+      expect(passesWhenCondition(gated, stateWith({ rubroId: 'r1_tecnologia' }))).toBe(false);
+      expect(passesWhenCondition(gated, stateWith())).toBe(false);
     });
 
     it('when.playedBefore: exige que TODOS los eventos estén en history', () => {

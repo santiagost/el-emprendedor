@@ -3,6 +3,7 @@ import { GAME_EVENTS } from '../data/events';
 import { phasesFor } from './phases';
 import { _templateBaseEvent, _templateGatedEvent } from '../data/events/_template';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
+import { RUBROS } from '../data/rubros';
 import { intuitionMissMessage } from './intuition';
 import { KNOWN_TOKENS, NAME_TOKEN, personalize } from '../lib/personalize';
 
@@ -38,8 +39,8 @@ describe('Integridad de Contenido (Content Spec)', () => {
     expect(errors).toEqual([]);
   });
 
-  it('los ids de condiciones ricas (archetype, financing, playedBefore) existen', () => {
-    const errors = validateConditionIds(GAME_EVENTS, ARCHETYPES, FINANCINGS);
+  it('los ids de condiciones ricas (archetype, financing, rubro, playedBefore) existen', () => {
+    const errors = validateConditionIds(GAME_EVENTS, ARCHETYPES, FINANCINGS, RUBROS);
     expect(errors).toEqual([]);
   });
 
@@ -74,6 +75,20 @@ describe('Integridad de Contenido (Content Spec)', () => {
       ...validateScheduledEvents([_templateBaseEvent, _templateGatedEvent]),
     ];
     expect(errors).toEqual([]);
+  });
+
+  it('un evento con un rubro inexistente se detecta y uno con rubro válido no', () => {
+    const withRubro = (rubro: string) => ({ ..._templateBaseEvent, when: { rubro: [rubro] } });
+    expect(validateConditionIds([withRubro('r9_inexistente')], ARCHETYPES, FINANCINGS, RUBROS)).toHaveLength(1);
+    expect(validateConditionIds([withRubro('r2_comercio')], ARCHETYPES, FINANCINGS, RUBROS)).toEqual([]);
+  });
+
+  it('los eventos de un solo rubro no cuentan como eventos base de la fase', () => {
+    const phase = phasesFor(15)[0];
+    const base = { ..._templateBaseEvent, id: 'f1_base', phaseId: 1 as const };
+    const gated = { ..._templateBaseEvent, id: 'f1_solo_comercio', phaseId: 1 as const, when: { rubro: ['r2_comercio'] } };
+    expect(validatePhasePacing([base, base, base], [phase])).toEqual([]);
+    expect(validatePhasePacing([base, base, gated], [phase])).toHaveLength(1);
   });
 });
 

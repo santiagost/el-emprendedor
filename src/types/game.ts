@@ -70,6 +70,7 @@ export interface EventConditions {
     forbiddenTags?: Tag[]; // Tags que NO debe tener
     archetype?: string[],
     financing?: string[],
+    rubro?: string[],
     metrics?: Partial<Record<keyof Metrics, { lt?: number; gt?: number }>>;
     playedBefore?: string[]; // IDs de eventos que ya deben estar en history
 }
@@ -139,6 +140,8 @@ export interface GameState {
     surprisesPlayed?: number;
     archetypeId?: string;
     financingId?: string;
+    /** Rubro de la empresa elegido en Setup; las partidas guardadas antes de que existiera no lo tienen. */
+    rubroId?: string;
     /** Nombre opcional del jugador; resuelve el token {nombre} de los textos en el render. */
     playerName?: string;
 }
@@ -150,6 +153,12 @@ export interface Archetype {
     impactPreview: ImpactPreview;
     effects: Partial<Metrics>;
     tags?: Tag[];
+}
+
+export interface Rubro {
+    id: string;
+    titulo: string;
+    descripcion: string;
 }
 
 export interface Financing {
