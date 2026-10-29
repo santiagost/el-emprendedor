@@ -815,3 +815,46 @@ describe('rescate (una vez por partida)', () => {
     expect(applyDecision({ ...legacy, metrics: { capital: 5, bienestar: 50, reputacion: 50 } } as GameState, fatal, 'f1_x').status).toBe('playing');
   });
 });
+
+describe('hito de cada fase', () => {
+  const state = (turn: number, maxTurns: number, rubroId = 'r1_tecnologia'): GameState => {
+    const phase = phasesFor(maxTurns).find((p) => turn >= p.fromTurn && turn <= p.toTurn)!;
+    return { ...startGame(ARCHETYPES[0], FINANCINGS[0], maxTurns, rubroId), currentTurn: turn, phaseId: phase.id };
+  };
+
+  it.each([10, 15])('el primer turno de cada fase sale su hito (partida de %i turnos), con cualquier semilla', (maxTurns) => {
+    for (const phase of phasesFor(maxTurns)) {
+      for (let seed = 1; seed <= 30; seed++) {
+        const result = selectNextEvent(state(phase.fromTurn, maxTurns), createRng(seed));
+        expect(result.event?.milestone, `fase ${phase.id} semilla ${seed}`).toBe(true);
+        expect(result.event?.phaseId).toBe(phase.id);
+      }
+    }
+  });
+
+  it('los demás turnos de la fase no sacan el hito: ya salió o se elige del resto', () => {
+    const phase = phasesFor(15)[1];
+    const played = state(phase.fromTurn + 1, 15);
+    const withHistory: GameState = { ...played, history: ['f2_primera_contratacion'] };
+    for (let seed = 1; seed <= 30; seed++) {
+      expect(selectNextEvent(withHistory, createRng(seed)).event?.milestone).toBeUndefined();
+    }
+  });
+
+  it('el hito va antes que un evento diferido que ya vencía', () => {
+    const phase = phasesFor(15)[1];
+    const s: GameState = { ...state(phase.fromTurn, 15), pendingEvents: [{ eventId: 'f2_proveedor_critico', triggerTurn: phase.fromTurn }] };
+    const result = selectNextEvent(s, createRng(1));
+    expect(result.event?.milestone).toBe(true);
+    expect(result.remainingPending).toEqual(s.pendingEvents);
+  });
+
+  it('el primer evento de la partida es el hito de la fase 1 de su rubro', () => {
+    for (const rubro of RUBROS) {
+      for (let seed = 1; seed <= 20; seed++) {
+        const ev = getInitialEvent(createRng(seed), startGame(ARCHETYPES[0], FINANCINGS[0], 15, rubro.id));
+        expect(ev.milestone, rubro.id).toBe(true);
+      }
+    }
+  });
+});

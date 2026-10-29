@@ -7,6 +7,7 @@ export const fase1Events = [
         title: 'El Primer Prototipo',
         description: 'El producto funciona pero tiene fallas visuales y bugs menores. ¿Cómo salís al mercado, {nombre}?',
         weight: 10,
+        milestone: true,
         when: { rubro: ['r1_tecnologia'] },
         options: [
             defineOption(
@@ -57,6 +58,7 @@ export const fase1Events = [
         title: 'La Primera Apertura',
         description: 'Tu local está casi listo, pero la vidriera está a medio armar, algunos precios están mal cargados y faltan productos del surtido. ¿Cómo abrís al público, {nombre}?',
         weight: 10,
+        milestone: true,
         when: { rubro: ['r2_comercio'] },
         options: [
             defineOption(
@@ -106,6 +108,7 @@ export const fase1Events = [
         title: 'El Primer Servicio',
         description: 'Tu servicio funciona, pero la propuesta tiene detalles sin pulir: materiales a medio terminar y procesos que todavía improvisás. ¿Cómo salís a ofrecerlo, {nombre}?',
         weight: 10,
+        milestone: true,
         when: { rubro: ['r3_servicios'] },
         options: [
             defineOption(
@@ -155,6 +158,7 @@ export const fase1Events = [
         title: 'El Primer Lote',
         description: 'El primer lote salió con terminaciones irregulares y algunos defectos menores. ¿Cómo salís a vender, {nombre}?',
         weight: 10,
+        milestone: true,
         when: { rubro: ['r4_produccion'] },
         options: [
             defineOption(

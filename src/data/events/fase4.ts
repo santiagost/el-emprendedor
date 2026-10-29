@@ -139,6 +139,7 @@ export const fase4Events = [
         phaseId: 4,
         title: 'Soltar la Operación',
         weight: 10,
+        milestone: true,
         description: 'La empresa ya funciona sin vos en el día a día, {nombre}. Podés contratar un gerente general y soltar, o seguir decidiendo cada detalle.',
         options: [
             defineOption(

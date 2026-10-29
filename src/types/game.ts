@@ -82,6 +82,8 @@ export interface GameEvent {
     description: string;
     kind?: GameEventKind;
     weight?: number;
+    /** Hito de su fase: sale en el primer turno de la fase, antes que cualquier otro evento. Debe haber uno por fase y rubro. */
+    milestone?: true;
     when?: EventConditions;
     requiredTags?: Tag[];  // Compatibilidad con engine.ts actual
     forbiddenTags?: Tag[];

@@ -39,6 +39,7 @@ export const defineEvent = (e: {
     title: string;
     description: string;
     weight?: number;
+    milestone?: true;
     when?: EventConditions;
     options: [GameOption, GameOption] | [GameOption, GameOption, GameOption];
 }): GameEvent => {
@@ -63,6 +64,7 @@ export const defineEvent = (e: {
         title: e.title,
         description: e.description,
         weight: e.weight ?? 10,
+        ...(e.milestone ? { milestone: true as const } : {}),
         when: e.when,
         requiredTags: e.when?.tags,
         forbiddenTags: e.when?.forbiddenTags,

@@ -12,6 +12,7 @@ import {
   validateOptionsAndPills,
   validateTagsIntegrity,
   validatePhasePacing,
+  validateMilestones,
   validateScheduledEvents,
   validateConditionIds,
   detectOrphanTags,
@@ -47,6 +48,20 @@ describe('Integridad de Contenido (Content Spec)', () => {
   it.each([10, 15])('cada fase tiene suficientes eventos base para sus turnos (partida de %i turnos)', (maxTurns) => {
     const errors = validatePhasePacing(GAME_EVENTS, phasesFor(maxTurns), RUBROS);
     expect(errors).toEqual([]);
+  });
+
+  it('cada fase tiene un solo hito, sin condiciones de entrada salvo el rubro', () => {
+    expect(validateMilestones(GAME_EVENTS, phasesFor(15), RUBROS)).toEqual([]);
+  });
+
+  it('validateMilestones detecta fases sin hito, con dos, o con hitos condicionados', () => {
+    const base = GAME_EVENTS.filter((ev) => !ev.milestone);
+    const phases = phasesFor(15);
+    expect(validateMilestones(base, phases, RUBROS).length).toBe(phases.length * RUBROS.length);
+    const dup = [...GAME_EVENTS, { ...GAME_EVENTS.find((ev) => ev.id === 'f2_primera_contratacion')!, id: 'f2_otro_hito' }];
+    expect(validateMilestones(dup, phases, RUBROS).some((e) => e.includes('tiene 2 hitos'))).toBe(true);
+    const gated = GAME_EVENTS.map((ev) => (ev.id === 'f3_ronda_inversion' ? { ...ev, when: { tags: ['cultura_lean' as const] } } : ev));
+    expect(validateMilestones(gated, phases, RUBROS).some((e) => e.includes('condiciones de entrada'))).toBe(true);
   });
 
   it('las sorpresas solo están en eventos principales de fase 3 y 4, sin minijuego, y contradicen su tendencia', () => {

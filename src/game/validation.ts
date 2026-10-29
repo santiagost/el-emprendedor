@@ -153,6 +153,44 @@ export const validatePhasePacing = (events: GameEvent[], phases: readonly Phase[
     return errores;
 }
 
+/**
+ * Cada fase tiene exactamente un hito para cualquier rubro que se elija: un evento principal marcado `milestone`
+ * y sin condiciones de tags, perfil o financiamiento (si las tuviera, podría no salir en el primer turno).
+ */
+export const validateMilestones = (events: GameEvent[], phases: readonly Phase[], rubros: { id: string }[]): string[] => {
+    const errores: string[] = [];
+    const milestones = events.filter((ev) => ev.milestone);
+
+    milestones.forEach((ev) => {
+        if (ev.kind !== 'main' && ev.kind !== undefined) {
+            errores.push(`El hito "${ev.id}" debe ser un evento principal, no de tipo "${ev.kind}".`);
+        }
+        const gated =
+            (ev.when?.tags?.length ?? 0) > 0 ||
+            (ev.when?.archetype?.length ?? 0) > 0 ||
+            (ev.when?.financing?.length ?? 0) > 0 ||
+            (ev.when?.metrics !== undefined) ||
+            (ev.when?.playedBefore?.length ?? 0) > 0 ||
+            (ev.requiredTags?.length ?? 0) > 0;
+        if (gated) {
+            errores.push(`El hito "${ev.id}" tiene condiciones de entrada; solo se permite condicionarlo por rubro.`);
+        }
+    });
+
+    phases.forEach((phase) => {
+        rubros.forEach((rubro) => {
+            const count = milestones.filter(
+                (ev) => ev.phaseId === phase.id && (!ev.when?.rubro?.length || ev.when.rubro.includes(rubro.id))
+            ).length;
+            if (count !== 1) {
+                errores.push(`Fase ${phase.id} ("${phase.label}") con rubro ${rubro.id}: tiene ${count} hitos y debe tener exactamente 1.`);
+            }
+        });
+    });
+
+    return errores;
+}
+
 export const validateScheduledEvents = (events: GameEvent[]): string[] => {
   const errores: string[] = [];
   const existingIds = new Set(events.map((e) => e.id));

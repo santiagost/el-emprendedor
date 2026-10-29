@@ -40,6 +40,7 @@ export const fase3Events = [
         phaseId: 3,
         title: 'Llega un Fondo de Inversión',
         weight: 10,
+        milestone: true,
         description: '{nombre}, un fondo de Venture Capital ofrece 200k USD, pero exige el 35% de la empresa y una silla con derecho a veto en el directorio.',
         options: [
             defineOption(

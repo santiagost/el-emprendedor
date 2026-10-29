@@ -29,7 +29,9 @@ export const getRandomWeightedEvent = (events: readonly GameEvent[], rng: RNG): 
 export const getInitialEvent = (rng: RNG, state: GameState): GameEvent => {
   const phaseOneEvents = MAIN_EVENTS.filter(
     (ev) => ev.phaseId === 1 && (!ev.requiredTags || ev.requiredTags.length === 0) && passesWhenCondition(ev, state));
-  return getRandomWeightedEvent(phaseOneEvents, rng);
+  // El primer turno es el primero de la fase 1: ahí sale su hito
+  const milestones = phaseOneEvents.filter((ev) => ev.milestone);
+  return getRandomWeightedEvent(milestones.length > 0 ? milestones : phaseOneEvents, rng);
 }
 
 export const validateInitialMetrics = (initialMetric: number, archetypeEffect = 0, financingEffect = 0): number => {
@@ -115,7 +117,19 @@ export interface SelectionResult {
   endedEarly: boolean;
 }
 
+const isFirstTurnOfPhase = (state: GameState): boolean => state.currentTurn === phaseForTurn(state.currentTurn, state.maxTurns)?.fromTurn;
+
 export const selectNextEvent = (state: GameState, rng: RNG): SelectionResult => {
+  // El hito de la fase sale en su primer turno, antes que los eventos diferidos y el resto del pool
+  if (isFirstTurnOfPhase(state)) {
+    const milestones = MAIN_EVENTS.filter(
+      (ev) => ev.milestone && ev.phaseId === state.phaseId && !state.history.includes(ev.id) && passesWhenCondition(ev, state)
+    );
+    if (milestones.length > 0) {
+      return { event: getRandomWeightedEvent(milestones, rng), remainingPending: state.pendingEvents, endedEarly: false };
+    }
+  }
+
   const eventsMap = new Map<string, GameEvent>(GAME_EVENTS.map(
     (ev) => [ev.id, ev]));
 

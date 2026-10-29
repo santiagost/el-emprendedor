@@ -92,6 +92,7 @@ export const fase2Events = [
         phaseId: 2,
         title: 'La Primera Contratación Clave',
         weight: 10,
+        milestone: true,
         description: 'La demanda supera lo que podés sostener solo, {nombre}. Necesitás sumar a alguien fuerte al equipo, pero cada perfil implica una apuesta distinta.',
         options: [
             defineOption(
