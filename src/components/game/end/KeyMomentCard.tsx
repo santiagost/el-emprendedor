@@ -43,7 +43,7 @@ export default function KeyMomentCard({ retrospective, outlook, lost }: KeyMomen
                 <span className="flex-1 w-0.5 bg-brand-cobalt dark:bg-blue-500" aria-hidden="true" />
               </div>
               <div className="pb-3.5 min-w-0">
-                <p className={`${LABEL} text-brand-cobalt-hover dark:text-blue-300`}>Mes {main.turn}</p>
+                <p className={`${LABEL} text-brand-cobalt-hover dark:text-blue-300`}>Año {main.turn}</p>
                 <p className="text-base font-extrabold leading-snug text-slate-900 dark:text-slate-100">{main.eventTitle}</p>
               </div>
 
@@ -114,7 +114,7 @@ export default function KeyMomentCard({ retrospective, outlook, lost }: KeyMomen
                 {others.map((p) => (
                   <li key={p.analysis.logIndex} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 space-y-1.5">
                     <p className={`${LABEL} text-brand-cobalt-hover dark:text-blue-300`}>
-                      Mes {p.turn} · {p.eventTitle}
+                      Año {p.turn} · {p.eventTitle}
                     </p>
                     <p className="text-sm leading-snug text-slate-900 dark:text-slate-100">
                       <strong className="font-extrabold">Elegiste:</strong> {p.chosenText}

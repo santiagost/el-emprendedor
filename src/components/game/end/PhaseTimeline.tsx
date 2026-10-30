@@ -97,7 +97,7 @@ export default function PhaseTimeline({ phases }: { phases: TimelinePhase[] }) {
                 >
                   <span className="space-y-0.5">
                     <span className="block text-xs font-extrabold uppercase tracking-wider text-brand-cobalt-hover dark:text-blue-300">
-                      Fase {p.phaseId} · Meses {p.fromTurn} a {p.toTurn}
+                      Fase {p.phaseId} · Años {p.fromTurn} a {p.toTurn}
                     </span>
                     <span className="block text-base font-extrabold leading-tight text-slate-900 dark:text-slate-100">{p.label}</span>
                   </span>
@@ -119,7 +119,7 @@ export default function PhaseTimeline({ phases }: { phases: TimelinePhase[] }) {
                   {p.recap && <span className="text-sm leading-snug text-slate-900 dark:text-slate-100">{p.recap.headline}</span>}
                   {p.recap?.keyDecision && (
                     <span className="text-sm leading-snug text-slate-600 dark:text-slate-300">
-                      <strong className="font-extrabold text-slate-900 dark:text-slate-100">Decisión clave:</strong> «{p.recap.keyDecision.text}» (mes {p.recap.keyDecision.turn})
+                      <strong className="font-extrabold text-slate-900 dark:text-slate-100">Decisión clave:</strong> «{p.recap.keyDecision.text}» (año {p.recap.keyDecision.turn})
                     </span>
                   )}
                   {p.recap && <span className="text-xs text-slate-600 dark:text-slate-400">{interruptionsText(p.recap.interruptions)}</span>}
@@ -133,7 +133,7 @@ export default function PhaseTimeline({ phases }: { phases: TimelinePhase[] }) {
               ) : (
                 <div className="mb-4 lg:mb-0 flex flex-col gap-1.5 p-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400">
                   <span className="text-xs font-extrabold uppercase tracking-wider">
-                    Fase {p.phaseId} · Meses {p.fromTurn} a {p.toTurn}
+                    Fase {p.phaseId} · Años {p.fromTurn} a {p.toTurn}
                   </span>
                   <span className="text-base font-extrabold leading-tight">{p.label}</span>
                   <span className="text-sm">No llegaste a esta fase.</span>

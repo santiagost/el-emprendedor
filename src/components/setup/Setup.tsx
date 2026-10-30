@@ -145,7 +145,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                             Vas a fundar una empresa
                         </h1>
                         <p className="max-w-2xl text-base text-slate-600 dark:text-slate-400">
-                            En cada mes aparece una situación real de un emprendimiento y elegís qué hacer. Al final ves cómo quedó tu empresa y qué aprendiste del camino.
+                            En cada año aparece una situación real de un emprendimiento y elegís qué hacer. Al final ves cómo quedó tu empresa y qué aprendiste del camino.
                         </p>
                     </div>
 
@@ -234,7 +234,7 @@ export default function Setup({ onComplete, initialName }: SetupProps) {
                                             <Check className="h-3.5 w-3.5" />
                                         </span>
                                         <span className="text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-100">
-                                            {option.label} <span className="font-semibold text-slate-500 dark:text-slate-400">· {option.turns} meses</span>
+                                            {option.label} <span className="font-semibold text-slate-500 dark:text-slate-400">· {option.turns} años</span>
                                         </span>
                                         <span className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">{option.hint}</span>
                                     </button>

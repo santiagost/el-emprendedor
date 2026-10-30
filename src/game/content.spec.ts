@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { GAME_EVENTS, MAIN_EVENTS } from '../data/events';
 import { phasesFor } from './phases';
-import { _templateBaseEvent, _templateGatedEvent } from '../data/events/_template';
+import { _templateBaseEvent, _templateGatedEvent, _templateRubroVariantEvent, _templateMilestoneEvent, _templateRescueEvent } from '../data/events/_template';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
 import { RUBROS } from '../data/rubros';
 import { startGame } from './engine';
@@ -19,6 +19,8 @@ import {
   detectOrphanTags,
   detectDuplicateImpacts,
 } from './validation';
+
+const TEMPLATES = [_templateBaseEvent, _templateGatedEvent, _templateRubroVariantEvent, _templateMilestoneEvent, _templateRescueEvent];
 
 describe('Integridad de Contenido (Content Spec)', () => {
   it('todos los eventos tienen IDs únicos y prefijo correcto de fase', () => {
@@ -88,10 +90,10 @@ describe('Integridad de Contenido (Content Spec)', () => {
 
   it('el template de autoría produce eventos válidos', () => {
     const errors = [
-      ...validateEventIds([_templateBaseEvent, _templateGatedEvent]),
-      ...validateOptionsAndPills([_templateBaseEvent, _templateGatedEvent]),
-      ...validateTagsIntegrity([_templateBaseEvent, _templateGatedEvent]),
-      ...validateScheduledEvents([_templateBaseEvent, _templateGatedEvent]),
+      ...validateEventIds(TEMPLATES),
+      ...validateOptionsAndPills(TEMPLATES),
+      ...validateTagsIntegrity(TEMPLATES),
+      ...validateScheduledEvents(TEMPLATES),
     ];
     expect(errors).toEqual([]);
   });

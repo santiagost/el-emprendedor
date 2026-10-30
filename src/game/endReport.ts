@@ -131,7 +131,7 @@ export function buildWhyLine(state: GameState): WhyLine {
     const floor = Math.floor(Math.min(...METRIC_KEYS.map((k) => metrics[k])) / 5) * 5;
     return {
       strong: floor >= 60 ? `Las tres métricas cerraron arriba de ${floor}.` : 'Llegaste al final con las tres métricas en pie.',
-      rest: `Llegaste al mes ${turn} con ${summary[0]}, ${summary[1]} y ${summary[2]}.${rescued ? ' Para llegar usaste tu único rescate.' : ''}`,
+      rest: `Llegaste al año ${turn} con ${summary[0]}, ${summary[1]} y ${summary[2]}.${rescued ? ' Para llegar usaste tu único rescate.' : ''}`,
     };
   }
 
@@ -139,13 +139,13 @@ export function buildWhyLine(state: GameState): WhyLine {
   if (failed) {
     const others = METRIC_KEYS.filter((k) => k !== failed);
     return {
-      strong: `${METRIC_SUBJECT[failed]} llegó a ${metrics[failed]}% en el mes ${turn} de ${maxTurns}.`,
+      strong: `${METRIC_SUBJECT[failed]} llegó a ${metrics[failed]}% en el año ${turn} de ${maxTurns}.`,
       rest: `Las otras dos métricas cerraron así: ${METRIC_LOWER[others[0]]} ${metrics[others[0]]}% y ${METRIC_LOWER[others[1]]} ${metrics[others[1]]}%.${rescued ? ' Ya habías usado tu único rescate.' : ''}`,
     };
   }
 
   return {
-    strong: `Se agotaron los eventos disponibles en el mes ${turn}.`,
+    strong: `Se agotaron los eventos disponibles en el año ${turn}.`,
     rest: `Cerraste con ${summary[0]}, ${summary[1]} y ${summary[2]}.`,
   };
 }
@@ -298,15 +298,15 @@ export function buildOutlook(state: GameState, retrospective: Retrospective): Ou
     if (hi <= 0) {
       return {
         big: 'Casi igual',
-        small: `${capitalize(METRIC_LOWER[target])} habría aguantado un poco más, pero probablemente el final no cambiaba. Caíste en el mes ${lastTurn}.`,
+        small: `${capitalize(METRIC_LOWER[target])} habría aguantado un poco más, pero probablemente el final no cambiaba. Caíste en el año ${lastTurn}.`,
         altBenefit,
       };
     }
     const from = lastTurn + lo;
     const to = lastTurn + hi;
     return {
-      big: from === to ? `Mes ${from}` : `Mes ${from} a ${to}`,
-      small: `Hasta dónde habrías llegado con los otros caminos. Caíste en el mes ${lastTurn}.`,
+      big: from === to ? `Año ${from}` : `Año ${from} a ${to}`,
+      small: `Hasta dónde habrías llegado con los otros caminos. Caíste en el año ${lastTurn}.`,
       altBenefit,
     };
   }

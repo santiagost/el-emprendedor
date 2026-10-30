@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, checkTurnInterruption, rollSurprise, SURPRISE_MAX } from './engine';
+import { startGame, getInitialEvent, selectNextEvent, applyDecision, advanceTurn, checkTurnInterruption, selectRescueEvent, rollSurprise, SURPRISE_MAX } from './engine';
 import { createRng } from './rng';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
 import { RUBROS } from '../data/rubros';
@@ -69,8 +69,13 @@ function simulateGame(strategy: Strategy, seed: number, maxTurns: number): { sta
 
     if (state.status !== 'playing') break;
 
-    // Replica exactamente el advance() del hook:
-    const isInterruption = currentEvent.kind === 'crisis' || currentEvent.kind === 'unforeseen';
+    // Replica exactamente el advance() del hook: primero el rescate pendiente, después las interrupciones
+    const rescue = selectRescueEvent(state);
+    if (rescue) {
+      currentEvent = rescue;
+      continue;
+    }
+    const isInterruption = currentEvent.kind === 'crisis' || currentEvent.kind === 'unforeseen' || currentEvent.kind === 'rescue';
     if (!isInterruption) {
       const interruption = checkTurnInterruption(state, rng);
       if (interruption) {

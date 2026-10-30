@@ -49,7 +49,7 @@ export default function TimelineBar({ currentTurn, maxTurns, milestonePhaseId }:
                 return (
                   <div
                     key={turn}
-                    title={`Mes ${turn} de ${maxTurns}`}
+                    title={`Año ${turn} de ${maxTurns}`}
                     style={inMilestone ? ({ '--i': index } as React.CSSProperties) : undefined}
                     className={`h-1.5 sm:h-2 flex-1 rounded-full border transition-all duration-300 ${barStyle}`}
                   />

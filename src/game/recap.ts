@@ -115,7 +115,7 @@ export const OUTLOOKS: Record<TrendId, [string, string, string]> = {
   ],
   cuesta_arriba: [
     'Elegí una prioridad y estabilizala primero: querer recuperar todo a la vez suele salir caro.',
-    'Una buena decisión por mes alcanza para empezar a remontar. No hace falta resolverlo todo ya.',
+    'Una buena decisión por año alcanza para empezar a remontar. No hace falta resolverlo todo ya.',
     'Cuidá lo que está más cerca del límite: una crisis ahora tendría muy poco margen para absorberse.',
   ],
   sostenible: [
@@ -266,7 +266,7 @@ export function buildPhaseRecap(state: GameState, phaseId: PhaseId, playerName?:
     const text = truncate(personalize(pivotal.entry.optionText, playerName), MAX_OPTION_CHARS);
     const verb = pivotal.value > 0 ? 'impulsó' : 'castigó';
     story.push(
-      `La decisión que más movió la aguja fue «${text}» (mes ${pivotal.entry.turn}), que ${verb} sobre todo ${METRIC_LABEL[pivotal.metric].to}.`
+      `La decisión que más movió la aguja fue «${text}» (año ${pivotal.entry.turn}), que ${verb} sobre todo ${METRIC_LABEL[pivotal.metric].to}.`
     );
   }
 

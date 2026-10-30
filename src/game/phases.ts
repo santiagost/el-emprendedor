@@ -26,7 +26,7 @@ export const MAX_TURNS = 15;
 
 /** Duraciones que se pueden elegir al empezar: nombre y una línea que dice qué esperar. */
 export const GAME_DURATIONS = [
-  { turns: 10, label: 'Corta', hint: 'Una versión más ágil: menos meses para probar cómo es.' },
+  { turns: 10, label: 'Corta', hint: 'Una versión más ágil: menos años para probar cómo es.' },
   { turns: 15, label: 'Completa', hint: 'El recorrido entero, con tiempo para que tus decisiones pesen.' },
 ] as const;
 

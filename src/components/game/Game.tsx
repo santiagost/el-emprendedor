@@ -13,6 +13,7 @@ import MetricCard from './MetricCard';
 import { METRIC_LABELS, METRIC_ORDER } from './end/metricLabels';
 import { Award, DollarSign, Heart } from 'lucide-react';
 import CompanyDrawer from './CompanyDrawer';
+import { OBJETIVOS } from '../../data/objetivos';
 import GameMenu from './GameMenu';
 import ExitConfirmModal from './ExitConfirmModal';
 import GameHeader from './GameHeader';
@@ -92,6 +93,9 @@ export default function Game({ arquetipo, financiamiento, playerName, maxTurns: 
     lastDecision,
     phaseId,
   } = gameState;
+
+  // Objetivo elegido al empezar (una partida retomada de antes de los objetivos no lo tiene)
+  const objetivo = OBJETIVOS.find((o) => o.id === gameState.objetivoId);
 
   // Sprint 3: opción elegida que está esperando el resultado de su minijuego
   const [pendingMinigame, setPendingMinigame] = useState<{ optionIndex: number; turn: number } | null>(null);
@@ -343,7 +347,7 @@ export default function Game({ arquetipo, financiamiento, playerName, maxTurns: 
           key={currentEvent.id}
           event={displayEvent}
           stage={interruptionStage}
-          turnLabel={`Mes ${currentTurn} de ${maxTurns} · ${PHASES.find((p) => p.id === phaseId)?.label ?? ''}`}
+          turnLabel={`Año ${currentTurn} de ${maxTurns} · ${PHASES.find((p) => p.id === phaseId)?.label ?? ''}`}
           metrics={displayMetrics}
           onDone={() => {
             setSeenAlertForEventId(currentEvent.id);
@@ -414,6 +418,7 @@ export default function Game({ arquetipo, financiamiento, playerName, maxTurns: 
               arquetipo={arquetipo}
               financiamiento={financiamiento}
               activeTags={gameState.activeTags}
+              objetivo={objetivo}
             />
           </div>
         </aside>
@@ -479,8 +484,8 @@ export default function Game({ arquetipo, financiamiento, playerName, maxTurns: 
                   : gameState.rescuePending
                   ? 'Continuar'
                   : isInterruption
-                  ? 'Continuar al Siguiente Mes'
-                  : 'Siguiente Mes'
+                  ? 'Continuar al Siguiente Año'
+                  : 'Siguiente Año'
               }
               onNext={advance}
               onSkip={outcomeSequence.skipToEnd}
@@ -498,6 +503,7 @@ export default function Game({ arquetipo, financiamiento, playerName, maxTurns: 
           arquetipo={arquetipo}
           financiamiento={financiamiento}
           activeTags={gameState.activeTags}
+          objetivo={objetivo}
           onClose={() => setShowCompanyDrawer(false)}
         />
       )}

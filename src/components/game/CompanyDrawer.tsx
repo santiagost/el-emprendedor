@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import type { Archetype, Financing } from '../../types/game';
+import type { Archetype, Financing, Objetivo } from '../../types/game';
 import type { Tag } from '../../data/tags';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
@@ -9,11 +9,12 @@ interface CompanyDrawerProps {
   arquetipo: Archetype;
   financiamiento: Financing;
   activeTags: Tag[];
+  objetivo?: Objetivo;
   onClose: () => void;
 }
 
 /** Panel "Mi empresa" para pantallas menores a lg (A7): entra desde la izquierda. */
-export default function CompanyDrawer({ arquetipo, financiamiento, activeTags, onClose }: CompanyDrawerProps) {
+export default function CompanyDrawer({ arquetipo, financiamiento, activeTags, objetivo, onClose }: CompanyDrawerProps) {
   return (
     <Modal
       placement="left"
@@ -27,7 +28,7 @@ export default function CompanyDrawer({ arquetipo, financiamiento, activeTags, o
           <X className="w-3.5 h-3.5" /> Cerrar
         </Button>
       </div>
-      <CompanyStatusCard arquetipo={arquetipo} financiamiento={financiamiento} activeTags={activeTags} />
+      <CompanyStatusCard arquetipo={arquetipo} financiamiento={financiamiento} activeTags={activeTags} objetivo={objetivo} />
     </Modal>
   );
 }

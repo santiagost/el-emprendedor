@@ -218,9 +218,9 @@ describe('buildRetrospective', () => {
     expect(r.projectionText).toMatch(/entre \d+ y \d+/);
   });
 
-  it('closes naming the month and the weakest metric, without repeating the lesson', () => {
+  it('closes naming the year and the weakest metric, without repeating the lesson', () => {
     const r = buildRetrospective(stateWith(log, 'ended_early', m(30, 50, 50)), undefined, getEvent);
-    expect(r.closing).toMatch(/mes 1/);
+    expect(r.closing).toMatch(/año 1/);
     expect(r.closing).toMatch(/el capital/);
     expect(r.closing).not.toContain('Cuidá la caja');
   });
@@ -235,10 +235,10 @@ describe('buildRetrospective', () => {
     expect(p.low).toBeLessThan(p.high);
   });
 
-  it('talks about months on a game over', () => {
+  it('talks about years on a game over', () => {
     const state = stateWith(log, 'game_over_capital', m(0, 50, 50));
     const r = buildRetrospective(state, undefined, getEvent);
-    expect(r.projectionText).toMatch(/mes|aguantado|cambiado/);
+    expect(r.projectionText).toMatch(/año|aguantado|cambiado/);
   });
 
   it('does not throw on an empty log, for any final status', () => {
