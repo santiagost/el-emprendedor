@@ -128,6 +128,12 @@ export function buildWhyLine(state: GameState): WhyLine {
   const rescued = state.decisionLog.some((e) => e.kind === 'rescue');
 
   if (status === 'victory') {
+    if (state.decisionLog[state.decisionLog.length - 1]?.endsGame) {
+      return {
+        strong: `Cerraste tu historia en el año ${turn} de ${maxTurns}, antes del final del recorrido.`,
+        rest: `Te fuiste con ${summary[0]}, ${summary[1]} y ${summary[2]}.${rescued ? ' Para llegar usaste tu único rescate.' : ''}`,
+      };
+    }
     const floor = Math.floor(Math.min(...METRIC_KEYS.map((k) => metrics[k])) / 5) * 5;
     return {
       strong: floor >= 60 ? `Las tres métricas cerraron arriba de ${floor}.` : 'Llegaste al final con las tres métricas en pie.',
@@ -260,7 +266,7 @@ export function buildTimeline(
     let status: PhaseStatus = 'completed';
     if (!recap) status = 'not_reached';
     else if (gameOver && phase.id === lastReachedId) status = 'cut';
-    else if (recap.partial) status = 'incomplete';
+    else if (recap.partial && !(state.status === 'victory' && phase.id === lastReachedId)) status = 'incomplete';
 
     return { phaseId: phase.id, label: phase.label, fromTurn: phase.fromTurn, toTurn: phase.toTurn, status, recap, decisions };
   });

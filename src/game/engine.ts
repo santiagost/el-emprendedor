@@ -457,7 +457,10 @@ export function applyDecision(
   const rescued = !state.rescueUsed && isGameOver(evaluateGameStatus(nextMetrics, state.currentTurn, state.maxTurns))
     ? RESCUE_METRIC_ORDER.find((key) => nextMetrics[key] <= 0)
     : undefined;
-  const status = rescued ? 'playing' : evaluateGameStatus(nextMetrics, state.currentTurn, state.maxTurns);
+  const evaluated = rescued ? 'playing' : evaluateGameStatus(nextMetrics, state.currentTurn, state.maxTurns);
+  // Una opción de cierre gana la partida en el acto, salvo que la misma decisión deje una métrica en 0
+  const endsGame = option.endsGame === true && evaluated === 'playing' && !rescued;
+  const status = endsGame ? 'victory' : evaluated;
   const resolvedKind = eventKind ?? (eventId.startsWith('crisis_') ? 'crisis' : eventId.startsWith('imp_') ? 'unforeseen' : eventId.startsWith('rescate_') ? 'rescue' : 'main');
 
   const logEntry = {
@@ -473,6 +476,7 @@ export function applyDecision(
     learningPill: option.learningPill,
     ...(resolved.performance ? { performance: resolved.performance } : {}),
     ...(resolved.surprised ? { surprised: true as const } : {}),
+    ...(endsGame ? { endsGame: true as const } : {}),
     metricsAfter: nextMetrics,
   };
 

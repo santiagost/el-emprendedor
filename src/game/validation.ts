@@ -1,6 +1,7 @@
 import type { GameEvent } from "../types/game"
 import { TAGS } from "../data/tags";
 import type { Phase } from "./phases";
+import { EXIT_TAGS } from "./objectives";
 
 export const validateEventIds = (events: GameEvent[]): string[] => {
 
@@ -185,6 +186,31 @@ export const validateMilestones = (events: GameEvent[], phases: readonly Phase[]
             if (count !== 1) {
                 errores.push(`Fase ${phase.id} ("${phase.label}") con rubro ${rubro.id}: tiene ${count} hitos y debe tener exactamente 1.`);
             }
+        });
+    });
+
+    return errores;
+}
+
+/**
+ * Las opciones que cierran la partida (`endsGame`) solo van en eventos principales y suman una etiqueta de salida,
+ * que es lo que le da su relato al final. No llevan minijuego ni evento programado: la partida termina ahí.
+ */
+export const validateEndingOptions = (events: GameEvent[]): string[] => {
+    const errores: string[] = [];
+
+    events.forEach((ev) => {
+        ev.options.forEach((op, index) => {
+            if (!op.endsGame) return;
+            const where = `La opción ${index + 1} del evento ${ev.id}`;
+            if (ev.kind !== 'main' && ev.kind !== undefined) {
+                errores.push(`${where} cierra la partida pero el evento es de tipo "${ev.kind}"; solo los principales pueden hacerlo.`);
+            }
+            if (!op.addTags?.some((tag) => EXIT_TAGS.includes(tag))) {
+                errores.push(`${where} cierra la partida y debe sumar una etiqueta de salida (${EXIT_TAGS.join(', ')}).`);
+            }
+            if (op.minigame) errores.push(`${where} cierra la partida y no puede tener minijuego.`);
+            if (op.scheduledEvent) errores.push(`${where} cierra la partida y no puede programar eventos.`);
         });
     });
 

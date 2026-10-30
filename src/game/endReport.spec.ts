@@ -64,6 +64,12 @@ describe('buildWhyLine', () => {
     expect(why.strong).toBe('Llegaste al final con las tres métricas en pie.');
   });
 
+  it('si la partida se cerró antes de tiempo, lo dice con el año en que fue', () => {
+    const why = buildWhyLine(stateWith([entry(11, { endsGame: true })], { status: 'victory', metrics: m(90, 80, 70), currentTurn: 11 }));
+    expect(why.strong).toBe('Cerraste tu historia en el año 11 de 15, antes del final del recorrido.');
+    expect(why.rest).toBe('Te fuiste con capital 90%, reputación 80% y bienestar 70%.');
+  });
+
   it('en una derrota nombra la métrica que cayó, el año y cómo estaban las otras', () => {
     const why = buildWhyLine(stateWith([entry(5), entry(6)], { status: 'game_over_bienestar', metrics: m(100, 2, 0), currentTurn: 6 }));
     expect(why.strong).toBe('El bienestar llegó a 0% en el año 6 de 15.');
@@ -142,6 +148,11 @@ describe('buildTimeline', () => {
     const log = [1, 2, 3, 4, 5].map((t) => entry(t));
     const state = stateWith(log, { status: 'ended_early', currentTurn: 5 });
     expect(buildTimeline(state, buildJourney(state), verdicts)[1].status).toBe('incomplete');
+  });
+
+  it('una victoria por cierre anticipado no deja la última fase como incompleta', () => {
+    const state = stateWith([entry(11), entry(12, { endsGame: true })], { status: 'victory', currentTurn: 12 });
+    expect(buildTimeline(state, buildJourney(state), verdicts)[3].status).toBe('completed');
   });
 
   it('cada decisión trae su veredicto y su título sin emoji ni marcas de tipo', () => {

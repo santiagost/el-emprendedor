@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { GAME_EVENTS, MAIN_EVENTS } from '../data/events';
 import { phasesFor } from './phases';
-import { _templateBaseEvent, _templateGatedEvent, _templateRubroVariantEvent, _templateMilestoneEvent, _templateRescueEvent } from '../data/events/_template';
+import { _templateBaseEvent, _templateGatedEvent, _templateRubroVariantEvent, _templateMilestoneEvent, _templateRescueEvent, _templateEndingEvent } from '../data/events/_template';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
 import { RUBROS } from '../data/rubros';
 import { startGame } from './engine';
@@ -14,13 +14,14 @@ import {
   validateTagsIntegrity,
   validatePhasePacing,
   validateMilestones,
+  validateEndingOptions,
   validateScheduledEvents,
   validateConditionIds,
   detectOrphanTags,
   detectDuplicateImpacts,
 } from './validation';
 
-const TEMPLATES = [_templateBaseEvent, _templateGatedEvent, _templateRubroVariantEvent, _templateMilestoneEvent, _templateRescueEvent];
+const TEMPLATES = [_templateBaseEvent, _templateGatedEvent, _templateRubroVariantEvent, _templateMilestoneEvent, _templateRescueEvent, _templateEndingEvent];
 
 describe('Integridad de Contenido (Content Spec)', () => {
   it('todos los eventos tienen IDs únicos y prefijo correcto de fase', () => {
@@ -67,6 +68,20 @@ describe('Integridad de Contenido (Content Spec)', () => {
     expect(validateMilestones(gated, phases, RUBROS).some((e) => e.includes('condiciones de entrada'))).toBe(true);
   });
 
+  it('las opciones que cierran la partida son de eventos principales y suman una etiqueta de salida', () => {
+    expect(validateEndingOptions(GAME_EVENTS)).toEqual([]);
+    expect(GAME_EVENTS.some((ev) => ev.options.some((op) => op.endsGame))).toBe(true);
+  });
+
+  it('validateEndingOptions detecta cierres sin etiqueta de salida, en imprevistos o con minijuego', () => {
+    const sale = GAME_EVENTS.find((ev) => ev.id === 'f4_intento_compra_hostil')!;
+    const withOption = (patch: object) => ({ ...sale, options: [{ ...sale.options[0], ...patch }, sale.options[1]] as typeof sale.options });
+    expect(validateEndingOptions([withOption({ addTags: ['calidad_producto'] })]).some((e) => e.includes('etiqueta de salida'))).toBe(true);
+    expect(validateEndingOptions([{ ...withOption({}), kind: 'unforeseen' as const }]).some((e) => e.includes('solo los principales'))).toBe(true);
+    expect(validateEndingOptions([withOption({ minigame: { kind: 'roulette' } })]).some((e) => e.includes('minijuego'))).toBe(true);
+    expect(validateEndingOptions([withOption({ scheduledEvent: { eventId: 'f4_x', delayTurns: 1 } })]).some((e) => e.includes('programar'))).toBe(true);
+  });
+
   it('las sorpresas solo están en eventos principales de fase 3 y 4, sin minijuego, y contradicen su tendencia', () => {
     const errors: string[] = [];
     // Cada rubro ve 17 sorpresas: las versiones por rubro de un mismo evento no se suman
@@ -94,6 +109,7 @@ describe('Integridad de Contenido (Content Spec)', () => {
       ...validateOptionsAndPills(TEMPLATES),
       ...validateTagsIntegrity(TEMPLATES),
       ...validateScheduledEvents(TEMPLATES),
+      ...validateEndingOptions(TEMPLATES),
     ];
     expect(errors).toEqual([]);
   });

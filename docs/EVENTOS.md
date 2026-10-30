@@ -30,6 +30,7 @@ El validador de contenido (`pnpm test`) rechaza cualquier evento que viole estas
 6. **scheduledEvent válido**: si una opción programa un evento diferido, el `eventId` debe existir y `delayTurns >= 1`.
 7. **Un solo hito por fase y rubro**: ver sección 10 (`validateMilestones`).
 8. **Rubros válidos**: todo id en `when.rubro` debe existir en `src/data/rubros.ts` (`validateConditionIds`).
+9. **Cierres con etiqueta de salida**: una opción con `endsGame` va en un evento principal, suma una etiqueta de salida y no tiene minijuego ni evento programado (`validateEndingOptions`, sección 12).
 
 ---
 
@@ -40,7 +41,7 @@ Nunca escribas objetos en crudo ni `impactPreview` manual. Usá los helpers de `
 - `defineOption(text, effects, extra)`:
   - `text`: texto del botón.
   - `effects`: `{ capital?, bienestar?, reputacion? }` (sugerido entre -30 y +30 para mantener el balance).
-  - `extra`: `{ addTags?, removeTags?, learningPill, scheduledEvent?, minigame?, surprise? }`.
+  - `extra`: `{ addTags?, removeTags?, learningPill, scheduledEvent?, minigame?, surprise?, endsGame? }`. `endsGame: true` hace que elegir esa opción termine la partida con victoria (sección 12).
   - El `impactPreview` (↑ ↓ →) se deriva solo del signo de `effects`. La interfaz lo muestra en el setup inicial y, desde la fase 3, como "Tu intuición:" en los botones de decisión (ver sección 8).
 - `defineEvent({ id, phaseId, title, description, weight?, milestone?, when?, options })`:
   - `phaseId`: 1 | 2 | 3 | 4. El id debe empezar con `f<phaseId>_`.
@@ -49,7 +50,7 @@ Nunca escribas objetos en crudo ni `impactPreview` manual. Usá los helpers de `
   - `when`: `{ tags?, forbiddenTags?, archetype?, financing?, rubro?, metrics?, playedBefore? }`. Un evento **base** es el que no tiene condiciones restrictivas de entrada.
   - Asserts en dev: id con prefijo de fase, 2-3 opciones, `learningPill` en todas.
 - **Panel de Resultado**: al decidir, el jugador ve los deltas numéricos aplicados (+XX / -XX), los efectos pasivos de tags y la micro-píldora antes de avanzar de año.
-- `src/data/events/_template.ts` tiene plantillas listas para copiar: evento base, condicionado por tags, versión por rubro, hito y rescate. El validador ignora los exports con prefijo `_`.
+- `src/data/events/_template.ts` tiene plantillas listas para copiar: evento base, condicionado por tags, versión por rubro, hito, rescate y opción que cierra la partida. El validador ignora los exports con prefijo `_`.
 
 ---
 
@@ -210,7 +211,35 @@ Tres mecanismos de interrupción, todos fuera del pool de la fase:
 
 ---
 
-## 12. Objetivos: qué evalúa el informe
+## 12. Opciones que cierran la partida
+
+Una opción puede terminar la partida en el acto, aunque queden años por jugar: vender la empresa, retirarse, cerrar un ciclo. Se marca con `endsGame: true` en `defineOption`:
+
+```ts
+defineOption(
+  'Vender tus acciones y aceptar el cheque para retirarte.',
+  { capital: +50, reputacion: +10, bienestar: +20 },
+  {
+    addTags: ['salida_exitosa_venta'],
+    endsGame: true,
+    learningPill: 'Estrategia de Salida (Exit): …',
+    outcomeText: 'Aceptaste la oferta y te retiraste, cerrando un ciclo.',
+  }
+)
+```
+
+- **Qué pasa:** se aplican los efectos y las etiquetas de la opción, el jugador ve su resultado y el botón pasa a "Ver Desenlace Final". La partida termina con **victoria** en ese año (`applyDecision` en `game/engine.ts`) y el registro de la decisión queda con `endsGame: true`. Las otras opciones del evento siguen la partida normalmente.
+- **Cuándo no gana:** si los efectos de esa misma decisión dejan una métrica en 0, manda la regla de siempre (rescate la primera vez, derrota la segunda). El cierre solo gana si la partida seguía en pie.
+- **Etiqueta de salida obligatoria:** la opción tiene que sumar `salida_exitosa_venta`, `lifestyle_business` o `expansion_global`. De ella salen el título y el relato del final (`buildEpilogue`) y cuenta para el objetivo "Llegar a la salida" (sección 13).
+- **Dónde va:** solo en eventos principales (no crisis, imprevistos ni rescates), sin `minigame` ni `scheduledEvent` en la misma opción. `validateEndingOptions` lo verifica y el test falla si no se cumple.
+- **El final se adapta solo:** el informe dice "Cerraste tu historia en el año N de M, antes del final del recorrido" y la fase en la que cerraste no figura como incompleta.
+- **Para escribir el evento:** el `outcomeText` es la última escena, así que va en pasado y sin dejar cosas abiertas. Y no pongas una opción de cierre en una fase temprana sin pensar el balance: es una victoria inmediata, tiene que costar algo (dilemas como "monetizar ahora o seguir creciendo").
+- **Hoy hay una sola:** vender en `f4_intento_compra_hostil`. Los efectos todavía no se recalibraron: queda para el ajuste de balance posterior a la carga masiva de eventos.
+- La plantilla `_templateEndingEvent` es el punto de partida.
+
+---
+
+## 13. Objetivos: qué evalúa el informe
 
 Al empezar, el jugador elige un **objetivo** (`src/data/objetivos.ts`) y el informe final dice si lo cumplió. **No cambia los eventos ni el motor**: se evalúa al final con `evaluateObjective` (`game/objectives.ts`). Perder es no cumplir.
 
@@ -222,13 +251,13 @@ Al empezar, el jugador elige un **objetivo** (`src/data/objetivos.ts`) y el info
 | Llegar a la salida | algún tag de salida: `salida_exitosa_venta`, `lifestyle_business` o `expansion_global` |
 | Empresa modelo (muy difícil) | las tres métricas ≥ 90 |
 
-- **Los mínimos salen de simular partidas** y dependen del contenido: cuando se carguen muchos eventos hay que **recalibrarlos** (los números están en `objetivos.ts`; la simulación de la sección 13 sirve de base).
+- **Los mínimos salen de simular partidas** y dependen del contenido: cuando se carguen muchos eventos hay que **recalibrarlos** (los números están en `objetivos.ts`; la simulación de la sección 14 sirve de base).
 - **Reputación** casi siempre termina cerca de 100 en las partidas que se ganan, por lo que "Marca reconocida" casi equivale a ganar sin sacrificarla: vigilarlo al sumar eventos (si muchas opciones suben Reputación, el objetivo deja de discriminar).
 - **Llegar a la salida** exige que haya opciones que agreguen un tag de salida en la fase 4. Si se retiran o se suman eventos de salida, revisar `EXIT_TAGS` en `game/objectives.ts`.
 
 ---
 
-## 13. Flujo de Trabajo
+## 14. Flujo de Trabajo
 
 1. Para agregar eventos a la fase N, editá `src/data/events/faseN.ts`.
 2. Si inventás un tag nuevo, agregalo primero en `src/data/tags.ts` con su label y modifier pasivo.
@@ -237,7 +266,7 @@ Al empezar, el jugador elige un **objetivo** (`src/data/objetivos.ts`) y el info
    ```bash
    pnpm test
    ```
-   - Los errores **bloquean** (el test falla): ids, opciones, píldoras, tags, pacing por rubro, schedule, rubros inexistentes y hitos (uno por fase y rubro).
+   - Los errores **bloquean** (el test falla): ids, opciones, píldoras, tags, pacing por rubro, schedule, rubros inexistentes, hitos (uno por fase y rubro) y opciones de cierre.
    - Los warnings **informan** (se imprimen, no bloquean): tags huérfanos e impactos repetidos. Revisalos igual: un tag huérfano es contenido muerto.
 5. La simulación de Monte Carlo (`completability.spec.ts`) corre miles de partidas con 3 estrategias, en las dos duraciones (10 y 15 años) y rotando el rubro, e imprime la distribución de finales:
    - `ended_early` debe ser 0: si sube, falta un evento base en alguna fase o un gated bloquea el pool.

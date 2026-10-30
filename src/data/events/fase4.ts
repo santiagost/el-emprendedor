@@ -50,6 +50,7 @@ export const fase4Events = [
                 { capital: +50, reputacion: +10, bienestar: +20 },
                 {
                     addTags: ['salida_exitosa_venta'],
+                    endsGame: true,
                     learningPill: 'Estrategia de Salida (Exit): Vender la empresa no es fracasar; monetizar el valor creado es el objetivo de muchos fundadores.',
                     outcomeText: 'Aceptaste la oferta de salida. Depositaste millones en tu cuenta y te retiraste victorioso tras años de esfuerzo, cerrando un ciclo inolvidable.',
                 }

@@ -20,6 +20,7 @@ Al empezar se elige el **rubro** de la empresa (Tecnología, Comercio, Servicios
   - **Reputación**: Confianza del mercado, inversores y clientes. Llegar a 0 destruye la viabilidad comercial.
   - **Bienestar**: Salud mental, energía personal y clima de equipo. Llegar a 0 causa colapso por burnout.
 - **Un rescate por partida**: la primera vez que una métrica llega a 0 no se pierde: sale un evento de rescate con dos salidas que cuestan algo (una deuda, equity, un socio). La segunda vez, la partida termina.
+- **Opciones que cierran la partida**: una opción puede terminar el juego en el acto con victoria (por ejemplo, vender la empresa). Ver `docs/EVENTOS.md`.
 - **Hito por fase**: el primer año de cada fase sale una decisión que la define (el hito de la fase).
 - **Crisis e imprevistos**: si una métrica baja a 25 o menos sale una crisis; los imprevistos (máximo 2 por partida) sacuden el rumbo con noticias de último momento.
 - **Micro-Píldoras Didácticas**: Cada alternativa enseña un principio de negocio real (Lean Startup, CAC, LTV, Vesting, Pricing Power, etc.).
@@ -60,5 +61,5 @@ http://localhost:5173/?seed=123456
 
 Para agregar o modificar eventos, consultar el manual detallado en:
 [Manual de Autoría de Eventos](docs/EVENTOS.md)
-y las plantillas en `src/data/events/_template.ts` (evento base, condicionado, versión por rubro, hito y rescate).
+y las plantillas en `src/data/events/_template.ts` (evento base, condicionado, versión por rubro, hito, rescate y cierre de partida).
 El listado de lo que hay hoy está en [Catálogo de Eventos](docs/CATALOGO_EVENTOS.md).

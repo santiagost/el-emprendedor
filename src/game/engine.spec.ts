@@ -816,6 +816,35 @@ describe('rescate (una vez por partida)', () => {
   });
 });
 
+describe('opciones que cierran la partida (endsGame)', () => {
+  const base: GameState = { ...startGame(ARCHETYPES[0], FINANCINGS[0], MAX_TURNS, 'r1_tecnologia'), currentTurn: 11, phaseId: 4 };
+  const sell = defineOption('Vender la empresa.', { capital: 20 }, { addTags: ['salida_exitosa_venta'], endsGame: true, learningPill: 'x' });
+
+  it('ganan la partida en el acto, aunque queden años por jugar', () => {
+    const next = applyDecision(base, sell, 'f4_venta');
+    expect(next.status).toBe('victory');
+    expect(next.currentTurn).toBe(11);
+    expect(next.decisionLog[next.decisionLog.length - 1].endsGame).toBe(true);
+    expect(next.activeTags).toContain('salida_exitosa_venta');
+  });
+
+  it('una opción común no cierra la partida ni deja la marca en el registro', () => {
+    const next = applyDecision(base, defineOption('Seguir.', { capital: 20 }, { learningPill: 'x' }), 'f4_otro');
+    expect(next.status).toBe('playing');
+    expect(next.decisionLog[next.decisionLog.length - 1].endsGame).toBeUndefined();
+  });
+
+  it('si la misma decisión deja una métrica en 0, no se gana: manda el rescate o la derrota', () => {
+    const risky = defineOption('Salir a pérdida.', { capital: -50 }, { addTags: ['expansion_global'], endsGame: true, learningPill: 'x' });
+    const poor: GameState = { ...base, metrics: { capital: 20, bienestar: 50, reputacion: 50 } };
+    const rescued = applyDecision(poor, risky, 'f4_venta');
+    expect(rescued.status).toBe('playing');
+    expect(rescued.rescuePending).toBe('capital');
+    const lost = applyDecision({ ...poor, rescueUsed: true }, risky, 'f4_venta');
+    expect(lost.status).toBe('game_over_capital');
+  });
+});
+
 describe('hito de cada fase', () => {
   const state = (turn: number, maxTurns: number, rubroId = 'r1_tecnologia'): GameState => {
     const phase = phasesFor(maxTurns).find((p) => turn >= p.fromTurn && turn <= p.toTurn)!;

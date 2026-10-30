@@ -174,3 +174,41 @@ export const _templateRescueEvent: GameEvent = defineEvent({
     ),
   ],
 });
+
+// ============================================================================
+// PLANTILLA 6: Opción que cierra la partida
+// Cualquier opción de un evento PRINCIPAL puede llevar `endsGame: true`: al elegirla la partida termina en el acto
+// con victoria, aunque queden años por jugar (vender la empresa, retirarse). Reglas (validateEndingOptions):
+// - Tiene que sumar una etiqueta de salida (salida_exitosa_venta, lifestyle_business o expansion_global): de ella
+//   sale el título y el relato del final.
+// - Su outcomeText es la última escena de la partida: escribilo como un cierre ("te retiraste…"), no como una pausa.
+// - No puede tener minijuego ni scheduledEvent, y no va en crisis, imprevistos ni rescates.
+// - Los efectos cuentan igual: si dejan una métrica en 0 no se gana (rescate o derrota, como siempre).
+// Las otras opciones del evento siguen la partida normalmente.
+// ============================================================================
+export const _templateEndingEvent: GameEvent = defineEvent({
+  id: 'f4_nombre_del_cierre',
+  phase: 4,
+  title: 'Una Oferta que Cierra la Historia',
+  description: 'Una decisión que, si la tomás, termina tu recorrido como fundador.',
+  weight: 10,
+  options: [
+    defineOption(
+      'Opción A: Cerrar la historia (la partida termina acá).',
+      { capital: 40, reputacion: 5, bienestar: 15 },
+      {
+        addTags: ['salida_exitosa_venta'],
+        endsGame: true,
+        learningPill: 'Concepto Clave: Qué enseña esta salida.',
+        outcomeText: 'Cierre narrativo: qué pasó y cómo termina tu camino, en pasado y sin dejar cosas abiertas.',
+      }
+    ),
+    defineOption(
+      'Opción B: Seguir adelante con la empresa.',
+      { capital: -10, reputacion: 10, bienestar: -10 },
+      {
+        learningPill: 'Costo de Oportunidad: Lección práctica sobre la contrapartida de este camino.',
+      }
+    ),
+  ],
+});

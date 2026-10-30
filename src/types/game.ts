@@ -63,6 +63,8 @@ export interface GameOption {
     minigame?: MinigameSpec;
     /** Desenlace que puede salir en vez del normal (fases 3 y 4); las opciones con minijuego no lo tienen. */
     surprise?: OptionSurprise;
+    /** Elegir esta opción cierra la partida en el acto con victoria (ej. vender la empresa). Debe sumar una etiqueta de salida. */
+    endsGame?: true;
 }
 
 export interface EventConditions {
@@ -119,6 +121,8 @@ export interface DecisionLogEntry {
     performance?: Performance;
     /** El resultado fue el desenlace alternativo de la opción: contradice la tendencia que se veía. */
     surprised?: true;
+    /** La opción elegida cerró la partida antes del último año. */
+    endsGame?: true;
     /** Métricas resultantes tras esta decisión (con modificadores y clamp). Opcional: guardados viejos no lo tienen. */
     metricsAfter?: Metrics;
 }
