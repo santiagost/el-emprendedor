@@ -23,13 +23,13 @@ export const crisisEvents = [
         }
       ),
       defineOption(
-        'Recorte de emergencia: frenar contrataciones y achicar estructura.',
-        { capital: 15, reputacion: -15, bienestar: -20 },
+        'Frenar gastos no esenciales y renegociar plazos con proveedores.',
+        { capital: 15, reputacion: -15 },
         {
           learningPill:
-            'Ajuste Rápido de Runway: Ante una crisis de liquidez inminente, achicar la estructura de costos de inmediato es doloroso pero salva a la empresa de la quiebra.',
+            'Ajuste Rápido de Runway: Ante una crisis de liquidez inminente, frenar gastos y estirar los pagos compra tiempo sin tocar al equipo, a costa de la confianza de los proveedores.',
           outcomeText:
-            'El recorte estabilizó las cuentas por unos meses, aunque el clima interno quedó golpeado y los proveedores miran con desconfianza.',
+            'Frenar gastos y estirar plazos estabilizó las cuentas por unos meses. El equipo no sintió el golpe, pero los proveedores empezaron a mirar tu empresa con desconfianza.',
         }
       ),
     ],

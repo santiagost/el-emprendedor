@@ -12,6 +12,7 @@ import {
   selectNextEvent,
   applyModifiers,
   checkTurnInterruption,
+  MAX_UNFORESEEN,
   surpriseChance,
   rollSurprise,
   getInitialEvent,
@@ -636,14 +637,13 @@ describe('Motor de Juego (Engine Spec)', () => {
       expect(interruption?.kind).toBe('unforeseen');
     });
 
-    it('respeta el tope máximo de 3 imprevistos por partida', () => {
-      const maxedState: GameState = {
-        ...baseState,
-        unforeseenEventsPlayed: 3,
-      };
+    it('respeta el tope máximo de 2 imprevistos por partida', () => {
+      expect(MAX_UNFORESEEN).toBe(2);
+      const withOne: GameState = { ...baseState, unforeseenEventsPlayed: 1 };
+      expect(checkTurnInterruption(withOne, createMockRng(0.01))?.kind).toBe('unforeseen');
 
-      const interruption = checkTurnInterruption(maxedState, createMockRng(0.01));
-      expect(interruption).toBeNull();
+      const maxedState: GameState = { ...baseState, unforeseenEventsPlayed: 2 };
+      expect(checkTurnInterruption(maxedState, createMockRng(0.01))).toBeNull();
     });
   });
 

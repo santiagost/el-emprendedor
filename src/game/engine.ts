@@ -264,6 +264,9 @@ export function calculateModifiersDelta(activeTags: Tag[]): Partial<Metrics> {
   };
 }
 
+/** Tope de imprevistos por partida. */
+export const MAX_UNFORESEEN = 2;
+
 export interface InterruptionResult {
   event: GameEvent;
   kind: 'crisis' | 'unforeseen';
@@ -298,9 +301,9 @@ export function checkTurnInterruption(
   }
 
   // 2. Chequeo de Imprevistos (Cisnes negros / Macro):
-  // Máximo 3 imprevistos por partida
+  // Máximo MAX_UNFORESEEN imprevistos por partida
   const playedCount = state.unforeseenEventsPlayed ?? 0;
-  if (playedCount < 3) {
+  if (playedCount < MAX_UNFORESEEN) {
     // Probabilidad base 25%. Si estamos en turno 7+ y aún no ocurrió ninguno, sube a 45%
     const prob = (state.currentTurn >= 7 && playedCount === 0) ? 0.45 : 0.25;
     const roll = rng.next();

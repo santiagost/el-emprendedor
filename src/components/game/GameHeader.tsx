@@ -114,7 +114,7 @@ export default function GameHeader({
         ) : (
           <>
             <span className="text-slate-800 dark:text-slate-200 font-bold tracking-wide">
-              TURNO {currentTurn} / {maxTurns}
+              MES {currentTurn} / {maxTurns}
             </span>
             <span className="text-slate-300 dark:text-slate-700">•</span>
             <span className="uppercase tracking-widest text-brand-cobalt dark:text-indigo-400 font-bold text-xs">

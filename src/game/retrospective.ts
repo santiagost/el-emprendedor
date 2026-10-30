@@ -270,7 +270,7 @@ const describeProjection = (state: GameState, projection: Projection | null, tar
     }
     const from = lastTurn + lo;
     const to = lastTurn + hi;
-    return `Con esos otros caminos, probablemente habrías llegado al turno ${from === to ? from : `${from} o ${to}`} en lugar de caer en el ${lastTurn}.`;
+    return `Con esos otros caminos, probablemente habrías llegado al mes ${from === to ? from : `${from} o ${to}`} en lugar de caer en el ${lastTurn}.`;
   }
 
   return `Con esos otros caminos, ${name} habría terminado probablemente entre ${rangeText(projection.low, projection.high)} en lugar de ${projection.actual}.`;
@@ -282,7 +282,7 @@ const describeClosing = (pivots: PivotMoment[], target: MetricKey): string => {
   }
   const top = [...pivots].sort((a, b) => b.gain - a.gain)[0];
   const alt = top.altText.replace(/[.!¡]+$/, '');
-  return `Si en el turno ${top.turn} hubieras elegido «${alt}», habrías cuidado mejor ${METRIC_NAMES[target].name}.`;
+  return `Si en el mes ${top.turn} hubieras elegido «${alt}», habrías cuidado mejor ${METRIC_NAMES[target].name}.`;
 };
 
 /**

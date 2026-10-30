@@ -343,7 +343,7 @@ export default function Game({ arquetipo, financiamiento, playerName, maxTurns: 
           key={currentEvent.id}
           event={displayEvent}
           stage={interruptionStage}
-          turnLabel={`Turno ${currentTurn} de ${maxTurns} · ${PHASES.find((p) => p.id === phaseId)?.label ?? ''}`}
+          turnLabel={`Mes ${currentTurn} de ${maxTurns} · ${PHASES.find((p) => p.id === phaseId)?.label ?? ''}`}
           metrics={displayMetrics}
           onDone={() => {
             setSeenAlertForEventId(currentEvent.id);
@@ -479,8 +479,8 @@ export default function Game({ arquetipo, financiamiento, playerName, maxTurns: 
                   : gameState.rescuePending
                   ? 'Continuar'
                   : isInterruption
-                  ? 'Continuar al Siguiente Turno'
-                  : 'Siguiente Turno'
+                  ? 'Continuar al Siguiente Mes'
+                  : 'Siguiente Mes'
               }
               onNext={advance}
               onSkip={outcomeSequence.skipToEnd}

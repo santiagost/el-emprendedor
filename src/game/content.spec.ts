@@ -4,6 +4,7 @@ import { phasesFor } from './phases';
 import { _templateBaseEvent, _templateGatedEvent } from '../data/events/_template';
 import { ARCHETYPES, FINANCINGS } from '../data/archetypes';
 import { RUBROS } from '../data/rubros';
+import { startGame } from './engine';
 import { intuitionMissMessage } from './intuition';
 import { KNOWN_TOKENS, NAME_TOKEN, personalize } from '../lib/personalize';
 
@@ -227,5 +228,22 @@ describe('Eventos de rescate', () => {
 
   it('no entran al sorteo de eventos principales ni de fase', () => {
     expect(MAIN_EVENTS.some((ev) => ev.kind === 'rescue')).toBe(false);
+  });
+});
+
+describe('Balance de ritmo (parte 8)', () => {
+  it('la crisis de caja tiene una salida que no toca el bienestar', () => {
+    const crisis = GAME_EVENTS.find((ev) => ev.id === 'crisis_quiebra_inminente')!;
+    expect(crisis.options.some((o) => (o.effects.bienestar ?? 0) >= 0)).toBe(true);
+    expect(crisis.options.some((o) => (o.effects.bienestar ?? 0) < 0)).toBe(true);
+  });
+
+  it('ninguna combinación de perfil y financiamiento arranca con el capital a 10 puntos de la crisis', () => {
+    for (const a of ARCHETYPES) {
+      for (const f of FINANCINGS) {
+        const { metrics } = startGame(a, f);
+        expect(metrics.capital, `${a.id} + ${f.id}`).toBeGreaterThanOrEqual(35);
+      }
+    }
   });
 });

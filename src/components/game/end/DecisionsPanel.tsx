@@ -16,7 +16,7 @@ export function DecisionList({ decisions }: { decisions: TimelineDecision[] }) {
         return (
           <li key={d.logIndex} className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200/80 dark:border-slate-800/60 space-y-1.5">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold">
-              <span className="text-brand-cobalt dark:text-indigo-400 font-bold">Turno {d.turn}</span>
+              <span className="text-brand-cobalt dark:text-indigo-400 font-bold">Mes {d.turn}</span>
               {kind && <span className={`px-1.5 py-0.5 rounded-md border text-xs font-bold ${kind.cls}`}>{kind.text}</span>}
               <span className="text-slate-800 dark:text-slate-200 min-w-0">{d.title}</span>
             </div>

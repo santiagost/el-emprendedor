@@ -121,7 +121,7 @@ export const TAGS = {
   inversiones: {
     label: 'Inversiones',
     modifiers: { capital: 2 },
-    description: 'Tu plata no está quieta: tus inversiones rinden y suman un ingreso extra cada turno.',
+    description: 'Tu plata no está quieta: tus inversiones rinden y suman un ingreso extra cada mes.',
     story: '[+tus inversiones rinden] y suman un ingreso extra',
     storyPast: '[+tus inversiones rindieron] y sumaron un ingreso extra',
     hint: 'tener la plata trabajando quizás te sume un ingreso extra',

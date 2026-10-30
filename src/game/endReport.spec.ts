@@ -56,7 +56,7 @@ describe('buildWhyLine', () => {
   it('en una victoria resume el piso de las tres métricas', () => {
     const why = buildWhyLine(stateWith([entry(15)], { status: 'victory', metrics: m(100, 100, 89), currentTurn: 15 }));
     expect(why.strong).toBe('Las tres métricas cerraron arriba de 85.');
-    expect(why.rest).toBe('Llegaste al turno 15 con capital 100%, reputación 100% y bienestar 89%.');
+    expect(why.rest).toBe('Llegaste al mes 15 con capital 100%, reputación 100% y bienestar 89%.');
   });
 
   it('en una victoria ajustada no promete un piso alto', () => {
@@ -64,9 +64,9 @@ describe('buildWhyLine', () => {
     expect(why.strong).toBe('Llegaste al final con las tres métricas en pie.');
   });
 
-  it('en una derrota nombra la métrica que cayó, el turno y cómo estaban las otras', () => {
+  it('en una derrota nombra la métrica que cayó, el mes y cómo estaban las otras', () => {
     const why = buildWhyLine(stateWith([entry(5), entry(6)], { status: 'game_over_bienestar', metrics: m(100, 2, 0), currentTurn: 6 }));
-    expect(why.strong).toBe('El bienestar llegó a 0% en el turno 6 de 15.');
+    expect(why.strong).toBe('El bienestar llegó a 0% en el mes 6 de 15.');
     expect(why.rest).toBe('Las otras dos métricas cerraron así: capital 100% y reputación 2%.');
   });
 
@@ -79,7 +79,7 @@ describe('buildWhyLine', () => {
 
   it('en un fin anticipado lo dice sin hablar de derrota', () => {
     const why = buildWhyLine(stateWith([entry(9)], { status: 'ended_early', metrics: m(50, 50, 50), currentTurn: 9 }));
-    expect(why.strong).toBe('Se agotaron los eventos disponibles en el turno 9.');
+    expect(why.strong).toBe('Se agotaron los eventos disponibles en el mes 9.');
   });
 });
 
@@ -195,11 +195,11 @@ describe('buildOutlook', () => {
     expect(outlook.altBenefit).toBe('Habría cuidado mejor el bienestar');
   });
 
-  it('en una derrota da el rango de turnos hasta donde habría llegado', () => {
+  it('en una derrota da el rango de meses hasta donde habría llegado', () => {
     const state = stateWith([entry(6)], { status: 'game_over_bienestar', currentTurn: 6 });
     const outlook = buildOutlook(state, retro({ targetMetric: 'bienestar', actual: 0, low: 10, high: 30, extraTurns: [4, 7] }))!;
-    expect(outlook.big).toBe('Turno 10 a 13');
-    expect(outlook.small).toContain('Caíste en el turno 6.');
+    expect(outlook.big).toBe('Mes 10 a 13');
+    expect(outlook.small).toContain('Caíste en el mes 6.');
   });
 
   it('si el final no cambiaba lo dice sin inventar turnos', () => {

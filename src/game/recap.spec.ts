@@ -78,7 +78,7 @@ describe('buildPhaseRecap', () => {
     const text = buildPhaseRecap(baseState(log, m(75, 52, 30)), 1).paragraphs.join(' ');
     expect(text).not.toMatch(/puntos|subió|bajó|Hoy el capital/);
     expect(text).toMatch(/«Aceptar el contrato grande[^»]*…»/);
-    expect(text).toContain('(turno 2)');
+    expect(text).toContain('(mes 2)');
     expect(text).toContain('1 crisis');
   });
 

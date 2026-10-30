@@ -61,7 +61,7 @@ export const FINANCINGS: Financing[] = [
         "f1_bootstrap",
         "Bootstrapping",
         "Financiás tu empresa con tus propios recursos y ahorros, y mantenés el control total sobre tu negocio.",
-        { capital: -10, bienestar: 0, reputacion: 0 },
+        { capital: -5, bienestar: 0, reputacion: 0 },
         ["autonomia_estrategica"]
     ),
     defineFinancing(
