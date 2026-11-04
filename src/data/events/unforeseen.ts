@@ -7,7 +7,7 @@ export const unforeseenEvents = [
     kind: 'unforeseen',
     description:
       'Un shock macroeconómico disparó los costos de insumos, servicios y alquileres un 35% de golpe. El presupuesto del mes quedó desactualizado.',
-    weight: 15,
+    weight: 8,
     options: [
       defineOption(
         'Actualizar tarifas de inmediato para proteger los márgenes.',

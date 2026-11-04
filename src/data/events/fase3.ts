@@ -41,7 +41,7 @@ export const fase3Events = [
         title: 'Llega un Fondo de Inversión',
         weight: 10,
         milestone: true,
-        description: '{nombre}, un fondo de Venture Capital ofrece 200k USD, pero exige el 35% de la empresa y una silla con derecho a veto en el directorio.',
+        description: '{nombre}, un fondo de inversión ofrece 200k USD, pero exige el 35% de la empresa y una silla con derecho a veto en el directorio.',
         options: [
             defineOption(
                 'Aceptar la inversión para pisar el acelerador.',

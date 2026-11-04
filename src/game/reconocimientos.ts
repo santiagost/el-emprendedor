@@ -65,6 +65,7 @@ export const RECONOCIMIENTOS: Record<Tag, Reconocimiento> = {
   deuda_riesgosa: { tipo: 'frente', titulo: 'Deuda que aprieta' },
   equipo_sobrecargado: { tipo: 'frente', titulo: 'Equipo al límite' },
   conflicto_legal: { tipo: 'frente', titulo: 'Juicio abierto' },
+  informalidad: { tipo: 'frente', titulo: 'Ventas sin facturar' },
 };
 
 export const ESTANTES: { id: Estante; label: string }[] = [

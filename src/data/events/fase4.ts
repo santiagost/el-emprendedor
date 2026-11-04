@@ -47,7 +47,7 @@ export const fase4Events = [
         options: [
             defineOption(
                 'Vender tus acciones y aceptar un cheque millonario para retirarte.',
-                { capital: +50, reputacion: +10, bienestar: +20 },
+                { capital: +30, bienestar: +5 },
                 {
                     addTags: ['salida_exitosa_venta'],
                     endsGame: true,
@@ -105,6 +105,18 @@ export const fase4Events = [
                     learningPill: 'Internacionalización: Escalar fronteras multiplica el valor potencial, pero reinicia el ciclo de riesgo e incertidumbre.',
                     outcomeText: 'Apostaste todo a abrir mercado en el exterior. La marca ahora compite a nivel regional, asumiendo nuevos desafíos y riesgos de escala.',
                 }
+            ),
+            defineOption(
+                'Armar un fondo de reserva para los años difíciles.',
+                { capital: +10, bienestar: +5 },
+                {
+                    surprise: {
+                        effects: { capital: -10, bienestar: +5 },
+                        outcomeText: 'Guardaste la reserva en pesos y la inflación se la fue comiendo: cuando la necesitaste, alcanzaba para bastante menos de lo que habías calculado.',
+                    },
+                    learningPill: 'Colchón Financiero: Una reserva equivalente a varios meses de gastos no da rendimiento, pero es lo que te deja decidir con calma cuando llega el próximo golpe.',
+                    outcomeText: 'Guardaste una reserva equivalente a varios años de gastos. Ya no te asusta el próximo golpe.',
+                }
             )
         ]
     }),
@@ -114,10 +126,13 @@ export const fase4Events = [
         phaseId: 4,
         title: 'Auditoría Fiscal General',
         weight: 8,
+        when: {
+            tags: ['informalidad']
+        },
         description: 'Los inspectores revisan minuciosamente tus libros contables y contrataciones de los últimos 3 años.',
         options: [
             defineOption(
-                'Presentar libros limpios (gastaste previamente en orden fiscal).',
+                'Presentar los libros de lo que sí facturaste y regularizar lo demás.',
                 { capital: -10, reputacion: +20, bienestar: +10 },
                 {
                     learningPill: 'Compliance y Formalización: La prolijidad fiscal y legal cuesta cara día a día, pero evita catástrofes repentinas.',
@@ -130,6 +145,35 @@ export const fase4Events = [
                 {
                     learningPill: 'Pasivos Ocultos: La informalidad como atajo financiero suele cobrarse con creces cuando la empresa gana visibilidad.',
                     outcomeText: 'Tuviste que pagar multas, recargos y planes de pago para subsanar descuidos pasados. La sangría de fondos golpeó fuerte la caja de la empresa.',
+                }
+            )
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_auditoria_rutina',
+        phaseId: 4,
+        title: 'Auditoría Fiscal de Rutina',
+        weight: 8,
+        when: {
+            forbiddenTags: ['informalidad']
+        },
+        description: 'Te llega una inspección de rutina: los inspectores piden los libros contables y las contrataciones de los últimos 3 años.',
+        options: [
+            defineOption(
+                'Presentar los libros ordenados y colaborar.',
+                { capital: -5, reputacion: +15, bienestar: +5 },
+                {
+                    learningPill: 'Compliance y Formalización: Tener todo en orden convierte una inspección en un trámite, y no en una amenaza.',
+                    outcomeText: 'Entregaste los libros al día y respondiste cada pedido. La inspección cerró sin observaciones y quedó a la vista que la empresa trabaja en regla.',
+                }
+            ),
+            defineOption(
+                'Pedir una prórroga para reunir papeles.',
+                { capital: -5, reputacion: -5, bienestar: -10 },
+                {
+                    learningPill: 'Orden Administrativo: Aunque no haya deudas, no poder mostrar los papeles a tiempo desgasta al equipo y despierta sospechas.',
+                    outcomeText: 'No tenías los papeles a mano y pediste más tiempo. Pasaste semanas rearmando carpetas y el inspector quedó con la duda de qué más podía faltar.',
                 }
             )
         ]
@@ -176,10 +220,10 @@ export const fase4Events = [
         phaseId: 4,
         title: 'Propuesta de Franquicia',
         weight: 10,
-        description: 'Un grupo inversor quiere franquiciar tu modelo en todo el país. Escalarías con capital ajeno, pero perderías control sobre la calidad.',
+        description: 'Un grupo inversor quiere franquiciar o licenciar tu modelo en todo el país. Escalarías con capital ajeno, pero perderías control sobre la calidad.',
         options: [
             defineOption(
-                'Franquiciar el modelo y escalar con capital de terceros.',
+                'Franquiciar o licenciar el modelo y escalar con capital de terceros.',
                 { capital: +20, reputacion: -10, bienestar: -5 },
                 {
                     surprise: {

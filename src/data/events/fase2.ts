@@ -36,15 +36,15 @@ export const fase2Events = [
         phaseId: 2,
         title: 'El Dilema de Abastecimiento',
         weight: 10,
-        description: 'Podés importar insumos/servicios clave a mitad de precio de un solo proveedor, o mantener varios proveedores locales más caros.',
+        description: 'Podés comprarle casi todo a un único proveedor del exterior a mitad de precio, o mantener varios proveedores locales más caros.',
         options: [
             defineOption(
-                'Importar con el proveedor único para maximizar margen.',
+                'Comprarle todo al proveedor único para maximizar margen.',
                 { capital: +20, reputacion: -10 },
                 {
                     addTags: ['proveedor_dependiente'],
                     learningPill: 'Riesgo de Cadena de Suministro: Optimizar solo por costo te vuelve vulnerable a aduanas y devaluaciones.',
-                    outcomeText: 'Concentraste el 100% de tus compras en el proveedor más barato. Tus márgenes son récord, pero si una entrega aduanera se frena, tu operación se paraliza por completo.',
+                    outcomeText: 'Concentraste el 100% de tus compras en el proveedor más barato. Tus márgenes son récord, pero si una entrega se frena, tu operación se paraliza por completo.',
                 }
             ),
             defineOption(

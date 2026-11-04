@@ -210,7 +210,7 @@ export const fase1Events = [
         description: '{nombre}, necesitás complementar tus habilidades. Aparecen dos personas interesadas en sumarse.',
         options: [
             defineOption(
-                'Sumar a un amigo de confianza técnica que comparte tu visión.',
+                'Sumar a un amigo de confianza que comparte tu visión.',
                 { reputacion: +5, bienestar: +15 },
                 {
                     addTags: ['socio_alineado'],

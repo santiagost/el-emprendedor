@@ -241,6 +241,15 @@ export const TAGS = {
     hint: 'salir a otros mercados podría hacer crecer tu marca afuera, con viajes e inversión de por medio',
     tone: 'good',
   },
+  informalidad: {
+    label: 'Informalidad',
+    modifiers: { capital: +1, reputacion: -1 },
+    description: 'Cobrás sin facturar. Ahorrás impuestos, pero quedás afuera de los clientes grandes y acumulás un riesgo.',
+    story: 'cobrás sin facturar: [+ahorrás impuestos] y [-quedás afuera de los clientes grandes]',
+    storyPast: 'cobraste sin facturar: [+ahorraste impuestos] y [-quedaste afuera de los clientes grandes]',
+    hint: 'trabajar sin facturar podría cerrarte puertas más adelante',
+    tone: 'bad',
+  },
 } satisfies Record<string, TagConfig>;
 
 export type Tag = keyof typeof TAGS;
