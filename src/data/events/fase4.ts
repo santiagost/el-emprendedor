@@ -457,4 +457,486 @@ export const fase4Events = [
             ),
         ]
     }),
+
+    defineEvent({
+        id: 'f4_cansancio_fundador',
+        phaseId: 4,
+        title: 'Cerrar un Ciclo',
+        weight: 10,
+        description: 'Pasaron los años, la empresa funciona y mirás para atrás con orgullo. Pero estás cansado y empezás a preguntarte para qué seguís. Hay maneras distintas de cerrar un ciclo.',
+        options: [
+            defineOption(
+                'Venderle la empresa a tu equipo directivo y retirarte.',
+                { capital: +25, bienestar: +15, reputacion: +5 },
+                {
+                    endsGame: true,
+                    addTags: ['salida_exitosa_venta'],
+                    learningPill: 'Venta a la Gerencia (MBO): Venderle la empresa a quienes mejor la conocen asegura continuidad, aunque suele cerrarse a un precio menor que con un tercero.',
+                    outcomeText: 'Le vendiste la empresa a tu equipo directivo, con un plan de pagos a varios años. Te fuiste sabiendo que quedaba en buenas manos, aunque por menos plata que la de un comprador externo.',
+                }
+            ),
+            defineOption(
+                'Achicar el ritmo, quedarte con los clientes más rentables y vivir de la empresa.',
+                { capital: +15, bienestar: +25 },
+                {
+                    endsGame: true,
+                    addTags: ['lifestyle_business'],
+                    learningPill: 'Lifestyle Business: Una empresa más chica que financia tu vida y tu tiempo no es un fracaso: es otro modelo de éxito.',
+                    outcomeText: 'Redujiste la empresa a su núcleo más rentable. Ganás menos que antes, pero tu tiempo volvió a ser tuyo y nadie te apura.',
+                }
+            ),
+            defineOption(
+                'Seguir adelante: todavía hay mucho por construir.',
+                { capital: +5, bienestar: -15, reputacion: +8 },
+                {
+                    learningPill: 'Costo del Cansancio: Seguir por inercia, sin querer, desgasta a quien conduce y también a la empresa.',
+                    outcomeText: 'Decidiste seguir. La empresa crece, pero te levantás con menos ganas cada mañana y lo notás en cada decisión.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_oferta_del_exterior',
+        phaseId: 4,
+        title: 'Una Oferta del Exterior',
+        weight: 10,
+        description: 'Una empresa extranjera quiere comprar tu operación y convertirla en su base regional. Te ofrece quedarte al frente, con más recursos y con metas que ya no controlarías.',
+        options: [
+            defineOption(
+                'Aceptar: tu empresa pasa a ser su base para toda la región.',
+                { capital: +20, bienestar: -10, reputacion: +15 },
+                {
+                    endsGame: true,
+                    addTags: ['expansion_global'],
+                    learningPill: 'Adquisición Estratégica: Ser comprado por una empresa global da recursos y alcance, a cambio de perder el control de las decisiones.',
+                    outcomeText: 'Aceptaste la oferta. Tu empresa se volvió el centro de operaciones de una compañía internacional. Tenés más recursos y más alcance, aunque ya no decidís todo.',
+                }
+            ),
+            defineOption(
+                'Rechazar y seguir independiente.',
+                { capital: -5, bienestar: +5, reputacion: +5 },
+                {
+                    addTags: ['autonomia_estrategica'],
+                    learningPill: 'Independencia: Rechazar una compra a tiempo conserva el control, y también todo el riesgo.',
+                    outcomeText: 'Dijiste que no. Tu empresa sigue siendo tuya, con todo lo bueno y lo difícil que eso implica.',
+                }
+            ),
+            defineOption(
+                'Proponer una alianza de distribución en lugar de una venta.',
+                { capital: +8, bienestar: -5, reputacion: +8 },
+                {
+                    addTags: ['red_contactos'],
+                    learningPill: 'Alianza Comercial: Una alianza da acceso a nuevos mercados sin entregar el control, aunque el socio tendrá su propia agenda.',
+                    outcomeText: 'Armaron un acuerdo para que distribuyan tu producto en la región. Ganás alcance sin vender, y a cambio le debés lealtad a un socio poderoso.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_modernizar_gestion',
+        phaseId: 4,
+        title: 'La Gestión Quedó Chica',
+        weight: 10,
+        description: 'La forma en que manejás la empresa (sistemas, planillas y procesos) quedó chica. Los errores se acumulan y cada vez cuesta más entender los números.',
+        options: [
+            defineOption(
+                'Reemplazar todo por un sistema nuevo de gestión.',
+                { capital: -20, bienestar: -12, reputacion: +8 },
+                {
+                    surprise: {
+                        effects: { capital: -30, bienestar: -15, reputacion: -10 },
+                        outcomeText: 'La migración salió mal: se perdieron datos, hubo errores de facturación y clientes molestos. Tardaste meses en recuperar el orden, y salió bastante más caro de lo previsto.',
+                    },
+                    addTags: ['procesos_solidos'],
+                    learningPill: 'Transformación Digital: Un sistema nuevo ordena la empresa, pero la migración es un proyecto riesgoso que exige tiempo de todo el equipo.',
+                    outcomeText: 'Implementaste un sistema nuevo para toda la empresa. Fue un año complicado, pero ahora tenés los números al día.',
+                }
+            ),
+            defineOption(
+                'Seguir parchando lo que hay.',
+                { capital: -5, bienestar: -8, reputacion: -3 },
+                {
+                    learningPill: 'Deuda de Procesos: Postergar la modernización parece barato, pero cada parche vuelve más caro el cambio que de todas formas vas a tener que hacer.',
+                    outcomeText: 'Sumaste parches y planillas. La empresa funciona, pero depende de la memoria de unas pocas personas.',
+                }
+            ),
+            defineOption(
+                'Tercerizar la administración a un estudio especializado.',
+                { capital: -10, bienestar: +3 },
+                {
+                    addTags: ['proveedor_dependiente'],
+                    learningPill: 'Tercerización: Un estudio especializado te da orden y experiencia sin armar un área propia, pero te deja dependiente de un tercero.',
+                    outcomeText: 'Un estudio se encargó de tus números. La empresa quedó más ordenada y vos con menos preocupaciones administrativas.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_plataforma_abierta',
+        phaseId: 4,
+        title: 'Abrir tu Producto a Terceros',
+        weight: 10,
+        when: {
+            rubro: ['r1_tecnologia'],
+        },
+        description: 'Otras empresas te piden poder conectarse a tu producto y construir cosas encima. Abrirlo puede multiplicar tu alcance, pero también tus riesgos y tu soporte.',
+        options: [
+            defineOption(
+                'Abrir una API pública con documentación y soporte.',
+                { capital: +8, bienestar: -10, reputacion: +10 },
+                {
+                    surprise: {
+                        effects: { capital: -10, bienestar: -10, reputacion: +10 },
+                        outcomeText: 'Abriste la API y varios terceros construyeron productos que competían con el tuyo. Ganaste alcance, pero perdiste clientes y gastaste mucho en reordenar tu hoja de ruta.',
+                    },
+                    addTags: ['red_contactos'],
+                    learningPill: 'Efecto Plataforma: Abrir tu producto a terceros genera valor que no podés construir solo, pero exige soporte y control.',
+                    outcomeText: 'Abriste una API pública. Otros empezaron a construir sobre tu producto y tu alcance creció, aunque el equipo de soporte se llenó de consultas.',
+                }
+            ),
+            defineOption(
+                'Dar acceso solo a unos pocos socios seleccionados.',
+                { capital: +6, bienestar: -4, reputacion: +4 },
+                {
+                    learningPill: 'Ecosistema Controlado: Abrir de a poco y con socios de confianza reduce el riesgo, aunque limita el alcance.',
+                    outcomeText: 'Le diste acceso a tres socios. Funciona sin sobresaltos, aunque el alcance es más acotado.',
+                }
+            ),
+            defineOption(
+                'Mantener todo cerrado para controlarlo mejor.',
+                { bienestar: +3, reputacion: -5 },
+                {
+                    learningPill: 'Control vs. Alcance: Un producto cerrado es más fácil de manejar, pero deja afuera a quienes querían construir sobre él.',
+                    outcomeText: 'Dijiste que no. El equipo siguió enfocado en su producto, y algunas empresas buscaron alternativas más abiertas.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_venta_de_datos',
+        phaseId: 4,
+        title: 'Vender los Datos de tus Usuarios',
+        weight: 10,
+        when: {
+            rubro: ['r1_tecnologia'],
+        },
+        description: 'Una red de anunciantes ofrece pagarte bien por los datos de uso de tus usuarios, "anonimizados". Sería el ingreso extra más fácil que podrías conseguir.',
+        options: [
+            defineOption(
+                'Vender los datos anonimizados a los anunciantes.',
+                { capital: +20, reputacion: -20 },
+                {
+                    surprise: {
+                        effects: { capital: -10, bienestar: -10, reputacion: -25 },
+                        outcomeText: 'Se descubrió que los datos no estaban bien anonimizados. Hubo una investigación, una sanción y titulares muy negativos. El ingreso extra costó mucho más de lo que dejó.',
+                    },
+                    learningPill: 'Privacidad de Datos: Vender datos de usuarios sin su consentimiento transforma tu activo más valioso en un riesgo legal y de confianza.',
+                    outcomeText: 'Cerraste el trato y la caja se llenó. Algunos usuarios se enteraron y no se lo tomaron bien.',
+                }
+            ),
+            defineOption(
+                'Pedirles permiso a tus usuarios y ofrecer el servicio con su consentimiento.',
+                { capital: +8, bienestar: -3, reputacion: +3 },
+                {
+                    learningPill: 'Consentimiento: Pedir permiso reduce el volumen de datos, pero convierte la monetización en un acuerdo transparente.',
+                    outcomeText: 'Les pediste permiso y una parte aceptó. Ganaste menos, pero tu negocio de datos es legal y transparente.',
+                }
+            ),
+            defineOption(
+                'No monetizar los datos: tu ventaja es la confianza de tus usuarios.',
+                { capital: -5, bienestar: +3, reputacion: +10 },
+                {
+                    learningPill: 'Confianza como Diferencial: Renunciar a un ingreso fácil puede ser una ventaja competitiva cuando todos los demás venden datos.',
+                    outcomeText: 'Dijiste que no y lo comunicaste. Los usuarios valoraron tu postura, aunque el ingreso extra se esfumó.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_linea_propia',
+        phaseId: 4,
+        title: 'Lanzar tu Propia Línea',
+        weight: 10,
+        when: {
+            rubro: ['r2_comercio'],
+        },
+        description: 'Hace años revendés productos de otras marcas. Un fabricante te propone producir una línea con tu nombre, con mejor margen pero con inversión y riesgo.',
+        options: [
+            defineOption(
+                'Lanzar la línea propia con una compra grande inicial.',
+                { capital: -18, bienestar: -8, reputacion: +10 },
+                {
+                    learningPill: 'Marca Propia: Una línea propia da más margen y diferencia, pero exige capital y asumir el riesgo de inventario que antes tenía otro.',
+                    outcomeText: 'Compraste un lote grande de productos con tu marca. Tu comercio ahora tiene identidad propia, y una apuesta importante en el depósito.',
+                }
+            ),
+            defineOption(
+                'Probar con un solo producto estrella.',
+                { capital: -8, bienestar: -3, reputacion: +5 },
+                {
+                    surprise: {
+                        effects: { capital: +10, bienestar: +5, reputacion: +10 },
+                        outcomeText: 'El producto estrella se agotó en semanas y los clientes pidieron más: la prueba se pagó sola y te dio argumentos para negociar mejor con el fabricante.',
+                    },
+                    learningPill: 'Prueba de Mercado: Lanzar un único producto permite aprender sin comprometer demasiado capital.',
+                    outcomeText: 'Lanzaste un producto con tu marca. Se vende bien y te dio información para decidir el próximo paso.',
+                }
+            ),
+            defineOption(
+                'Seguir revendiendo: fabricar no es lo tuyo.',
+                { capital: +5, bienestar: +3, reputacion: -3 },
+                {
+                    surprise: {
+                        effects: { capital: -8, bienestar: -4, reputacion: -6 },
+                        outcomeText: 'Una de las marcas que revendías abrió su propia tienda online con precios más bajos que los tuyos: seguir igual te dejó sin margen.',
+                    },
+                    learningPill: 'Foco: Quedarte en lo que mejor hacés evita riesgos, aunque renuncies a una parte del margen que otros capturan.',
+                    outcomeText: 'Decidiste no meterte en el negocio del fabricante. Seguís vendiendo lo que mejor sabés vender.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_logistica_margen',
+        phaseId: 4,
+        title: 'La Logística se Come el Margen',
+        weight: 10,
+        when: {
+            rubro: ['r2_comercio'],
+        },
+        description: 'Las ventas online crecieron, pero cada envío cuesta cada vez más y los clientes esperan entregas rápidas y gratis.',
+        options: [
+            defineOption(
+                'Armar tu propia logística con vehículos y depósito.',
+                { capital: -18, bienestar: -10, reputacion: +8 },
+                {
+                    learningPill: 'Logística Propia: Controlar los envíos mejora el servicio, pero convierte tu comercio en una empresa de transporte.',
+                    outcomeText: 'Armaste tu propio sistema de entregas. Los clientes están más conformes, pero ahora gestionás vehículos, choferes y rutas.',
+                }
+            ),
+            defineOption(
+                'Tercerizar con un operador logístico.',
+                { capital: -6, bienestar: +3, reputacion: -3 },
+                {
+                    learningPill: 'Tercerización Logística: Un operador logístico convierte un costo fijo en uno variable, a cambio de depender de su calidad.',
+                    outcomeText: 'Contrataste a un operador que se ocupa de las entregas. Perdiste control, pero ganaste tiempo y previsibilidad.',
+                }
+            ),
+            defineOption(
+                'Cobrar el envío a los clientes.',
+                { capital: +5, reputacion: -8 },
+                {
+                    learningPill: 'Traslado de Costos: Cobrar el envío protege tu margen, pero hace que los clientes comparen con quien lo ofrece gratis.',
+                    outcomeText: 'Empezaste a cobrar el envío. Tu margen mejoró, pero algunos clientes se fueron a comprar donde es gratis.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_profesional_independiza',
+        phaseId: 4,
+        title: 'Tu Mejor Profesional Quiere Abrir lo Suyo',
+        weight: 10,
+        when: {
+            rubro: ['r3_servicios'],
+        },
+        description: 'Quien lleva años a tu lado y atiende a tus mejores clientes te avisa que quiere abrir su propio estudio. Los clientes lo conocen a él casi tanto como a vos.',
+        options: [
+            defineOption(
+                'Apoyarlo y volverte su aliado: derivarse clientes mutuamente.',
+                { capital: -5, bienestar: +3, reputacion: +8 },
+                {
+                    addTags: ['red_contactos'],
+                    learningPill: 'Alianza con ex Colaboradores: Convertir a quien se va en un aliado conserva la relación y multiplica tus oportunidades.',
+                    outcomeText: 'Lo ayudaste a arrancar y acordaron derivarse clientes. Perdiste a un gran profesional, pero ganaste a un socio comercial.',
+                }
+            ),
+            defineOption(
+                'Pedirle que firme una cláusula de no competencia antes de irse.',
+                { capital: +3, bienestar: -8, reputacion: -5 },
+                {
+                    surprise: {
+                        effects: { capital: -10, bienestar: -12, reputacion: -10 },
+                        outcomeText: 'La cláusula terminó en una discusión legal: se fue igual, con parte de tus clientes, y los gastos de abogados superaron lo que querías proteger.',
+                    },
+                    learningPill: 'No Competencia: Una cláusula protege tu cartera, pero tensa la relación y no siempre puede hacerse valer.',
+                    outcomeText: 'Firmaron la cláusula y la despedida fue fría. Tus clientes están protegidos, pero el clima quedó tenso.',
+                }
+            ),
+            defineOption(
+                'Ofrecerle una sociedad para que desarrolle su propia unidad dentro de la empresa.',
+                { capital: -10, bienestar: -3, reputacion: +5 },
+                {
+                    surprise: {
+                        effects: { capital: +8, bienestar: +6, reputacion: +8 },
+                        outcomeText: 'La nueva unidad despegó más rápido de lo previsto y a los pocos meses ya aportaba más de lo que habías invertido.',
+                    },
+                    learningPill: 'Intraemprendimiento: Dar participación y autonomía retiene el talento, a cambio de compartir las decisiones y las ganancias.',
+                    outcomeText: 'Le ofreciste una unidad propia con participación en las ganancias. Aceptó, y ahora tenés un socio que antes era un empleado.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_nombre_es_la_empresa',
+        phaseId: 4,
+        title: 'Tu Nombre es la Empresa',
+        weight: 10,
+        when: {
+            rubro: ['r3_servicios'],
+        },
+        description: 'Los clientes te contratan a vos, no a tu empresa. Si te enfermás o te vas, buena parte del negocio se va con vos.',
+        options: [
+            defineOption(
+                'Construir una marca institucional y un equipo que sostenga la empresa sin vos.',
+                { capital: -12, bienestar: -5, reputacion: +10 },
+                {
+                    addTags: ['procesos_solidos'],
+                    learningPill: 'Riesgo de Persona Clave: Una empresa que depende de una sola persona vale menos, porque no se puede transferir ni sostener sin ella.',
+                    outcomeText: 'Empezaste a mostrar a tu equipo y a tu marca en lugar de a vos. Los clientes empiezan a confiar en la empresa y no solo en tu nombre.',
+                }
+            ),
+            defineOption(
+                'Seguir apoyándote en tu nombre: te funciona.',
+                { capital: +8, bienestar: -10, reputacion: +5 },
+                {
+                    learningPill: 'Marca Personal: Tu nombre es un activo potente, pero no se puede vender ni descansar de él.',
+                    outcomeText: 'Seguiste con tu nombre al frente. Los clientes confían, pero no podés tomarte ni una semana libre.',
+                }
+            ),
+            defineOption(
+                'Vender tu cartera de clientes a una firma más grande y retirarte.',
+                { capital: +25, bienestar: +15, reputacion: -5 },
+                {
+                    endsGame: true,
+                    addTags: ['salida_exitosa_venta'],
+                    learningPill: 'Venta de Cartera: Venderle tus clientes a una firma mayor te da liquidez y un cierre, a cambio de renunciar a lo que construiste.',
+                    outcomeText: 'Le vendiste tu cartera a una firma más grande. Hiciste una transición cuidadosa con tus clientes y te retiraste con un buen cierre.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_exportar',
+        phaseId: 4,
+        title: 'Una Oportunidad de Exportar',
+        weight: 10,
+        when: {
+            rubro: ['r4_produccion'],
+        },
+        description: 'Un comprador del exterior quiere tu producto. Exportar abre un mercado enorme, pero exige papeles, certificaciones y manejar los riesgos de cambio y de cobro.',
+        options: [
+            defineOption(
+                'Exportar directo, armando tu propia área de comercio exterior.',
+                { capital: -20, bienestar: -10, reputacion: +12 },
+                {
+                    surprise: {
+                        effects: { capital: +10, bienestar: -10, reputacion: +12 },
+                        outcomeText: 'El primer comprador pagó por adelantado y el tipo de cambio jugó a tu favor. Lo que parecía una inversión enorme se recuperó con el primer envío.',
+                    },
+                    learningPill: 'Comercio Exterior: Exportar directo da más margen y control, pero exige conocimiento, trámites y asumir los riesgos de cambio y cobranza.',
+                    outcomeText: 'Armaste un área de comercio exterior y mandaste tu primer envío. Es mucho trabajo y mucho riesgo, pero tu producto ya está en otro país.',
+                }
+            ),
+            defineOption(
+                'Vender a través de un intermediario o una comercializadora.',
+                { capital: +8, bienestar: -3, reputacion: +3 },
+                {
+                    learningPill: 'Intermediarios: Un intermediario simplifica los trámites y el riesgo, a cambio de quedarse con parte del margen.',
+                    outcomeText: 'Una comercializadora se encargó de los trámites y del cobro. Ganaste menos por unidad, pero sin complicaciones.',
+                }
+            ),
+            defineOption(
+                'No exportar: concentrarte en el mercado local.',
+                { bienestar: +5, reputacion: -3 },
+                {
+                    learningPill: 'Foco Local: Quedarte en tu mercado reduce riesgos, aunque dejás pasar una oportunidad de crecer.',
+                    outcomeText: 'Decidiste no meterte en exportaciones. El negocio sigue estable y simple, con una oportunidad menos.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_automatizar_planta',
+        phaseId: 4,
+        title: 'Automatizar la Línea de Producción',
+        weight: 10,
+        when: {
+            rubro: ['r4_produccion'],
+        },
+        description: 'Una máquina nueva podría hacer el trabajo de varias personas de tu planta, más rápido y con menos errores. Es una inversión grande y un cambio que afecta a todo el equipo.',
+        options: [
+            defineOption(
+                'Automatizar y reducir el personal de planta.',
+                { capital: +15, bienestar: -10, reputacion: -10 },
+                {
+                    surprise: {
+                        effects: { capital: -10, bienestar: -10, reputacion: -10 },
+                        outcomeText: 'La máquina tuvo fallas durante meses y tuviste que pagar horas extras para sostener la producción mientras ya habías reducido el equipo. Terminaste pagando más y con menos gente.',
+                    },
+                    learningPill: 'Automatización: Automatizar baja el costo y los errores, pero tiene un costo humano que también impacta en el clima y la marca.',
+                    outcomeText: 'Instalaste la máquina y reduciste el personal. La eficiencia subió, pero el equipo que quedó trabaja con miedo.',
+                }
+            ),
+            defineOption(
+                'Automatizar y reubicar a tu equipo en tareas nuevas, capacitándolo.',
+                { capital: -12, bienestar: +5, reputacion: +8 },
+                {
+                    learningPill: 'Capacitación: Reubicar y capacitar cuesta más hoy, pero conserva el conocimiento del equipo y su compromiso.',
+                    outcomeText: 'Capacitaste a tu equipo para operar y mantener las máquinas. Costó más tiempo y plata, pero conservaste a tu gente.',
+                }
+            ),
+            defineOption(
+                'No automatizar: la producción artesanal es tu marca.',
+                { capital: -5, bienestar: -5, reputacion: +5 },
+                {
+                    learningPill: 'Valor Artesanal: Producir a mano puede ser un diferencial, siempre que los clientes paguen por eso.',
+                    outcomeText: 'Decidiste mantener el proceso artesanal. Es más lento y más caro, pero lo que los clientes compran es eso.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_proveedor_quiebra',
+        phaseId: 4,
+        title: 'Tu Proveedor Entra en Quiebra',
+        weight: 20,
+        when: {
+            tags: ['proveedor_dependiente'],
+            playedBefore: ['f2_proveedor_critico'],
+        },
+        description: 'El proveedor al que le comprabas casi todo entró en convocatoria de acreedores y dejó de entregar. Tenés poco stock y clientes esperando.',
+        options: [
+            defineOption(
+                'Comprar urgente a proveedores alternativos, aunque pagues más.',
+                { capital: -18, bienestar: -8 },
+                {
+                    addTags: ['proveedores_diversificados'],
+                    removeTags: ['proveedor_dependiente'],
+                    learningPill: 'Diversificación Tardía: Armar una red de proveedores en plena crisis sale mucho más caro que haberlo hecho cuando todo andaba bien.',
+                    outcomeText: 'Conseguiste otros proveedores a las corridas, a precios más altos. Cumpliste con los clientes, pero a un costo importante.',
+                }
+            ),
+            defineOption(
+                'Pausar los pedidos y esperar a ver cómo se resuelve.',
+                { capital: -5, bienestar: -5, reputacion: -20 },
+                {
+                    removeTags: ['proveedor_dependiente'],
+                    learningPill: 'Riesgo de Concentración: Depender de un único proveedor te deja sin opciones cuando falla.',
+                    outcomeText: 'Esperaste. Los clientes no pudieron esperar y varios compraron en otro lado.',
+                }
+            ),
+        ]
+    }),
 ]

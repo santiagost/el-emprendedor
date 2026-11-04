@@ -84,7 +84,7 @@ describe('Integridad de Contenido (Content Spec)', () => {
 
   it('las sorpresas solo están en eventos principales de fase 3 y 4, sin minijuego, y contradicen su tendencia', () => {
     const errors: string[] = [];
-    // Cada rubro ve 24 sorpresas: las versiones por rubro de un mismo evento no se suman
+    // Cada rubro ve 27 sorpresas: las versiones por rubro de un mismo evento no se suman
     const totalByRubro = Object.fromEntries(RUBROS.map((r) => [r.id, 0]));
     for (const ev of GAME_EVENTS) {
       ev.options.forEach((op, i) => {
@@ -100,7 +100,7 @@ describe('Integridad de Contenido (Content Spec)', () => {
       });
     }
     expect(errors).toEqual([]);
-    expect(Object.values(totalByRubro)).toEqual(RUBROS.map(() => 24));
+    expect(Object.values(totalByRubro)).toEqual(RUBROS.map(() => 27));
   });
 
   it('el template de autoría produce eventos válidos', () => {
