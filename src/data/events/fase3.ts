@@ -347,5 +347,36 @@ export const fase3Events = [
                 }
             )
         ]
-    })
+    }),
+
+    defineEvent({
+        id: 'f3_video_filtrado',
+        phaseId: 3,
+        title: 'El Video de la Cámara',
+        weight: 20,
+        when: {
+            tags: ['secreto_ajeno'],
+            playedBefore: ['f1_visita_empresa'],
+        },
+        description: 'Circula en grupos del rubro un video de una cámara de seguridad: se te ve revisando una computadora ajena en aquella visita. Los clientes empiezan a preguntar.',
+        options: [
+            defineOption(
+                'Dar la cara: pedir disculpas en público y explicar qué pasó.',
+                { capital: -10, bienestar: -5, reputacion: -15 },
+                {
+                    removeTags: ['secreto_ajeno'],
+                    learningPill: 'Gestión de Reputación: Asumir un error en público no lo borra, pero corta la historia; negarlo la alarga.',
+                    outcomeText: 'Pediste disculpas y explicaste. Perdiste algunos clientes, pero el tema dejó de circular en pocas semanas.',
+                }
+            ),
+            defineOption(
+                'Decir que el video está sacado de contexto y no hablar más.',
+                { capital: -5, bienestar: -10, reputacion: -30 },
+                {
+                    learningPill: 'Efecto Streisand: Negar algo que todos pueden ver multiplica su alcance y le suma la mentira al error.',
+                    outcomeText: 'Nadie creyó la explicación y el video se compartió todavía más. Varios clientes cortaron la relación.',
+                }
+            ),
+        ]
+    }),
 ]

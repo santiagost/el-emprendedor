@@ -66,6 +66,13 @@ export const RECONOCIMIENTOS: Record<Tag, Reconocimiento> = {
   equipo_sobrecargado: { tipo: 'frente', titulo: 'Equipo al límite' },
   conflicto_legal: { tipo: 'frente', titulo: 'Juicio abierto' },
   informalidad: { tipo: 'frente', titulo: 'Ventas sin facturar' },
+  secreto_ajeno: { tipo: 'frente', titulo: 'Secreto sin revelar' },
+  deuda_familiar: { tipo: 'frente', titulo: 'Deuda con la familia' },
+  promesas_pendientes: { tipo: 'frente', titulo: 'Promesas sin cumplir' },
+  sin_habilitacion: { tipo: 'frente', titulo: 'Sin habilitación' },
+  stock_inmovilizado: { tipo: 'frente', titulo: 'Stock parado' },
+  alquiler_comprometido: { tipo: 'frente', titulo: 'Alquiler a cuestas' },
+  precio_devaluado: { tipo: 'frente', titulo: 'Precio por el piso' },
 };
 
 export const ESTANTES: { id: Estante; label: string }[] = [
