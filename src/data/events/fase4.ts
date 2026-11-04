@@ -285,5 +285,176 @@ export const fase4Events = [
                 }
             )
         ]
-    })
+    }),
+
+    defineEvent({
+        id: 'f4_reclamo_aumentos',
+        phaseId: 4,
+        title: 'Se Enteraron del Aumento',
+        weight: 20,
+        when: {
+            tags: ['desigualdad_salarial'],
+            playedBefore: ['f3_empleado_clave_se_va'],
+        },
+        description: 'En el equipo circuló lo que cobra tu persona clave tras la contraoferta. Varios piden revisar sus sueldos y algunos ya miran otras ofertas.',
+        options: [
+            defineOption(
+                'Revisar los sueldos de todo el equipo con criterios claros.',
+                { capital: -15, bienestar: +8, reputacion: +6 },
+                {
+                    removeTags: ['desigualdad_salarial'],
+                    learningPill: 'Equidad Interna: Sueldos con criterios transparentes evitan que cada aumento genere un conflicto con el resto.',
+                    outcomeText: 'Armaste una escala con criterios claros y ajustaste varios sueldos. Costó plata, pero el clima mejoró mucho.',
+                }
+            ),
+            defineOption(
+                'Explicar que fue una excepción por el riesgo de perderla.',
+                { bienestar: -10, reputacion: -8 },
+                {
+                    removeTags: ['desigualdad_salarial'],
+                    learningPill: 'Comunicación de Excepciones: Explicar una excepción sin cambiar nada rara vez conforma a quien se siente injustamente tratado.',
+                    outcomeText: 'Explicaste tus motivos. Algunos lo entendieron, pero otros sienten que hay reglas distintas para cada uno.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_calidad_dispareja',
+        phaseId: 4,
+        title: 'La Sede Nueva no Rinde Igual',
+        weight: 20,
+        when: {
+            tags: ['operacion_dispersa'],
+            playedBefore: ['f3_expansion_otra_ciudad'],
+        },
+        description: 'Los clientes de la otra ciudad se quejan: el servicio no es el mismo que en tu sede original. Tu marca ya se asocia a las dos.',
+        options: [
+            defineOption(
+                'Centralizar los procesos y capacitar a la sede nueva.',
+                { capital: -12, bienestar: -8, reputacion: +8 },
+                {
+                    addTags: ['procesos_solidos'],
+                    removeTags: ['operacion_dispersa'],
+                    learningPill: 'Estandarización: Cuando la operación se reparte, lo que no está escrito y medido se degrada.',
+                    outcomeText: 'Llevaste a tu equipo de siempre a capacitar y escribiste los procesos. Ahora las dos sedes funcionan igual.',
+                }
+            ),
+            defineOption(
+                'Cerrar la sede nueva y volver a concentrarte en la original.',
+                { capital: -15, bienestar: +5, reputacion: -5 },
+                {
+                    removeTags: ['operacion_dispersa'],
+                    learningPill: 'Salir a Tiempo: Cerrar una operación que no rinde duele, pero evita que arrastre a toda la empresa.',
+                    outcomeText: 'Cerraste la sede nueva. Perdiste lo invertido, pero volviste a ser una empresa más simple.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_clientes_extranan_humanos',
+        phaseId: 4,
+        title: 'Nadie Responde a un Humano',
+        weight: 20,
+        when: {
+            tags: ['soporte_automatizado'],
+            rubro: ['r1_tecnologia'],
+            playedBefore: ['f3_automatizar_soporte'],
+        },
+        description: 'Los clientes se quejan de que tu soporte automático da vueltas sin resolver y de que nunca consiguen hablar con una persona. Se nota en las bajas.',
+        options: [
+            defineOption(
+                'Volver a sumar personas al soporte para los casos complicados.',
+                { capital: -10, bienestar: +3, reputacion: +8 },
+                {
+                    removeTags: ['soporte_automatizado'],
+                    learningPill: 'Servicio al Cliente: Automatizar sin dejar una salida a una persona ahorra costos, pero pierde a quienes más valoran el trato.',
+                    outcomeText: 'Reincorporaste personas para los casos difíciles. Costó más, pero las quejas bajaron y los clientes volvieron.',
+                }
+            ),
+            defineOption(
+                'Mejorar el sistema automático y seguir sin personas.',
+                { capital: -6, bienestar: -5, reputacion: -5 },
+                {
+                    learningPill: 'Mejora Continua: Un sistema automático puede mejorar, pero mientras tanto los clientes insatisfechos pasan a la competencia.',
+                    outcomeText: 'Mejoraste las respuestas y sumaste más opciones, pero los clientes siguen pidiendo hablar con alguien.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_cobro_estatal',
+        phaseId: 4,
+        title: 'El Estado Paga Tarde',
+        weight: 20,
+        when: {
+            tags: ['contrato_estatal'],
+            rubro: ['r3_servicios'],
+            playedBefore: ['f3_licitacion_publica'],
+        },
+        description: 'Cumpliste con el contrato de la licitación, pero el organismo acumula atrasos: ya pasaron más de 200 días desde tu última factura y todavía no cobrás.',
+        options: [
+            defineOption(
+                'Seguir cumpliendo el contrato y esperar el pago.',
+                { capital: -15, bienestar: -8, reputacion: +3 },
+                {
+                    learningPill: 'Riesgo de Cobranza: Financiar a un cliente que no paga convierte tu empresa en su banco.',
+                    outcomeText: 'Seguiste trabajando sin cobrar. La caja se vació y tuviste que financiar todo con tu plata.',
+                }
+            ),
+            defineOption(
+                'Suspender el servicio hasta que regularicen el pago.',
+                { capital: -5, bienestar: -5, reputacion: -10 },
+                {
+                    removeTags: ['contrato_estatal'],
+                    learningPill: 'Poder de Negociación: Frenar el servicio presiona al cliente, pero daña la relación y puede costarte el contrato.',
+                    outcomeText: 'Frenaste el servicio y el organismo reclamó. Después de semanas cobraste una parte, pero la relación quedó dañada.',
+                }
+            ),
+            defineOption(
+                'Vender las facturas a una financiera con descuento.',
+                { capital: -8, bienestar: +3 },
+                {
+                    removeTags: ['contrato_estatal'],
+                    learningPill: 'Factoring: Vender facturas con descuento te da la plata hoy, a cambio de resignar parte de lo que cobrarías.',
+                    outcomeText: 'Vendiste tus facturas a una financiera con un descuento importante. Perdiste parte de la ganancia, pero la caja volvió a funcionar.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f4_denuncia_consumidor',
+        phaseId: 4,
+        title: 'La Denuncia de un Consumidor',
+        weight: 20,
+        when: {
+            tags: ['falla_oculta'],
+            rubro: ['r4_produccion'],
+            playedBefore: ['f3_lote_defectuoso'],
+        },
+        description: 'Un consumidor te denunció porque un producto de aquel lote defectuoso le hizo daño. El tema llegó a un medio local.',
+        options: [
+            defineOption(
+                'Reconocer el problema, indemnizar y retirar lo que quede.',
+                { capital: -18, bienestar: -8, reputacion: -10 },
+                {
+                    removeTags: ['falla_oculta'],
+                    learningPill: 'Responsabilidad del Fabricante: Reconocer un defecto y reparar el daño cuesta, pero es mucho menos que defender lo indefendible.',
+                    outcomeText: 'Reconociste el problema, indemnizaste y retiraste lo que quedaba. Perdiste plata y prestigio, pero cerraste el caso.',
+                }
+            ),
+            defineOption(
+                'Defenderte diciendo que cumplís con todos los controles.',
+                { capital: -5, bienestar: -10, reputacion: -25 },
+                {
+                    removeTags: ['falla_oculta'],
+                    learningPill: 'Ocultamiento: Defender lo que sabés que está mal convierte un error de calidad en un escándalo público.',
+                    outcomeText: 'Dijiste que cumplías con todo. Después se supo que ya sabías del defecto y tu credibilidad quedó por el piso.',
+                }
+            ),
+        ]
+    }),
 ]

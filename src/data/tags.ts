@@ -349,6 +349,42 @@ export const TAGS = {
     hint: 'tener tu propia máquina podría darte capacidad, aunque con costos de mantenimiento',
     tone: 'bad',
   },
+  desigualdad_salarial: {
+    label: 'Desigualdad Salarial',
+    modifiers: { bienestar: -1 },
+    description: 'Alguien del equipo cobra bastante más que los demás sin un criterio claro. Tarde o temprano se va a notar.',
+    story: 'alguien del equipo cobra más que el resto y [-nadie sabe por qué]',
+    storyPast: 'alguien del equipo cobró más que el resto y [-nadie supo por qué]',
+    hint: 'mejorarle el sueldo a una sola persona podría generar ruido en el equipo',
+    tone: 'bad',
+  },
+  operacion_dispersa: {
+    label: 'Operación Dispersa',
+    modifiers: { capital: -1 },
+    description: 'Abriste una operación lejos de tu base. Llegás a más clientes, pero cuesta cuidar que todo se haga igual de bien.',
+    story: 'tu operación está en dos lugares y [-cuesta que todo salga igual de bien]',
+    storyPast: 'tu operación estuvo en dos lugares y [-costó que todo saliera igual de bien]',
+    hint: 'abrir lejos de tu base podría darte más clientes, pero también más dolores de cabeza',
+    tone: 'bad',
+  },
+  contrato_estatal: {
+    label: 'Contrato con el Estado',
+    modifiers: { capital: +1 },
+    description: 'Le vendés a un organismo público. El contrato es grande y estable, pero los pagos suelen demorarse.',
+    story: 'le vendés al Estado: [+el contrato es grande] y [-los pagos se demoran]',
+    storyPast: 'le vendiste al Estado: [+el contrato fue grande] y [-los pagos se demoraron]',
+    hint: 'un contrato público podría ser enorme, aunque quizás tarde en pagarte',
+    tone: 'bad',
+  },
+  soporte_automatizado: {
+    label: 'Soporte Automatizado',
+    modifiers: { capital: +1, reputacion: -1 },
+    description: 'Tu atención al cliente la resuelve un sistema automático. Es barata y rápida, pero los casos difíciles no encuentran a una persona.',
+    story: 'tu soporte es automático: [+es barato y rápido] y [-los casos difíciles no encuentran a nadie]',
+    storyPast: 'tu soporte fue automático: [+fue barato y rápido] y [-los casos difíciles no encontraron a nadie]',
+    hint: 'automatizar toda la atención podría ahorrarte plata, pero a veces el cliente quiere hablar con una persona',
+    tone: 'bad',
+  },
 } satisfies Record<string, TagConfig>;
 
 export type Tag = keyof typeof TAGS;
