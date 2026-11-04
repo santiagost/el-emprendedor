@@ -313,6 +313,42 @@ export const TAGS = {
     hint: 'trabajar gratis quizás le enseñe a tus clientes que tu trabajo no vale',
     tone: 'bad',
   },
+  margen_ajustado: {
+    label: 'Margen Ajustado',
+    modifiers: { capital: -1 },
+    description: 'Mantuviste tus precios mientras subían tus costos. Vendés igual, pero ganás menos por cada venta.',
+    story: 'mantuviste tus precios y [-cada venta te deja menos ganancia]',
+    storyPast: 'mantuviste tus precios y [-cada venta te dejó menos ganancia]',
+    hint: 'no subir los precios podría dejarte vendiendo más, pero ganando menos',
+    tone: 'bad',
+  },
+  contratacion_por_afecto: {
+    label: 'Contratación por Afecto',
+    modifiers: { reputacion: -1 },
+    description: 'Sumaste a un amigo sin un proceso claro. El clima es cálido, pero nadie definió qué se espera de él.',
+    story: 'sumaste a un amigo sin proceso y [-nadie definió qué se espera de su trabajo]',
+    storyPast: 'sumaste a un amigo sin proceso y [-nadie definió qué se esperaba de su trabajo]',
+    hint: 'sumar a un amigo sin proceso podría mezclar la amistad con el trabajo',
+    tone: 'bad',
+  },
+  falla_oculta: {
+    label: 'Falla sin Resolver',
+    modifiers: {  },
+    description: 'Conocés un problema serio de tu producto y lo dejaste para más adelante. Mientras no lo arregles, sigue ahí.',
+    story: 'hay una falla seria que [-conocés y todavía no arreglaste]',
+    storyPast: 'hubo una falla seria que [-conociste y no arreglaste a tiempo]',
+    hint: 'postergar una falla seria podría salir caro si se hace pública',
+    tone: 'bad',
+  },
+  maquina_propia: {
+    label: 'Máquina Propia',
+    modifiers: { capital: -1, reputacion: +1 },
+    description: 'Comprás tu propio equipo y producís con él. Tenés capacidad y control, pero también costos de mantenimiento.',
+    story: 'tu máquina propia [+te da capacidad y control] y [-suma mantenimiento]',
+    storyPast: 'tu máquina propia [+te dio capacidad y control] y [-sumó mantenimiento]',
+    hint: 'tener tu propia máquina podría darte capacidad, aunque con costos de mantenimiento',
+    tone: 'bad',
+  },
 } satisfies Record<string, TagConfig>;
 
 export type Tag = keyof typeof TAGS;

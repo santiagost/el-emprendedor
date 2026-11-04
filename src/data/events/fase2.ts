@@ -469,4 +469,481 @@ export const fase2Events = [
             ),
         ]
     }),
+
+    defineEvent({
+        id: 'f2_aumentar_precios',
+        phaseId: 2,
+        title: 'Los Costos Subieron',
+        weight: 10,
+        description: 'Tus proveedores aumentaron sus precios varias veces este año y tu margen se achicó. Subir los precios puede espantar clientes; no subirlos te deja trabajando casi sin ganancia.',
+        options: [
+            defineOption(
+                'Subir todos los precios de golpe y avisar con una semana de anticipación.',
+                { capital: +12, bienestar: -3, reputacion: -10 },
+                {
+                    learningPill: 'Poder de Fijación de Precios: Subir de golpe recupera el margen rápido, pero pone a prueba cuánto valoran tu producto tus clientes.',
+                    outcomeText: 'Recuperaste margen enseguida. Algunos clientes se quejaron y un par se fue, pero la mayoría se quedó.',
+                }
+            ),
+            defineOption(
+                'Subir de a poco y explicarle a cada cliente el porqué.',
+                { capital: +6, bienestar: -6, reputacion: +3 },
+                {
+                    learningPill: 'Comunicación de Precios: Explicar un aumento da trabajo, pero reduce el rechazo y fortalece la relación con el cliente.',
+                    outcomeText: 'Hablaste con tus clientes uno por uno. Fue lento y cansador, pero casi nadie se fue.',
+                }
+            ),
+            defineOption(
+                'Mantener los precios para no perder clientes.',
+                { capital: -10, bienestar: -3, reputacion: +6 },
+                {
+                    addTags: ['margen_ajustado'],
+                    scheduledEvent: { eventId: 'f3_costos_se_comen_margen', delayTurns: 3 },
+                    learningPill: 'Erosión del Margen: Sostener precios mientras suben tus costos regala margen: vendés lo mismo, pero ganás menos por cada venta.',
+                    outcomeText: 'Nadie se quejó y seguiste vendiendo igual, pero cada venta te deja menos ganancia que antes.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f2_contratar_amigo',
+        phaseId: 2,
+        title: 'Un Amigo Quiere Trabajar con Vos',
+        weight: 10,
+        description: 'Un amigo de toda la vida está sin trabajo y te pide sumarse a tu equipo. No tiene la experiencia ideal, pero lo conocés y confiás en él.',
+        options: [
+            defineOption(
+                'Contratarlo ya, sin entrevista ni período de prueba.',
+                { capital: -8, bienestar: +8 },
+                {
+                    addTags: ['contratacion_por_afecto'],
+                    scheduledEvent: { eventId: 'f3_amigo_rinde_poco', delayTurns: 2 },
+                    learningPill: 'Contratar por Afecto: Contratar sin proceso mezcla amistad y trabajo; cuando hay que corregir o despedir, se complican las dos relaciones.',
+                    outcomeText: 'Tu amigo se sumó con muchas ganas y el clima mejoró. Pero nadie definió qué se espera de su trabajo.',
+                }
+            ),
+            defineOption(
+                'Hacerle el mismo proceso de selección que a cualquier candidato.',
+                { capital: -5, bienestar: -3, reputacion: +5 },
+                {
+                    learningPill: 'Proceso de Selección: Evaluar a todos con el mismo criterio protege el trabajo y la amistad: si entra, entra por mérito.',
+                    outcomeText: 'Hizo el proceso y lo hizo bien. Entró, y en el equipo todos saben que no fue un favor.',
+                }
+            ),
+            defineOption(
+                'Explicarle que por ahora no hay lugar y ayudarlo a buscar en otro lado.',
+                { bienestar: -5 },
+                {
+                    learningPill: 'Límites Claros: Decir que no a un amigo es incómodo, pero evita mezclar un vínculo personal con una relación de jefe y empleado.',
+                    outcomeText: 'Fue una charla incómoda. Tu amigo lo entendió, aunque tardó en volver a escribirte.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f2_cuotas_sin_interes',
+        phaseId: 2,
+        title: 'Cuotas sin Interés',
+        weight: 10,
+        description: 'Tus clientes piden pagar en cuotas con tarjeta. Si las ofrecés sin interés vendés más, pero la plata te llega meses después y la tarjeta te cobra una comisión.',
+        options: [
+            defineOption(
+                'Ofrecer 6 cuotas sin interés y absorber el costo financiero.',
+                { capital: -10, reputacion: +10 },
+                {
+                    learningPill: 'Costo Financiero: Vender en cuotas sin interés sube las ventas, pero cobrás más tarde y la comisión la pagás vos.',
+                    outcomeText: 'Las ventas subieron bastante. La plata entra más tarde y parte se va en comisiones, así que en la caja casi no se nota.',
+                }
+            ),
+            defineOption(
+                'Ofrecer cuotas con recargo para cubrir el costo.',
+                { capital: +6, reputacion: -5 },
+                {
+                    learningPill: 'Traslado de Costos: Cobrar el financiamiento protege tu margen, pero vendés menos porque el cliente compara con quien lo ofrece gratis.',
+                    outcomeText: 'Cubriste el costo, pero varios clientes se fueron a comprar donde las cuotas no tenían recargo.',
+                }
+            ),
+            defineOption(
+                'Vender solo al contado o con débito, con un descuento por pagar así.',
+                { capital: +8, bienestar: +3, reputacion: -3 },
+                {
+                    learningPill: 'Liquidez: Cobrar al instante mejora tu caja, aunque perdés a los clientes que necesitan financiar la compra.',
+                    outcomeText: 'Cobrás al momento y la caja respira. Algunos clientes no pudieron comprar sin cuotas.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f2_necesidad_capital',
+        phaseId: 2,
+        title: 'La Caja se Queda Corta',
+        weight: 10,
+        description: 'Las ventas crecen, pero cobrás a 60 días y pagás a tus proveedores a 30. Para seguir creciendo necesitás plata ahora.',
+        options: [
+            defineOption(
+                'Descontar cheques y pedir adelantos en cuenta corriente.',
+                { capital: +15, bienestar: -8 },
+                {
+                    addTags: ['deuda_riesgosa'],
+                    scheduledEvent: { eventId: 'f3_cuota_prestamo', delayTurns: 3 },
+                    learningPill: 'Costo del Dinero: El crédito rápido sirve para un apuro, pero con tasas altas se vuelve un costo fijo que se come el crecimiento.',
+                    outcomeText: 'Conseguiste la plata en el día. Pero las tasas son altas y los intereses empezaron a pesar en cada balance.',
+                }
+            ),
+            defineOption(
+                'Pedir un préstamo para pymes con tasa más baja, aunque tarde y exija papeles.',
+                { capital: +10, bienestar: -8, reputacion: +5 },
+                {
+                    learningPill: 'Financiamiento Formal: Los créditos para pymes son más baratos, pero exigen balances, garantías y paciencia.',
+                    outcomeText: 'Tardaste semanas en reunir los papeles, pero conseguiste una tasa razonable. Mostrar tus números también ordenó tu empresa.',
+                }
+            ),
+            defineOption(
+                'Negociar con tus proveedores pagarles a 60 días.',
+                { capital: +5, bienestar: -3, reputacion: -8 },
+                {
+                    learningPill: 'Capital de Trabajo: Alargar los pagos a proveedores financia la operación sin intereses, a costa de la relación con ellos.',
+                    outcomeText: 'Algunos proveedores aceptaron y otros te pidieron pago adelantado. Ganaste aire, pero cambió cómo te ven.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f2_cliente_corporativo_pide',
+        phaseId: 2,
+        title: 'El Cliente Grande Pide su Propia Versión',
+        weight: 10,
+        when: {
+            rubro: ['r1_tecnologia'],
+        },
+        description: 'Una empresa grande quiere contratar tu producto, pero solo si le agregás funciones a medida. Es el contrato más grande que viste y le dedicarías a eso casi todo el equipo.',
+        options: [
+            defineOption(
+                'Aceptar y construir todo lo que pida.',
+                { capital: +20, bienestar: -10, reputacion: +5 },
+                {
+                    addTags: ['cliente_dependencia'],
+                    scheduledEvent: { eventId: 'f3_cliente_corporativo_renegocia', delayTurns: 3 },
+                    learningPill: 'Trampa de la Consultora: Construirle un producto a un solo cliente te da ingresos hoy y te saca del rumbo de tu propio producto.',
+                    outcomeText: 'Firmaste el contrato más grande hasta ahora. Tu equipo trabaja casi solo para ese cliente y tu producto no avanza.',
+                }
+            ),
+            defineOption(
+                'Aceptar solo lo que también le sirva al resto de tus clientes.',
+                { capital: +8, bienestar: -3, reputacion: +3 },
+                {
+                    learningPill: 'Hoja de Ruta: Priorizar lo que sirve a muchos clientes mantiene coherente tu producto y enfocado a tu equipo.',
+                    outcomeText: 'El cliente aceptó una parte y se llevó mejoras que también usan los demás. El contrato es más chico, pero el producto avanza.',
+                }
+            ),
+            defineOption(
+                'Cobrar las funciones a medida como un servicio aparte.',
+                { capital: +12, bienestar: -8 },
+                {
+                    learningPill: 'Servicios Profesionales: Cobrar la personalización por separado financia el desarrollo sin atar el producto a un solo cliente.',
+                    outcomeText: 'Armaste un servicio aparte con otro equipo y otro precio. Da más trabajo, pero ese ingreso extra no frena tu producto.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f2_falla_seguridad',
+        phaseId: 2,
+        title: 'Una Falla de Seguridad',
+        weight: 10,
+        when: {
+            rubro: ['r1_tecnologia'],
+        },
+        description: 'Un usuario te escribe en privado: encontró una falla que permite ver datos de otros clientes. Que vos sepas, nadie la usó todavía de forma maliciosa.',
+        options: [
+            defineOption(
+                'Corregirla en silencio, sin avisarle a nadie.',
+                { capital: -3, bienestar: -5 },
+                {
+                    learningPill: 'Divulgación Responsable: Corregir sin avisar resuelve el problema técnico, pero si alguien ya accedió a los datos, los usuarios tienen derecho a saberlo.',
+                    outcomeText: 'Pasaste unos días corrigiendo y la falla quedó cerrada. Nadie se enteró, y vos tampoco sabés si alguien llegó a verla.',
+                }
+            ),
+            defineOption(
+                'Corregirla y avisarles a todos los usuarios con un comunicado.',
+                { capital: -8, bienestar: -8, reputacion: +8 },
+                {
+                    learningPill: 'Transparencia: Avisar de una falla a tiempo cuesta reputación en el corto plazo y construye confianza para el largo.',
+                    outcomeText: 'Algunos usuarios se preocuparon, pero la mayoría valoró que se lo contaras antes de que lo supieran por otro lado.',
+                }
+            ),
+            defineOption(
+                'Dejarla para después: tenés otras prioridades.',
+                { capital: +3, bienestar: +3 },
+                {
+                    addTags: ['falla_oculta'],
+                    learningPill: 'Deuda de Seguridad: Postergar una falla de seguridad no la elimina; la deja esperando el peor momento.',
+                    outcomeText: 'Seguiste con tu plan como si nada. La falla sigue ahí, y alguien más podría encontrarla.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f2_hot_sale',
+        phaseId: 2,
+        title: 'El Evento de Descuentos',
+        weight: 10,
+        when: {
+            rubro: ['r2_comercio'],
+        },
+        description: 'Se acerca un evento de descuentos online y todos los comercios se preparan. Las ventas pueden multiplicarse en pocos días, pero también el riesgo de comprar de más o de no dar abasto.',
+        options: [
+            defineOption(
+                'Comprar stock de más y bajar los precios fuerte.',
+                { capital: +18, bienestar: -8, reputacion: +5 },
+                {
+                    minigame: {
+                        kind: 'roulette',
+                        riskBias: 0.12,
+                        title: 'Gran promoción',
+                        rule: 'Apostaste fuerte: la ruleta decide si la demanda estuvo a la altura del stock que compraste.',
+                        outcomeTextByPerformance: {
+                            perfect: 'La promo explotó: vendiste casi todo el stock en pocos días y sumaste clientes nuevos.',
+                            poor: 'La demanda no estuvo a la altura del stock: te quedó mucha mercadería y tuviste que rebajar todavía más.',
+                        },
+                    },
+                    learningPill: 'Riesgo de Inventario: Apostar fuerte puede multiplicar las ventas, pero si la demanda no llega, el stock se vuelve un costo.',
+                    outcomeText: 'Armaste una promo agresiva con mucho stock. Salió lo que tenía que salir y quedaste con otra imagen de tu comercio.',
+                }
+            ),
+            defineOption(
+                'Participar con tu stock normal y tres productos gancho a buen precio.',
+                { capital: +10, bienestar: -3, reputacion: +4 },
+                {
+                    minigame: {
+                        kind: 'roulette',
+                        title: 'Promoción medida',
+                        rule: 'Participaste con stock normal y productos gancho: la ruleta decide cuántos clientes se quedaron con el resto del catálogo.',
+                        outcomeTextByPerformance: {
+                            perfect: 'Los ganchos funcionaron y la gente compró mucho más que lo que fue a buscar.',
+                            poor: 'La gente se llevó solo los productos baratos y ya casi no compró nada más.',
+                        },
+                    },
+                    learningPill: 'Productos Gancho: Unos pocos productos muy baratos atraen tráfico y permiten vender el resto a precio normal.',
+                    outcomeText: 'Los productos gancho llevaron gente a tu tienda y el resto del catálogo se vendió a buen ritmo.',
+                }
+            ),
+            defineOption(
+                'Participar solo con descuentos en la mercadería que ya tenías guardada.',
+                { capital: +5, reputacion: +2 },
+                {
+                    minigame: {
+                        kind: 'roulette',
+                        riskBias: -0.2,
+                        title: 'Liquidación segura',
+                        rule: 'Participaste solo con lo que ya tenías: poco riesgo, pero la ruleta decide cuánto se vendió.',
+                        outcomeTextByPerformance: {
+                            perfect: 'Se vendió casi todo lo que tenías guardado y liberaste espacio y caja.',
+                            poor: 'La gente pasó de largo y solo se llevó lo más barato de lo viejo.',
+                        },
+                    },
+                    learningPill: 'Rotación de Stock: Un evento masivo es una buena oportunidad para liquidar stock viejo sin comprar nada nuevo.',
+                    outcomeText: 'Sacaste mercadería parada sin gastar un peso en stock nuevo. El volumen no fue récord, pero sin riesgo.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f2_plataforma_comisiones',
+        phaseId: 2,
+        title: 'La Plataforma te Cobra Más',
+        weight: 10,
+        when: {
+            rubro: ['r2_comercio'],
+        },
+        description: 'La plataforma donde vendés casi todo subió sus comisiones. Dejarla te haría perder tráfico, pero cada venta te deja menos ganancia.',
+        options: [
+            defineOption(
+                'Seguir en la plataforma y subir tus precios para cubrir la comisión.',
+                { capital: +5, reputacion: -6 },
+                {
+                    learningPill: 'Dependencia de Canal: Cuando un solo canal concentra tus ventas, quien lo controla puede cambiar las reglas.',
+                    outcomeText: 'Mantuviste las ventas con precios algo más altos. Tus clientes siguen ahí, pero comparando con la competencia en la misma plataforma.',
+                }
+            ),
+            defineOption(
+                'Armar tu tienda online propia y llevar de a poco a tus clientes.',
+                { capital: -12, bienestar: -8, reputacion: +6 },
+                {
+                    addTags: ['clientes_diversificados'],
+                    learningPill: 'Canal Propio: Una tienda propia cuesta y tarda en rendir, pero te da control sobre los precios y los datos de tus clientes.',
+                    outcomeText: 'Armaste tu tienda propia con bastante esfuerzo. Todavía vende poco, pero los clientes que llegan son tuyos.',
+                }
+            ),
+            defineOption(
+                'Dividir tus ventas entre la plataforma y un canal propio en redes.',
+                { capital: -3, bienestar: -5, reputacion: +2 },
+                {
+                    learningPill: 'Diversificar Canales: Vender por más de un canal reduce el riesgo, a cambio de más trabajo operativo.',
+                    outcomeText: 'Ahora atendés dos canales. Es más trabajo, pero ya no dependés de uno solo.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f2_turnos_cancelados',
+        phaseId: 2,
+        title: 'Turnos que se Caen',
+        weight: 10,
+        when: {
+            rubro: ['r3_servicios'],
+        },
+        description: 'Cada semana varios clientes cancelan a último momento o directamente no se presentan. Perdés horas que no podés recuperar.',
+        options: [
+            defineOption(
+                'Pedir una seña para reservar y cobrarla si cancelan tarde.',
+                { capital: +10, bienestar: +3, reputacion: -6 },
+                {
+                    learningPill: 'Política de Cancelación: Una seña protege tu tiempo y filtra a clientes comprometidos, aunque algunos la sienten como desconfianza.',
+                    outcomeText: 'Las ausencias bajaron casi a cero. Un par de clientes se quejó por la seña, pero la mayoría lo entendió.',
+                }
+            ),
+            defineOption(
+                'Mandar recordatorios automáticos y dejar todo como está.',
+                { capital: +3, bienestar: -3, reputacion: +3 },
+                {
+                    learningPill: 'Reducir Fricción: Un recordatorio es barato y baja las ausencias sin cambiar la relación con el cliente.',
+                    outcomeText: 'Las ausencias bajaron algo. Seguís perdiendo horas, pero la relación con los clientes no cambió.',
+                }
+            ),
+            defineOption(
+                'Aceptar overbooking: agendar más gente de la que podés atender.',
+                { capital: +8, bienestar: -12, reputacion: -4 },
+                {
+                    learningPill: 'Overbooking: Agendar de más compensa las ausencias, pero el día que vienen todos, la calidad y el equipo pagan el costo.',
+                    outcomeText: 'La agenda se llenó y los ingresos subieron. Los días en que se presenta todo el mundo, la atención se resiente.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f2_pago_por_resultados',
+        phaseId: 2,
+        title: 'Pago por Resultados',
+        weight: 10,
+        when: {
+            rubro: ['r3_servicios'],
+        },
+        description: 'Un cliente te propone pagarte un monto fijo bajo y un porcentaje de lo que venda su empresa gracias a tu trabajo.',
+        options: [
+            defineOption(
+                'Aceptar el esquema: apostar a tus resultados.',
+                { capital: +5, bienestar: -8, reputacion: +5 },
+                {
+                    learningPill: 'Ingreso Variable: Cobrar por resultados puede pagar mucho más, pero asumís el riesgo de factores que no controlás.',
+                    outcomeText: 'Aceptaste el trato. Si el cliente vende, vas a ganar más que con tu tarifa. Si no, habrás trabajado casi gratis.',
+                }
+            ),
+            defineOption(
+                'Pedir un fijo más alto y un porcentaje más chico.',
+                { capital: +10, bienestar: -3 },
+                {
+                    learningPill: 'Reparto de Riesgo: Un fijo razonable cubre tus costos y un variable chico alinea incentivos sin apostar todo.',
+                    outcomeText: 'Negociaron y quedaron en un punto medio. Tu costo está cubierto y todavía tenés algo de ganancia extra si le va bien.',
+                }
+            ),
+            defineOption(
+                'Rechazar y cobrar solo tu tarifa de siempre.',
+                { capital: +3, bienestar: +3 },
+                {
+                    learningPill: 'Previsibilidad: Una tarifa fija es menos emocionante, pero te permite planificar la caja.',
+                    outcomeText: 'Seguiste con tu esquema de siempre. Sabés cuánto vas a cobrar y el cliente se quedó igual.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f2_comprar_maquina',
+        phaseId: 2,
+        title: 'Comprar una Máquina',
+        weight: 10,
+        when: {
+            rubro: ['r4_produccion'],
+        },
+        description: 'Tu producción ya no alcanza con el equipo actual. Una máquina nueva duplicaría tu capacidad, pero cuesta casi todo lo que tenés en caja.',
+        options: [
+            defineOption(
+                'Comprar la máquina nueva a crédito.',
+                { capital: -20, bienestar: -5, reputacion: +8 },
+                {
+                    addTags: ['maquina_propia'],
+                    scheduledEvent: { eventId: 'f3_falla_de_la_maquina', delayTurns: 3 },
+                    learningPill: 'Inversión en Activos: Una máquina propia baja el costo por unidad en el largo plazo, pero inmoviliza capital y suma mantenimiento.',
+                    outcomeText: 'La máquina llegó y tu capacidad se duplicó. Ahora hay cuotas que pagar y un equipo del que depende toda tu producción.',
+                }
+            ),
+            defineOption(
+                'Alquilar horas de máquina en otra planta cuando hay picos.',
+                { capital: -8, bienestar: -8 },
+                {
+                    learningPill: 'Capacidad Flexible: Alquilar capacidad cuesta más por unidad, pero evita inmovilizar capital hasta confirmar que la demanda es estable.',
+                    outcomeText: 'Cubrís los picos con horas alquiladas. Es más caro por unidad y requiere coordinar, pero no te endeudaste.',
+                }
+            ),
+            defineOption(
+                'Comprar una máquina usada y reacondicionarla.',
+                { capital: -10, bienestar: -10, reputacion: +3 },
+                {
+                    addTags: ['maquina_propia'],
+                    scheduledEvent: { eventId: 'f3_falla_de_la_maquina', delayTurns: 2 },
+                    learningPill: 'Equipo Usado: Una máquina usada baja la inversión inicial, pero trae más riesgo de fallas y gastos de puesta a punto.',
+                    outcomeText: 'Conseguiste una máquina usada a buen precio. Hubo que ajustarla y los primeros lotes salieron con algunos errores.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f2_marca_blanca',
+        phaseId: 2,
+        title: 'Producir para Otra Marca',
+        weight: 10,
+        when: {
+            rubro: ['r4_produccion'],
+        },
+        description: 'Una cadena de supermercados quiere que le produzcas con su propia marca, en cantidades grandes y a un precio bajo. Es un volumen que nunca imaginaste.',
+        options: [
+            defineOption(
+                'Aceptar el contrato por toda tu capacidad.',
+                { capital: +20, bienestar: -10, reputacion: -8 },
+                {
+                    addTags: ['cliente_dependencia'],
+                    scheduledEvent: { eventId: 'f3_cadena_baja_precio', delayTurns: 3 },
+                    learningPill: 'Marca Blanca: Producir para otra marca da volumen y ocupa tu capacidad, pero tu cliente pasa a decidir el precio.',
+                    outcomeText: 'Tu fábrica trabaja a pleno y la caja se llenó. Pero casi toda tu producción tiene el nombre de otro.',
+                }
+            ),
+            defineOption(
+                'Aceptar un lote chico y seguir creciendo con tu propia marca.',
+                { capital: +8, bienestar: -3 },
+                {
+                    learningPill: 'Diversificar Ventas: Combinar marca propia y marca blanca aprovecha capacidad ociosa sin depender de un solo comprador.',
+                    outcomeText: 'Aceptaste un lote acotado. Es un ingreso extra que ocupa capacidad que sobraba, y tu marca sigue creciendo.',
+                }
+            ),
+            defineOption(
+                'Rechazar y apostar a construir tu marca.',
+                { capital: -5, reputacion: +8 },
+                {
+                    learningPill: 'Marca Propia: Tu marca da más margen y más valor, pero tarda años en construirse.',
+                    outcomeText: 'Dijiste que no a un contrato enorme. Tu volumen es chico, pero cada producto que vendés tiene tu nombre y tu margen.',
+                }
+            ),
+        ]
+    }),
 ]

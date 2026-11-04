@@ -379,4 +379,235 @@ export const fase3Events = [
             ),
         ]
     }),
+
+    defineEvent({
+        id: 'f3_costos_se_comen_margen',
+        phaseId: 3,
+        title: 'Vendés Más, Ganás Menos',
+        weight: 20,
+        when: {
+            tags: ['margen_ajustado'],
+            playedBefore: ['f2_aumentar_precios'],
+        },
+        description: 'Pasó un año y los costos siguieron subiendo. Mantuviste los precios y hoy vendés más que nunca, pero casi no te queda ganancia por cada venta.',
+        options: [
+            defineOption(
+                'Ajustar los precios ahora, aunque los clientes ya se acostumbraron al valor anterior.',
+                { capital: +10, bienestar: -5, reputacion: -10 },
+                {
+                    removeTags: ['margen_ajustado'],
+                    learningPill: 'Efecto Escalera: Posponer ajustes obliga a hacer uno más grande después, y es más difícil de justificar.',
+                    outcomeText: 'El ajuste fue grande y varios clientes lo notaron. Tu margen se recompuso, pero te costó explicarlo.',
+                }
+            ),
+            defineOption(
+                'Recortar costos y gastos del equipo para sostener el precio.',
+                { capital: +5, bienestar: -12 },
+                {
+                    removeTags: ['margen_ajustado'],
+                    learningPill: 'Eficiencia vs. Desgaste: Recortar costos mejora el margen, pero exige más al equipo y a la calidad.',
+                    outcomeText: 'Recortaste gastos en todo lo que se pudo. Tu margen mejoró, pero el equipo trabaja con menos recursos.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f3_amigo_rinde_poco',
+        phaseId: 3,
+        title: 'El Amigo que Llega Tarde',
+        weight: 20,
+        when: {
+            tags: ['contratacion_por_afecto'],
+            playedBefore: ['f2_contratar_amigo'],
+        },
+        description: 'Tu amigo, que entró sin ningún proceso, llega tarde y no cumple sus tareas. El resto del equipo empieza a notarlo y a preguntarse por qué recibe un trato distinto.',
+        options: [
+            defineOption(
+                'Tener una charla franca y ponerle metas claras por escrito.',
+                { bienestar: -8, reputacion: +3 },
+                {
+                    removeTags: ['contratacion_por_afecto'],
+                    learningPill: 'Feedback Claro: Hablar a tiempo y con metas concretas es la mejor forma de salvar un vínculo y un puesto.',
+                    outcomeText: 'La charla fue difícil, pero tu amigo entendió. Hoy sabe qué se espera de él y el equipo ve que hay reglas para todos.',
+                }
+            ),
+            defineOption(
+                'Dejarlo pasar para no arruinar la amistad.',
+                { capital: -8, bienestar: -12, reputacion: -8 },
+                {
+                    learningPill: 'Costo de Evitar: Postergar una charla difícil la hace más grande y le resta credibilidad al resto del equipo.',
+                    outcomeText: 'Evitaste la charla. El problema siguió creciendo y varios del equipo ya piensan que hay reglas distintas según quién seas.',
+                }
+            ),
+            defineOption(
+                'Despedirlo.',
+                { capital: -5, bienestar: -8, reputacion: -3 },
+                {
+                    removeTags: ['contratacion_por_afecto'],
+                    learningPill: 'Despedir a un Amigo: Es de las decisiones más difíciles de liderar; hacerlo con respeto cuida lo que se pueda cuidar.',
+                    outcomeText: 'Lo despediste con respeto y una indemnización justa. La amistad quedó herida, pero el equipo volvió a ordenarse.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f3_cuota_prestamo',
+        phaseId: 3,
+        title: 'Los Intereses se Acumulan',
+        weight: 20,
+        when: {
+            tags: ['deuda_riesgosa'],
+            playedBefore: ['f2_necesidad_capital'],
+        },
+        description: 'Los intereses de lo que tomaste prestado siguen creciendo y este año las cuotas se llevan una parte importante de lo que ganás.',
+        options: [
+            defineOption(
+                'Refinanciar la deuda a un plazo más largo.',
+                { capital: +5, bienestar: -3, reputacion: -3 },
+                {
+                    learningPill: 'Refinanciar: Alargar el plazo alivia la cuota de hoy, pero aumenta el costo total de la deuda.',
+                    outcomeText: 'Tu cuota mensual bajó y la caja respira. A cambio, vas a pagar intereses por mucho más tiempo.',
+                }
+            ),
+            defineOption(
+                'Cancelar la deuda de golpe con tus reservas.',
+                { capital: -25, bienestar: +8, reputacion: +3 },
+                {
+                    removeTags: ['deuda_riesgosa'],
+                    learningPill: 'Desendeudarse: Pagar de una sola vez duele en la caja, pero corta el costo de los intereses y te devuelve tranquilidad.',
+                    outcomeText: 'Usaste gran parte de tus reservas, pero ya no debés nada. Dormís mucho mejor.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f3_cliente_corporativo_renegocia',
+        phaseId: 3,
+        title: 'El Cliente Grande Aprieta',
+        weight: 20,
+        when: {
+            tags: ['cliente_dependencia'],
+            rubro: ['r1_tecnologia'],
+            playedBefore: ['f2_cliente_corporativo_pide'],
+        },
+        description: 'Tu cliente grande renueva el contrato, pero amenaza con irse si no le bajás el precio y le sumás más funciones. Representa casi la mitad de tus ingresos.',
+        options: [
+            defineOption(
+                'Aceptar sus condiciones para no perderlo.',
+                { capital: -10, bienestar: -10 },
+                {
+                    learningPill: 'Poder de Negociación: Un cliente que concentra tus ingresos puede dictar las condiciones.',
+                    outcomeText: 'Aceptaste las condiciones. Seguís teniéndolo como cliente, pero tu equipo trabaja más por menos plata.',
+                }
+            ),
+            defineOption(
+                'Plantarte: ofrecerle solo el producto estándar a precio de lista.',
+                { capital: -15, bienestar: +3, reputacion: +3 },
+                {
+                    removeTags: ['cliente_dependencia'],
+                    learningPill: 'Independencia: Perder a un cliente que te condiciona duele hoy y te devuelve el control de tu producto.',
+                    outcomeText: 'El cliente se fue y perdiste una parte enorme de tus ingresos. Tu equipo volvió a trabajar en el producto.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f3_filtracion_datos',
+        phaseId: 3,
+        title: 'Los Datos Expuestos',
+        weight: 20,
+        when: {
+            tags: ['falla_oculta'],
+            rubro: ['r1_tecnologia'],
+            playedBefore: ['f2_falla_seguridad'],
+        },
+        description: 'Un medio especializado publica que los datos de tus usuarios quedaron expuestos por una falla que ya conocías. Los clientes piden explicaciones.',
+        options: [
+            defineOption(
+                'Admitir que la conocías y pedir disculpas públicas.',
+                { capital: -15, bienestar: -10, reputacion: -15 },
+                {
+                    removeTags: ['falla_oculta'],
+                    learningPill: 'Gestión de Incidentes: Reconocer el error de frente no lo borra, pero limita el daño y muestra responsabilidad.',
+                    outcomeText: 'Reconociste que la falla ya la conocías y explicaste qué ibas a cambiar. Perdiste usuarios, pero la crisis se calmó en pocas semanas.',
+                }
+            ),
+            defineOption(
+                'Decir que fue un ataque inesperado.',
+                { capital: -8, bienestar: -8, reputacion: -35 },
+                {
+                    removeTags: ['falla_oculta'],
+                    learningPill: 'Ocultamiento: Cuando se descubre que sabías, el encubrimiento cuesta mucho más que el error original.',
+                    outcomeText: 'Dijiste que nadie podía haberlo previsto. Pero alguien filtró que la falla ya estaba reportada y perdiste también la confianza que te quedaba.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f3_falla_de_la_maquina',
+        phaseId: 3,
+        title: 'Se Rompió la Máquina',
+        weight: 20,
+        when: {
+            tags: ['maquina_propia'],
+            rubro: ['r4_produccion'],
+            playedBefore: ['f2_comprar_maquina'],
+        },
+        description: 'En plena temporada alta, tu máquina se frena por una falla y el repuesto tarda semanas en llegar. Tenés pedidos para entregar.',
+        options: [
+            defineOption(
+                'Pagar la reparación urgente con un técnico especializado.',
+                { capital: -12, bienestar: -3, reputacion: +3 },
+                {
+                    learningPill: 'Mantenimiento: Los costos de un equipo propio no terminan en la compra; una falla en el peor momento sale más cara que el mantenimiento preventivo.',
+                    outcomeText: 'Pagaste un técnico y la máquina volvió rápido. Cumpliste con casi todos los pedidos, a un costo alto.',
+                }
+            ),
+            defineOption(
+                'Tercerizar la producción mientras llega el repuesto.',
+                { capital: -8, bienestar: -8 },
+                {
+                    learningPill: 'Plan B Operativo: Tener una planta alternativa a quien llamar convierte una parada total en un costo acotado.',
+                    outcomeText: 'Mandaste la producción a otra planta. Tu margen se achicó, pero entregaste todos los pedidos.',
+                }
+            ),
+        ]
+    }),
+
+    defineEvent({
+        id: 'f3_cadena_baja_precio',
+        phaseId: 3,
+        title: 'La Cadena Pide una Rebaja',
+        weight: 20,
+        when: {
+            tags: ['cliente_dependencia'],
+            rubro: ['r4_produccion'],
+            playedBefore: ['f2_marca_blanca'],
+        },
+        description: 'La cadena que te compra casi toda tu producción te avisa que, para renovar, necesita un precio 15% menor. Tenés muy poco margen para aceptarlo.',
+        options: [
+            defineOption(
+                'Aceptar el nuevo precio y producir de forma más eficiente.',
+                { capital: -10, bienestar: -12 },
+                {
+                    learningPill: 'Poder de Compra: Quien concentra tus ventas puede exigirte rebajas que erosionan tu margen.',
+                    outcomeText: 'Aceptaste el nuevo precio y recortaste en todo lo que pudiste. Seguís produciendo para la cadena, con mucho menos ganancia.',
+                }
+            ),
+            defineOption(
+                'Rechazar y buscar otros compradores con la capacidad que se libera.',
+                { capital: -18, bienestar: -5, reputacion: +5 },
+                {
+                    removeTags: ['cliente_dependencia'],
+                    learningPill: 'Diversificar: Perder a tu mayor comprador asusta, pero depender de él te deja sin poder de negociación.',
+                    outcomeText: 'Perdiste el contrato más grande y tenés capacidad parada, pero empezaste a vender a otros compradores a mejor precio.',
+                }
+            ),
+        ]
+    }),
 ]
